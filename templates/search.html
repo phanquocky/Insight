@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh Sách Người</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .search-container {
+            background-color: #ffffff;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 300px;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-input {
+            flex: 1;
+            border: none;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 4px 0 0 4px;
+            margin: 10px;
+        }
+
+        .search-button {
+            background-color: #007bff;
+            color: #ffffff;
+            border: none;
+            padding: 10px 15px;
+            font-size: 16px;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+        }
+
+        .search-button:hover {
+            background-color: #0056b3;
+        }
+
+        .person-list {
+            background-color: #ffffff;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .person {
+            margin-bottom: 10px;
+        }
+
+        .person-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 16px;
+        }
+
+        .person-info span {
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <form method="post">
+        <div class="search-container">
+            <input required name="search" autocomplete="off" type="text" value="" class="search-input" placeholder="Nhập từ khóa tìm kiếm">
+            <button class="search-button">Tìm Kiếm</button>
+        </div>
+    </form>
+
+    <h1>Find User who has name: {{ request_name }}</h1>
+
+    <div class="person-list">
+        {% if users %}
+            {% for user in users %}
+                <div class="person">
+                    <div class="person-info">
+                        <span>ID: {{ user.id }}</span>
+                        <span>Họ và Tên: {{ user.name }}</span>
+                        <span>Ngày Sinh: {{ user.DoB }}</span>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+        <!-- Thêm thông tin người khác tương tự cho khoảng 5 người -->
+    </div>
+</body>
+</html>
