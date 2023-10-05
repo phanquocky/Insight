@@ -87,7 +87,7 @@ def query_users_by_score(min_score = 0, max_score = 100, num_users = 20):
     # In ra màn hình danh sách 
     for user in users:
         userProfile = {
-            "id": user['_id'],
+            # "id": user['_id'],
             "name": user['name'],
             "public_key": user['public_key'],
             "score": user['score']
