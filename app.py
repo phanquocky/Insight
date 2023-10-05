@@ -1,7 +1,9 @@
+import json
 from flask import Flask, render_template, request
 from mongodb import createUser
 from datetime import datetime
 from mongodb import query_users_by_name
+from mongodb import query_users_by_score
 
 
 app = Flask(__name__)
@@ -24,7 +26,18 @@ def signUp():
 
 @app.route('/contest')
 def contest():
-    return render_template('contest.html')
+    return render_template('contest.html', 
+                           users = query_users_by_score())
+
+@app.route('/challenge', methods=['GET','POST'])
+def challenge():
+    if request.method == 'POST':
+        user = request.json
+        print(user)
+        return "OK"
+    elif request.method == 'GET':
+        return render_template('challenge.html')
+
 
 if __name__ == '__main__':
     app.run()
