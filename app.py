@@ -3,6 +3,7 @@ from mongodb import createUser
 from datetime import datetime
 from mongodb import query_users_by_name
 
+
 app = Flask(__name__)
 
 @app.route('/')
@@ -20,6 +21,10 @@ def search():
 @app.route('/signUp')
 def signUp():
     return render_template('signup.html')
+
+@app.route('/contest')
+def contest():
+    return render_template('contest.html')
 
 if __name__ == '__main__':
     app.run()
