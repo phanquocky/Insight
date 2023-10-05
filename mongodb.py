@@ -47,7 +47,9 @@ def query_users_by_name(name):
         userProfile = {
             "id": user['_id'],
             "name": user['name'],
-            "DoB": user['date_of_birth']
+            "DoB": user['date_of_birth'],
+            "public_key": user['public_key'],
+            "score": user['score']
         }
         listUser.append(userProfile)
     
@@ -64,7 +66,6 @@ def query_all_users():
     # In ra màn hình danh sách 
     for user in users:
         userProfile = {
-            "id": user['_id'],
             "name": user['name'],
             "public_key": user['public_key'],
             "score": user['score']
@@ -87,13 +88,13 @@ def query_users_by_score(min_score = 0, max_score = 100, num_users = 20):
     # In ra màn hình danh sách 
     for user in users:
         userProfile = {
-            # "id": user['_id'],
             "name": user['name'],
             "public_key": user['public_key'],
             "score": user['score']
         }
         listUser.append(userProfile)
     
+    listUser.reverse()
     print("users with score in range: ", min_score, " - ", max_score)  
     print("number of users: ", len(listUser))
     print(listUser)
@@ -110,6 +111,7 @@ def find_examiner_above(min_score, need_examiner = 5):
     #  2 user => min_score + 5 -> min_score + 9
     #  1 user => min_score + 10 -> 100
 
+    min_score = min(min_score + 1, 100)
     list_examiner = []
 
     list_a = query_users_by_score(min_score, min_score + 4, 2)
@@ -118,11 +120,29 @@ def find_examiner_above(min_score, need_examiner = 5):
     list_examiner = list_a + list_b
 
     min_score += 10
-    while need_examiner > 0:
-        list_c = query_users_by_score(min_score, min_score+4, need_examiner)
+    while min_score <= 100 and need_examiner > 0:
+        list_c = query_users_by_score(min_score, min_score+9, need_examiner)
+        list_c.reverse()
+        print("\t list_c : ", list_c)
         list_examiner += list_c
         need_examiner -= len(list_c)
+        min_score += 10
 
     print("list examiner: ")
     print(list_examiner)
     return list_examiner
+
+def createRoom(mentor_pubkey, challenger_pubkey):
+    # Add data to mongodb
+    print("Create room successfully!")
+    return None;
+
+def find_room_with_mentor_and_challenger(mentor_pubkey, challenger_pubkey) :
+    # Solve Query
+    print("Find room with mentor and challenger successfully!")
+    return None;
+
+def update_room_with_examiners(room_id, examiners):
+    # Update data to mongodb
+    print("Update room with examiners successfully!")
+    return None;

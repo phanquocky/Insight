@@ -4,6 +4,10 @@ from mongodb import createUser
 from datetime import datetime
 from mongodb import query_users_by_name
 from mongodb import query_users_by_score
+from mongodb import find_examiner_above
+from mongodb import find_room_with_mentor_and_challenger
+from mongodb import createRoom
+from mongodb import update_room_with_examiners
 
 
 app = Flask(__name__)
@@ -42,10 +46,33 @@ def challenge():
     if request.method == 'POST':
         user = request.json
         print(user)
+        # update to mongodb
         return "OK"
     elif request.method == 'GET':
-        return render_template('challenge.html')
+        challenger_name = request.args.get('challenger')
+        mentor_name = request.args.get('mentor')
+        mentor = query_users_by_name(mentor_name)
+        score = mentor[0]['score']
 
+        # room = find_room_with_mentor_and_challenger(mentor_name, challenger_name)
+        
+        # if(room == None):
+        #     createRoom(mentor_publickey, challenger_publickey)
+
+        # examiners = room['examiners']
+        # if examiners.is_empty():
+        #     find_examiner_above(int(score) if score else 0)
+
+        # # Update examiners to mongodb
+        # update_room_with_examiners(room['id'], examiners)
+
+        examiners = find_examiner_above(int(score) if score else 0)
+        if not examiners:
+            examiners.append(mentor[0])
+        
+        return render_template('challenge.html', 
+                                mentor = mentor[0],
+                                examiners = examiners)
 
 if __name__ == '__main__':
     app.run()
