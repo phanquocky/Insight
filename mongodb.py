@@ -57,7 +57,7 @@ def query_users_by_name(name):
 def query_all_users():
     # Truy vấn cơ sở dữ liệu để lấy danh sách tất cả người dùng
     users_collection = db['User']
-    users = users_collection.find({})
+    users = users_collection.find({}).sort('score', 1)
 
     listUser = []
 
@@ -78,8 +78,9 @@ def query_all_users():
 
 def query_users_by_score(min_score = 0, max_score = 100, num_users = 20): 
     # Truy vấn cơ sở dữ liệu để lấy danh sách người dùng có điểm số trong khoảng $min_score và $max_score
+    # Sort by score
     users_collection = db['User']
-    users = users_collection.find({'score': {'$gt': min_score, '$lt': max_score}}).limit(num_users)
+    users = users_collection.find({'score': {'$gte': min_score, '$lte': max_score}}).sort('score', 1).limit(num_users)
 
     listUser = []
 
@@ -96,10 +97,32 @@ def query_users_by_score(min_score = 0, max_score = 100, num_users = 20):
     print("users with score in range: ", min_score, " - ", max_score)  
     print("number of users: ", len(listUser))
     print(listUser)
-    return listUser
+    return listUser 
 
 def update_user_score(id, score):
     # Cập nhật điểm số của người dùng có id là $id
     users_collection = db['User']
     users_collection.update_one({'_id': id}, {'$set': {'score': score}})
     print("Update user score successfully!")
+
+def find_examiner_above(min_score, need_examiner = 5):
+    #  2 user => min_score     -> min_score + 4
+    #  2 user => min_score + 5 -> min_score + 9
+    #  1 user => min_score + 10 -> 100
+
+    list_examiner = []
+
+    list_a = query_users_by_score(min_score, min_score + 4, 2)
+    list_b = query_users_by_score(min_score + 5, min_score + 9, 2)
+    need_examiner -= len(list_a) + len(list_b)
+    list_examiner = list_a + list_b
+
+    min_score += 10
+    while need_examiner > 0:
+        list_c = query_users_by_score(min_score, min_score+4, need_examiner)
+        list_examiner += list_c
+        need_examiner -= len(list_c)
+
+    print("list examiner: ")
+    print(list_examiner)
+    return list_examiner
