@@ -24,10 +24,18 @@ def search():
 def signUp():
     return render_template('signup.html')
 
-@app.route('/contest')
+@app.route('/contest', methods=['GET','POST'])
 def contest():
+    min_score = request.form.get('min_score')
+    max_score = request.form.get('max_score')
+
+    min_score = int(min_score) if min_score else 0
+    max_score = int(max_score) if max_score else 100
+    print(type (min_score), type (max_score))
     return render_template('contest.html', 
-                           users = query_users_by_score())
+                           users = query_users_by_score(min_score=min_score, max_score=max_score),
+                           min_score = min_score,
+                           max_score = max_score)
 
 @app.route('/challenge', methods=['GET','POST'])
 def challenge():

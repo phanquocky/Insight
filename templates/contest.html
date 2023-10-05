@@ -13,6 +13,8 @@
   }
 
   function sendChallenge(user) {
+    console.log("user = ", user);
+
       fetch('/challenge', {
           method: 'POST',
           body: JSON.stringify(user),
@@ -28,7 +30,20 @@
 
   <h1 class="text-center mt-3">Contest</h1>
 
+  <form method="post" class="float-end row col-6 mt-3 mb-3">
 
+    <div style="width: 40%;" class="input-group col-6">
+      <span class="input-group-text" id="min-score">Min Score</span>
+      <input required type="number" name="min_score" value="{{min_score}}" autocomplete="off" style="flex: 0 0 auto; width: 50%; " class="form-control" placeholder="0" aria-label="Min Score" aria-describedby="basic-addon1">
+    </div>
+
+    <div style="width: 40%;" class="input-group col-6">
+      <span class="input-group-text" id="max-score">Max Score</span>
+      <input required type="number" name="max_score" value="{{max_score}}" autocomplete="off" style="flex: 0 0 auto; width: 50%;" class="form-control" placeholder="0" aria-label="Max Score" aria-describedby="basic-addon1">
+    </div>
+
+    <button  style="width: 10%;" class="btn btn-success search-button">Find</button>
+  </form>
 
   {% if users %}
     <table class="table table-striped mt-3 text-center">
