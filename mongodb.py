@@ -3,6 +3,7 @@ from pymongo.server_api import ServerApi
 from mongoengine import Document, StringField, DateTimeField, IntField
 from datetime import datetime
 import config
+import random
 
 uri = f"mongodb+srv://{config.USER}:{config.PASSWORD}@cluster0.becqcta.mongodb.net/?retryWrites=true&w=majority"
 
@@ -21,6 +22,67 @@ class User:
         self.metamask_id = metamask_id
         self.public_key = public_key
         self.score = score
+
+class Room:
+    def __init__(self, mentor, test, test_sign, judges, contestant, submission, submission_sign, level, final_result, status):
+        self.mentor = mentor
+        self.test = test
+        self.test_sign = test_sign
+        self.judges = judges  # Danh sách các giám khảo và điểm và chữ kí của họ
+        self.contestant = contestant
+        self.submission = submission
+        self.submission_sign = submission_sign
+        self.level = level
+        self.final_result = final_result
+        self.status = status
+
+# Test room
+def createRoomRandom():
+    users_collection = db["User"]
+    users = list(users_collection.find())
+
+    mentor = contestant = None
+    judges = []
+
+    # Chọn mentor, người thi và giám khảo không trùng nhau
+    while True:
+        mentor = random.choice(users)
+        contestant = random.choice(users)
+        judges = random.sample(users, 5)  # Lấy ngẫu nhiên 5 giám khảo
+
+        # Kiểm tra các users không trùng nhau
+        if mentor != contestant and mentor not in judges and contestant not in judges:
+            break
+    
+    final_result = 0
+    list_judges_data = []
+    for judge in judges:
+        score = random.randint(0, 100)
+        final_result += score
+        judge_data = {
+            "public_key": judge['public_key'],
+            "score": score,
+            "judge_sign": "hahahihiiii111000"
+        }
+        list_judges_data.append(judge_data)
+    final_result //= len(list_judges_data)
+
+    room = Room(mentor = mentor['public_key'], 
+                test = "9899799", 
+                test_sign = "8hh7g6gf5f", 
+                judges = list_judges_data, 
+                contestant = contestant['public_key'], 
+                submission = "98978ed", 
+                submission_sign = "788u8h8e", 
+                level = random.randint(1, 100), 
+                final_result = final_result, 
+                status = random.randint(0, 6))
+    
+
+    room_collection = db['Room']
+    room_collection.insert_one(room.__dict__)
+
+    print('Phong thi created successfully!')
 
 def createUser():
     newUser = User(
@@ -132,17 +194,12 @@ def find_examiner_above(min_score, need_examiner = 5):
     print(list_examiner)
     return list_examiner
 
-def createRoom(mentor_pubkey, challenger_pubkey):
-    # Add data to mongodb
-    print("Create room successfully!")
-    return None;
-
 def find_room_with_mentor_and_challenger(mentor_pubkey, challenger_pubkey) :
     # Solve Query
     print("Find room with mentor and challenger successfully!")
-    return None;
+    return None
 
 def update_room_with_examiners(room_id, examiners):
     # Update data to mongodb
     print("Update room with examiners successfully!")
-    return None;
+    return None

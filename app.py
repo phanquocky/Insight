@@ -1,13 +1,7 @@
 import json
 from flask import Flask, render_template, request
-from mongodb import createUser
 from datetime import datetime
-from mongodb import query_users_by_name
-from mongodb import query_users_by_score
-from mongodb import find_examiner_above
-from mongodb import find_room_with_mentor_and_challenger
-from mongodb import createRoom
-from mongodb import update_room_with_examiners
+from mongodb import *
 
 
 app = Flask(__name__)
