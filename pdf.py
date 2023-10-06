@@ -15,7 +15,7 @@ def bytes_to_pdf(pdf_bytes, output_file):
 # Oke with English
 def text_to_pdf(input_file, output_pdf):
   # Read text file and store content in a variable
-  with open(input_file, encoding='utf-8') as f:
+  with open(input_file, "r", encoding='utf-8') as f:
     text = f.read()
 
   # Initialize a new PDF 
@@ -25,7 +25,7 @@ def text_to_pdf(input_file, output_pdf):
   pdf.add_page() 
 
   # Set font to arial, 12pt
-  pdf.set_font("Arial", size = 12)
+  pdf.set_font("Arial", size = 15)
 
   # Insert the text from the text file
   pdf.multi_cell(200, 10, txt = text) 
