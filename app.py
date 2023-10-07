@@ -69,7 +69,7 @@ def challenge():
                                 examiners = examiners)
 
 @app.route('/sign', methods=['GET','POST'])
-def sign_root():
+def sign_route():
     if request.method == 'POST':
         data = request.json
         message = data['message']   
@@ -84,6 +84,10 @@ def sign_root():
         if(message == None):
             message = ""
         return render_template('sign.html', message = message)
+
+@app.route('/verify', methods=['GET','POST'])
+def verify_route():
+    return render_template('verify.html')
 
 if __name__ == '__main__':
     app.run()
