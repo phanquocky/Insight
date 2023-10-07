@@ -9,6 +9,9 @@
 
     <button onclick="getMetamaskAddress()">Get Metamask Address</button>
 
+    <!-- Add a div to display the Metamask address -->
+    <div id="metamaskAddress"></div>
+
     <script>
         function getMetamaskAddress() {
             if (typeof web3 !== 'undefined') {
@@ -17,7 +20,32 @@
                     .then(function(accounts) {
                         var metamaskAddress = accounts[0];
                         console.log("Metamask Address:", metamaskAddress);
-                        // TODO: Using 'form' to send metamaskAddress to server
+
+                        // Display the Metamask address in the browser
+                        document.getElementById("metamaskAddress").innerText = "Metamask Address: " + metamaskAddress;
+
+                        // Send the metamaskAddress to the server
+                        fetch('/get_metamask_address', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: 'metamaskAddress=' + encodeURIComponent(metamaskAddress),
+                        })
+                        .then(function(response) {
+                            if (response.ok) {
+                                return response.text();
+                            } else {
+                                throw new Error('Failed to send Metamask Address to the server.');
+                            }
+                        })
+                        .then(function(data) {
+                            console.log(data);
+                            // Handle the response from the server if needed
+                        })
+                        .catch(function(error) {
+                            console.error(error);
+                        });
                     })
                     .catch(function(error) {
                         console.error(error);
@@ -29,4 +57,3 @@
     </script>
 </body>
 </html>
-
