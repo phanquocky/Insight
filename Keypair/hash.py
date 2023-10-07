@@ -1,6 +1,5 @@
 import hashlib
 
-
 def sha256_hash(message):
     sha256_hasher = hashlib.sha256()
     sha256_hasher.update(message)
@@ -15,7 +14,6 @@ def main():
 
     print(f"Original Message: {message.decode()}")
     print(f"Hashed Message (SHA-256): {hashed_message}")
-
 
 if __name__ == "__main__":
     main()
