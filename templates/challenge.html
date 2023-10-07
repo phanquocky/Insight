@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="text-center">Challenge</h1>
+
+<p class="text-center">The invite is sent to {{mentor.name}}. 
+  Please wait for new notification from {{mentor.name}}.
+</p>
+
+{% if examiners %}
+    <table class="table table-striped mt-3 text-center">
+      <thead>
+        <tr>
+          <th scope="col">#ID</th>
+          <th scope="col">Name</th>
+          <th scope="col">Score</th>
+          <!-- <th scope="col">Public Key</th> -->
+          <!-- <th scope="col">Action</th> -->
+        </tr>
+      </thead>
+
+      <tbody class="overflow-auto">
+        {% for examiner in examiners %}
+        <tr>
+            <th scope="row" class="col-1">{{ loop.index }}</th>
+            <td class="col-4">{{ examiner.name }}</td>
+            <td class="col-1">{{ examiner.score }}</td>
+            <!-- <td class="5 overflow-auto">{{ examiner.public_key }}</td> -->
+            <!-- <td class="col-2">
+              <div class="btn-group" role="group" aria-label="inline-btn">
+                <button style="min-width: 5rem;" type="button" class="btn btn-outline-success"
+                 onclick="confirmChallenge({{examiner}})">
+                  Challenge
+                </button> 
+              </div>
+            </td>   -->
+          </tr>
+          {% endfor %}
+      </tbody>
+    </table>
+
+  {% else %}
+    <h2 class="text-center mt-3">No examiner found</h2>
+  {% endif %}
+{% endblock %}

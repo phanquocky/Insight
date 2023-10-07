@@ -17,7 +17,9 @@ $ pip install -r requirements.txt
 Start the Flask development server:
 
 ```
-$ flask run
+$ flask run     
+
+$ flask --app app.py --debug run // auto reloading
 ```
 
 In flask, default port is 5000.

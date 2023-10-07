@@ -1,4 +1,84 @@
 {% extends 'base.html' %}
 {% block content %}
-  <p>Contest</p>
+  
+<script>
+  function confirmChallenge(user) {
+      const userName = user.name;
+      const confirmation = window.confirm(`Do you want to challenge with ${userName}?`);
+      if (confirmation) {
+          sendChallenge(user);
+          // get user's public_key in localStorage
+          // window.location.href = `/challenge?challenger=${localStorage.getItem('public_key')}&mentor=${user.public_key}`;
+          window.location.href = `/challenge?challenger=${localStorage.getItem('name')}&mentor=${user.name}`;
+      }
+  }
+
+  function sendChallenge(user) {
+      fetch('/challenge', {
+          method: 'POST',
+          body: JSON.stringify(user),
+          headers: {
+            "Content-Type": "application/json",
+          },
+      })
+      .then(response => response.text())
+      .then(result => console.log(result))
+      .catch(error => console.log('API NOT FOUND'));
+  }
+</script>
+
+  <h1 class="text-center mt-3">Contest</h1>
+
+  <form method="post" class="float-end row col-6 mt-3 mb-3">
+
+    <div style="width: 40%;" class="input-group col-6">
+      <span class="input-group-text" id="min-score">Min Score</span>
+      <input required type="number" name="min_score" value="{{min_score}}" autocomplete="off" style="flex: 0 0 auto; width: 50%; " class="form-control" placeholder="0" aria-label="Min Score" aria-describedby="basic-addon1">
+    </div>
+
+    <div style="width: 40%;" class="input-group col-6">
+      <span class="input-group-text" id="max-score">Max Score</span>
+      <input required type="number" name="max_score" value="{{max_score}}" autocomplete="off" style="flex: 0 0 auto; width: 50%;" class="form-control" placeholder="0" aria-label="Max Score" aria-describedby="basic-addon1">
+    </div>
+
+    <button  style="width: 10%;" class="btn btn-success search-button">Find</button>
+  </form>
+
+  {% if users %}
+    <table class="table table-striped mt-3 text-center">
+      <thead>
+        <tr>
+          <th scope="col">#ID</th>
+          <th scope="col">Name</th>
+          <th scope="col">Score</th>
+          <!-- <th scope="col">Public Key</th> -->
+          <th scope="col">Action</th>
+        </tr>
+      </thead>
+
+      <tbody class="overflow-auto">
+        {% for user in users %}
+        <tr>
+            <th scope="row" class="col-1">{{ loop.index }}</th>
+            <td class="col-4">{{ user.name }}</td>
+            <td class="col-1">{{ user.score }}</td>
+            <!-- <td class="5 overflow-auto">{{ user.public_key }}</td> -->
+            <td class="col-2">
+              <div class="btn-group" role="group" aria-label="inline-btn">
+                <button style="min-width: 5rem;" type="button" class="btn btn-outline-success"
+                 onclick="confirmChallenge({{user}})">
+                  <!-- onclick="confirmChallenge({{user|tojson|safe}})"> -->
+                  Challenge
+                </button>
+              </div>
+            </td>  
+          </tr>
+          {% endfor %}
+      </tbody>
+    </table>
+
+  {% else %}
+    <h2 class="text-center mt-3">No user found</h2>
+  {% endif %}
+
 {% endblock %}
