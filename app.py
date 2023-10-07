@@ -1,5 +1,5 @@
 import json
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, abort
 from datetime import datetime
 from mongodb import *
 from Keypair.sign_verify import *
@@ -72,22 +72,81 @@ def challenge():
 def sign_route():
     if request.method == 'POST':
         data = request.json
-        message = data['message']   
-        private_key_hex = data['private_key']
-        private_key = hex_string_to_private_key(private_key_hex)
-        signature, private_key = sign(message.encode(), private_key)
-        signature_hex = signature.hex()
-        print("signature_hex: ", signature_hex)
-        return json.dumps({'signature': signature_hex})
+        try:
+            message = data['message']   
+            private_key_hex = data['private_key']
+        except Exception as e:
+            print(e)
+            abort(400, "message, private_key are required!")
+
+        try:
+            print("private_key_hex: ", private_key_hex)
+            private_key = hex_string_to_private_key(private_key_hex)
+            print("private_key: ", private_key)
+            signature, private_key = sign(hex_string_to_bytes(message), private_key)
+            signature_hex = signature.hex()
+            print("signature_hex: ", signature_hex)
+            return json.dumps({'signature': signature_hex})
+        except Exception as e:
+            print(e)
+            abort(400, "Invalid data")
     elif request.method == 'GET':
         message = request.args.get('message')
         if(message == None):
             message = ""
+        
         return render_template('sign.html', message = message)
 
 @app.route('/verify', methods=['GET','POST'])
 def verify_route():
-    return render_template('verify.html')
+    public_key = message = signature = None
+    alert_message = ""
+
+    if request.method == 'POST':
+        data = request.json
+        try:
+            public_key = data['public_key']
+            message = data['message']
+            signature = data['signature']
+        except Exception as e:
+            print(e)
+            abort(400, "pubblic_key, message, signature are required!")
+
+        try:
+            is_verified = None
+            is_verified = verify(hex_string_to_bytes(message), hex_string_to_bytes(signature),  hex_string_to_public_key(public_key))
+            return json.dumps({'is_verified': is_verified})        
+        except Exception as e:
+            print(e)
+            abort(400, "Invalid data")
+    
+    elif request.method == 'GET':
+        public_key = request.args.get('public_key')
+        message = request.args.get('message')
+        signature = request.args.get('signature')
+
+        if(public_key == None or message == None or signature == None):
+            return render_template('verify.html')
+        else:
+            public_key = str(public_key)
+            message = str(message)
+            signature = str(signature)
+            print("public_key: ", public_key)
+            print("message: ", message)
+            print("signature: ", signature)
+            try:
+                is_verified = None
+                is_verified = verify(hex_string_to_bytes(message), hex_string_to_bytes(signature),  hex_string_to_public_key(public_key))
+                if(is_verified):
+                    alert_message = "alert-success"
+                else:
+                    alert_message = "alert-danger"
+                return render_template('verify.html', alert_message = alert_message, public_key = public_key, message = message, signature = signature)
+            except Exception as e:
+                print(e)
+                alert_message = "alert-danger"
+                return render_template('verify.html', public_key = public_key, message = message, signature = signature, alert_message = alert_message)
+
 
 @app.route('/login')
 def index():

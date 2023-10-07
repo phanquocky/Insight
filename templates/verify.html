@@ -1,4 +1,61 @@
 {% extends 'base.html' %}
 {% block content %}
+
+<script>
+  {% if Failed %}
+    alert("Failed to verify message");
+  {% endif %}
+</script>
+
 <h1 class="text-center">Verify Message</h1>
+
+<div style="padding-bottom: 0;" class="card mt-3 ms-3" >
+  <h4 class="card-header"> Verify </h4>
+  <form class="card-body alert {{alert_message}}" role="alert" method="get">
+    <div class="form-group row">
+      <label for="hash-message" class="col-sm-2 col-form-label"><strong>Hash of Message</strong></label>
+      <div class="col-sm-10">
+        <input name="message" type="text" class="form-control" id="hash-message" placeholder="Enter hash of message"
+              required
+              {% if message %}
+                value= {{message}}
+              {% endif %}
+        />
+      </div>
+    </div>  
+
+    <div class="form-group row mt-3">
+      <label for="private-key" class="col-sm-2 col-form-label"><strong>Signature of Message</strong></label>
+      <div class="col-sm-10">
+        <div>
+          <input style="padding-right: 30px;" name="signature" type="text" class="form-control" id="private-key" placeholder="Enter signature of message" 
+                required 
+                {% if signature %}
+                  value= {{signature}}
+                {% endif %}
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group row mt-3">
+      <label for="public-key" class="col-sm-2 col-form-label"><strong>Public key</strong></label>
+      <div class="col-sm-10">
+        <div>
+          <input style="padding-right: 30px;" name="public_key" type="text" class="form-control" id="public-key" placeholder="Enter public key" 
+                required 
+                {% if public_key %}
+                  value= {{public_key}}
+                {% endif %}
+          />
+        </div>
+      </div>
+    </div>
+
+    <button  type="submit" class="btn btn-primary mt-3">
+      Verify Message
+    </button>
+  </form>
+</div>
+
 {% endblock %}
