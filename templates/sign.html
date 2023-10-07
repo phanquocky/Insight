@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+  .field-icon {
+    float: right;
+    margin-left: -30px;
+    margin-top: -25px;
+    position: relative;
+    z-index: 2;
+  }
+</style>
+<h1 class="text-center">Sign Message</h1>
+
+<div class="card mt-3 ms-3">
+  <h4 class="card-header"> Sign </h4>
+  <form id="form-sign" class="card-body" method="post">
+    <div class="form-group row">
+      <label for="hash-message" class="col-sm-2 col-form-label"><strong>Hash of Message</strong></label>
+      <div class="col-sm-10">
+        <input name="message" type="text" class="form-control" id="hash-message" placeholder="Enter your message" value={{message}}
+              required
+        />
+      </div>
+    </div>  
+
+    <div class="form-group row mt-3">
+      <label for="private-key" class="col-sm-2 col-form-label"><strong>Your Private Key</strong></label>
+      <div class="col-sm-10">
+        <div>
+          <input style="padding-right: 30px;" name="private_key" type="password" class="form-control" id="private-key" placeholder="Enter your message" defaultValue=""
+                required 
+          />
+          <span toggle="#private-key" class="col-1 me-1 fa fa-fw fa-eye field-icon toggle-password"></span>
+        </div>
+        
+        <input class="form-control mt-2" type="file"  accept=".txt" id="formFile"
+           onchange="handleFileInputChange(event)">
+      </div>
+    </div>
+
+    <div class="form-group row mt-3">
+      <label for="hash-message" class="col-sm-2 col-form-label"><strong>Sign of Message</strong></label>
+      <div class="col-sm-10">
+        <input name="message" type="text" class="form-control" id="sign-message" placeholder="Enter your message" defaultValue={{signature}}
+              required disabled
+        />
+      </div>
+    </div> 
+
+    <button id="button-sign" type="submit" class="btn btn-primary mt-3"
+        onclick="handleButtonSignClicked(event)">
+          Sign Message
+    </button>
+  </form>
+</div>
+
+<script>
+  /**
+   * If file upload:
+   *  1. Read file
+   *  2. value of "private-key" = file content
+   *  3. disable "private-key" input
+  */ 
+  function handleFileInputChange(event) {
+    const fileInput = event.target;
+    const selectedFile = fileInput.files[0]; // Get the selected file
+
+    if (selectedFile) {
+      // You can now work with the selected file
+      console.log("Selected file:", selectedFile);
+
+      const maxSizeInBytes = 1024 * 10; // 10 KB (adjust as needed)
+      
+      if (selectedFile.size > maxSizeInBytes) {
+        alert("File size exceeds the allowed limit (10 KB). Please select a smaller file.");
+        fileInput.value = ''; // Clear the file input
+        return;
+      }
+
+      // Here, you can read the file content, for example:
+      const reader = new FileReader();
+
+      reader.onload = function (e) {
+        const fileContent = e.target.result;
+        console.log("File content:", fileContent);
+        // You can do something with the file content here
+
+        const privateKeyInput = document.getElementById('private-key');
+        privateKeyInput.value = fileContent;
+        privateKeyInput.disabled = true;
+      };
+
+      reader.readAsText(selectedFile); // Read the file as text
+    }
+  }
+
+  $(".toggle-password").click(function() {
+    $(this).toggleClass("fa-eye fa-eye-slash");
+    var input = $($(this).attr("toggle"));
+    if (input.attr("type") == "password") {
+      input.attr("type", "text");
+    } else {
+      input.attr("type", "password");
+    }
+  });
+
+  function handleButtonSignClicked(event) {
+    event.preventDefault();
+
+    const formSign = document.getElementById('form-sign');
+    if(!formSign.checkValidity()) {
+      formSign.reportValidity();
+      return;
+    }
+
+    const messageInput = document.getElementById('hash-message');
+    const privateKeyInput = document.getElementById('private-key');
+    const signMessageInput = document.getElementById('sign-message');
+
+    const message = messageInput.value;
+    const private_key = privateKeyInput.value;
+
+    if (message && private_key) {
+      const data = {
+        message,
+        private_key
+      };
+      const dataJson = JSON.stringify(data);
+      console.log("dataJSON:",dataJson)
+
+      console.log(data)
+
+      fetch('/sign', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: dataJson,
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Success:', data);
+        signMessageInput.value = data.signature;
+      })
+      .catch((error) => {
+          alert("Your private key is invalid. Please try again.");
+          signMessageInput.value = "";
+      });
+    }
+  }
+
+</script>
+{% endblock %}

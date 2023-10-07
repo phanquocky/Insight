@@ -1,9 +1,16 @@
 import ecdsa
 from hashlib import sha256
 
-def sign(message, private_key=None):
-    if private_key is None:
+def hex_string_to_private_key(hex_string):
+    private_key_bytes = bytes.fromhex(hex_string)
+    private_key = ecdsa.keys.SigningKey.from_string(private_key_bytes, curve=ecdsa.SECP256k1, hashfunc=sha256)
+    return private_key
+
+def sign(message, private_key_hex_string=None):
+    if private_key_hex_string is None:
         private_key = ecdsa.SigningKey.generate(curve=ecdsa.SECP256k1, hashfunc=sha256)
+    else :
+        private_key = hex_string_to_private_key(private_key_hex_string)
     signature = private_key.sign(message)
     return signature, private_key
 
@@ -20,7 +27,11 @@ def verify(message, signature, public_key_hex):
 def main():
     message = b"Hieu write something for Alice.."
     signature, private_key = sign(message)
+    print(type (signature), type (private_key))
+    
+    print("Private key:", private_key.to_string().hex())
     print("Signature:", signature.hex())
+    print("size of signature:", len(signature.hex()))
 
     public_key_hex = private_key.get_verifying_key().to_string().hex()
     is_verified = verify(message, signature, public_key_hex)
