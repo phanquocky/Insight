@@ -2,7 +2,7 @@ import json
 from flask import Flask, render_template, request
 from datetime import datetime
 from mongodb import *
-
+from Keypair.sign_verify import sign
 
 app = Flask(__name__)
 
@@ -67,6 +67,22 @@ def challenge():
         return render_template('challenge.html', 
                                 mentor = mentor[0],
                                 examiners = examiners)
+
+@app.route('/sign', methods=['GET','POST'])
+def sign_root():
+    if request.method == 'POST':
+        data = request.json
+        message = data['message']   
+        private_key_hex = data['private_key']
+        signature, private_key = sign(message.encode(), private_key_hex)
+        signature_hex = signature.hex()
+        print("signature_hex: ", signature_hex)
+        return json.dumps({'signature': signature_hex})
+    elif request.method == 'GET':
+        message = request.args.get('message')
+        if(message == None):
+            message = ""
+        return render_template('sign.html', message = message)
 
 if __name__ == '__main__':
     app.run()
