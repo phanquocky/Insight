@@ -48,10 +48,8 @@ class LoginForm(Form):
         Form.__init__(self, *args, **kwargs)
 
     def validate(self, extra_validators=None):
-        print(1)
         if not Form.validate(self):
             return False
-        print(2)
 
         user = query_users_by_username(username = self.username.data, count = 1)
         if user and check_password(user[0]['password'], self.password.data.encode('utf-8')):
