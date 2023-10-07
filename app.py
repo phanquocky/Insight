@@ -1,26 +1,71 @@
 import json
-from flask import Flask, render_template, request
-from datetime import datetime
+from flask import Flask, render_template, request, flash, url_for, session, redirect
+from datetime import datetime, timedelta
 from mongodb import *
+from config import SECRECT_KEY
 from Keypair.sign_verify import *
+from forms import *
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = SECRECT_KEY 
+app.config['SESSION_COOKIE_SECURE'] = True
+
+@app.before_request
+def before_request():
+  session.permanent = True
+  app.permanent_session_lifetime = timedelta(minutes = 15) #Phiên làm việc sẽ tự động xóa sau 15p nếu không có thêm bất cứ request nào lên server.
 
 @app.route('/')
-def hello_world():
-    return render_template("base.html")
+def main():
+    return redirect(url_for('home'))
+
+@app.route('/home', methods=['GET', 'POST'])
+def home():
+    username = None
+    if 'username' in session:
+        username = session['username']
+    return render_template("base.html", username = username)
 
 @app.route("/search", methods=['GET', 'POST'])
 def search():
     name = str(request.form.get('search'))
-    print(name)
+    username = None
+    if 'username' in session:
+        username = session['username']
     return render_template("search.html", 
                            users = query_users_by_name(name), 
-                           request_name = name)
+                           request_name = name,
+                           username = username)
 
-@app.route('/signUp')
-def signUp():
+@app.route('/signup', methods = ['GET', 'POST'])
+def signup():
+    if  'username' in session:
+        return render_template("base.html", username = session['username'])
+
+    if request.form.get('signup-submit'):
+        form = SignupForm(request.form)
+        if form.validate():
+            new_user = User(username = form.username.data, password = form.password.data.encode('utf-8'))
+            new_user.addToDB()
+            flash('Signed up successfully.', category='success')
+            return redirect(url_for('home'))
+        return render_template('signup.html', form=form)
+    
+    elif request.form.get('login-submit'):
+        form = LoginForm(request.form)
+        if form.validate():
+            session['username'] = form.username.data
+            flash('Logged in successfully.', category='success')
+            return redirect(url_for('home'))
+        return render_template('signup.html', form=form, login = True)
+    
     return render_template('signup.html')
+
+@app.route('/logout')
+def logout():
+    # Xóa thông tin đăng nhập khỏi session để người dùng đăng xuất
+    session.pop('username', None)
+    return redirect(url_for('home'))
 
 @app.route('/contest', methods=['GET','POST'])
 def contest():
@@ -30,10 +75,15 @@ def contest():
     min_score = int(min_score) if min_score else 0
     max_score = int(max_score) if max_score else 100
     print(type (min_score), type (max_score))
+
+    username = None
+    if 'username' in session:
+        username = session['username']
     return render_template('contest.html', 
                            users = query_users_by_score(min_score=min_score, max_score=max_score),
                            min_score = min_score,
-                           max_score = max_score)
+                           max_score = max_score,
+                           username = username)
 
 @app.route('/challenge', methods=['GET','POST'])
 def challenge():
@@ -64,12 +114,20 @@ def challenge():
         if not examiners:
             examiners.append(mentor[0])
         
+        username = None
+        if 'username' in session:
+            username = session['username']
         return render_template('challenge.html', 
                                 mentor = mentor[0],
-                                examiners = examiners)
+                                examiners = examiners,
+                                username = username)
 
 @app.route('/sign', methods=['GET','POST'])
 def sign_route():
+    username = None
+    if 'username' in session:
+        username = session['username']
+
     if request.method == 'POST':
         data = request.json
         message = data['message']   
@@ -83,15 +141,21 @@ def sign_route():
         message = request.args.get('message')
         if(message == None):
             message = ""
-        return render_template('sign.html', message = message)
+        return render_template('sign.html', message = message, username = username)
 
 @app.route('/verify', methods=['GET','POST'])
 def verify_route():
-    return render_template('verify.html')
+    username = None
+    if 'username' in session:
+        username = session['username']
+    return render_template('verify.html', username = username)
 
 @app.route('/login')
 def index():
-    return render_template('index.html')
+    username = None
+    if 'username' in session:
+        username = session['username']
+    return render_template('index.html', username = username)
 
 @app.route('/get_metamask_address', methods=['POST'])
 def get_metamask_address():
