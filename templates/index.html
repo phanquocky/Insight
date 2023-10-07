@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Metamask Address</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.6.0/dist/web3.min.js"></script>
+</head>
+<body>
+    <h1>Metamask Address</h1>
+
+    <button onclick="getMetamaskAddress()">Get Metamask Address</button>
+
+    <script>
+        function getMetamaskAddress() {
+            if (typeof web3 !== 'undefined') {
+                web3 = new Web3(web3.currentProvider);
+                web3.eth.requestAccounts()
+                    .then(function(accounts) {
+                        var metamaskAddress = accounts[0];
+                        console.log("Metamask Address:", metamaskAddress);
+                        // TODO: Using 'form' to send metamaskAddress to server
+                    })
+                    .catch(function(error) {
+                        console.error(error);
+                    });
+            } else {
+                console.error("Web3 is not available. Please install Metamask.");
+            }
+        }
+    </script>
+</body>
+</html>
+

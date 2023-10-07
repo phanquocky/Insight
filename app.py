@@ -85,5 +85,18 @@ def sign_root():
             message = ""
         return render_template('sign.html', message = message)
 
+@app.route('/login')
+def index():
+    return render_template('index.html')
+
+@app.route('/get_metamask_address', methods=['POST'])
+def get_metamask_address():
+    metamask_address = request.form['metamaskAddress']
+    print(metamask_address)
+    
+    # You can do something with the Metamask address here (e.g., authenticate the user)
+    # You can send a response back to the client if needed
+    return f"Metamask Address: {metamask_address}"
+
 if __name__ == '__main__':
     app.run()
