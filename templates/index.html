@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Metamask Address</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.6.0/dist/web3.min.js"></script>
+</head>
+<body>
+    <h1>Metamask Address</h1>
+
+    <button onclick="getMetamaskAddress()">Get Metamask Address</button>
+
+    <!-- Add a div to display the Metamask address -->
+    <div id="metamaskAddress"></div>
+
+    <script>
+        function getMetamaskAddress() {
+            if (typeof web3 !== 'undefined') {
+                web3 = new Web3(web3.currentProvider);
+                web3.eth.requestAccounts()
+                    .then(function(accounts) {
+                        var metamaskAddress = accounts[0];
+                        console.log("Metamask Address:", metamaskAddress);
+
+                        // Display the Metamask address in the browser
+                        document.getElementById("metamaskAddress").innerText = "Metamask Address: " + metamaskAddress;
+
+                        // Send the metamaskAddress to the server
+                        fetch('/get_metamask_address', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: 'metamaskAddress=' + encodeURIComponent(metamaskAddress),
+                        })
+                        .then(function(response) {
+                            if (response.ok) {
+                                return response.text();
+                            } else {
+                                throw new Error('Failed to send Metamask Address to the server.');
+                            }
+                        })
+                        .then(function(data) {
+                            console.log(data);
+                            // Handle the response from the server if needed
+                        })
+                        .catch(function(error) {
+                            console.error(error);
+                        });
+                    })
+                    .catch(function(error) {
+                        console.error(error);
+                    });
+            } else {
+                console.error("Web3 is not available. Please install Metamask.");
+            }
+        }
+    </script>
+</body>
+</html>
