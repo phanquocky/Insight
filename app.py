@@ -2,7 +2,7 @@ import json
 from flask import Flask, render_template, request
 from datetime import datetime
 from mongodb import *
-from Keypair.sign_verify import sign
+from Keypair.sign_verify import *
 
 app = Flask(__name__)
 
@@ -74,7 +74,8 @@ def sign_root():
         data = request.json
         message = data['message']   
         private_key_hex = data['private_key']
-        signature, private_key = sign(message.encode(), private_key_hex)
+        private_key = hex_string_to_private_key(private_key_hex)
+        signature, private_key = sign(message.encode(), private_key)
         signature_hex = signature.hex()
         print("signature_hex: ", signature_hex)
         return json.dumps({'signature': signature_hex})
