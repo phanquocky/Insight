@@ -1,5 +1,4 @@
 from cryptography.hazmat.primitives.asymmetric import ec
-import hashlib
 from hashlib import sha256
 from cryptography.hazmat.backends import default_backend
 
@@ -20,12 +19,18 @@ def generate_key_pair_from_user_pw(user, pw):
     return generate_key_pair(priv)
 #Test
 def main():
+    #1. original test
     #private_key_hex, public_key_hex = generate_key_pair()
 
-    #test gen from hash of user, pw:
-    user = b"hieunguyen"
-    pw = b"Thisizmypass"
-    private_key_hex, public_key_hex = generate_key_pair_from_user_pw(user, pw)
+    #2. test gen with priv key
+    existing_priv = 0x1234567890abcdef
+    priv = ec.derive_private_key(existing_priv, ec.SECP256R1())
+    private_key_hex, public_key_hex = generate_key_pair(priv)
+
+    #3. test gen from hash of user, pw:
+    #user = b"hieunguyen"
+    #pw = b"Thisizmypass"
+    #private_key_hex, public_key_hex = generate_key_pair_from_user_pw(user, pw)
 
     print("Private Key (hex):")
     print(private_key_hex)
