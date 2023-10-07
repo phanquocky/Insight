@@ -1,8 +1,10 @@
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 
-def generate_key_pair():
-    private_key = ec.generate_private_key(ec.SECP256R1())  # Tạo private key ECC
+def generate_key_pair(private_key=None):
+    #can use specific private key to generate public key by passing para
+    if private_key is None:
+        private_key = ec.generate_private_key(ec.SECP256R1())  # Tạo private key ECC
     public_key = private_key.public_key()  # Tạo public key từ private key
 
     private_key_hex = private_key.private_numbers().private_value
