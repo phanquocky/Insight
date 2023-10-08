@@ -35,7 +35,12 @@
             </ul>
             <form class="d-flex" role="search">
               {% if username %}
-                <div style="align-items: center; display: flex; margin-right: 10px;">Hi {{ username }}</div>
+                <div style="align-items: center; display: flex; margin-right: 10px;">
+                  <div class="icon-container" style="margin-right: 10px;">
+                    <i id="notification-icon" class="bi bi-bell-fill"></i>
+                  </div>
+                  Hi {{ username }}
+                </div>
                 <button id="logoutButton" class="btn btn-outline-danger" onclick="logout_user(event)">Log out</button>
               {% else %}
                 <button id="loginButton" class="btn btn-outline-success" onclick="login_user(event)">Login/Sign Up</button>
