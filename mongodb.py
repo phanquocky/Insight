@@ -42,6 +42,18 @@ class Room:
         self.final_result = final_result
         self.status = status
 
+class Mail:
+    def __init__(self, addr_from, addr_to, content, date_end, is_read = False) -> None:
+        self.addr_from = addr_from
+        self.addr_to   = addr_to
+        self.content   = content
+        self.date_send = datetime.now()
+        self.date_end  = date_end
+        self.is_read   = is_read 
+    def addToDB(self):
+        users_collection = db['Mail']
+        users_collection.insert_one(self.__dict__) 
+
 # Test room
 def createRoomRandom():
     users_collection = db["User"]
