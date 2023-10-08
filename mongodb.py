@@ -203,3 +203,26 @@ def update_room_with_examiners(room_id, examiners):
     # Update data to mongodb
     print("Update room with examiners successfully!")
     return None
+
+def update_judge(test_id, public_key):
+    # Find the Room with the specified test_id
+    room_collection = db['Room']
+    room = room_collection.find_one({'test': test_id})
+
+    if room is None:
+        print(f"Room with test_id {test_id} not found.")
+        return
+
+    # Create the judge data with the user's public_key and judge_sign
+    judge_data = {
+        "public_key": public_key,
+        "judge_sign": "hahahihi"
+    }
+
+    # Add the new judge to the Room's judges attribute
+    room['judges'].append(judge_data)
+
+    # Update the Room in the database
+    room_collection.update_one({'test': test_id}, {'$set': room})
+
+    print(f"Judge with public_key {public_key} added to the Room with test_id {test_id} successfully.")

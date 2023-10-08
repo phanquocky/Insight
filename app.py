@@ -1,5 +1,5 @@
 import json
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 from datetime import datetime
 from mongodb import *
 from Keypair.sign_verify import *
@@ -102,5 +102,25 @@ def get_metamask_address():
     # You can send a response back to the client if needed
     return f"Metamask Address: {metamask_address}"
 
+@app.route('/judge_confirm', methods=['POST'])
+def judge_confirm():
+    if request.method == 'POST':
+        public_key = request.form.get('public_key')
+        test_id = request.form.get('test_id')
+
+        if public_key is None or test_id is None:
+            return jsonify({"error": "Error: Both Public key and Test id is required."}), 400
+
+        # Perform any necessary processing with the received data
+        # For example, you can call a function like store_judge_data(public_key, test_id)
+
+        update_judge(test_id, public_key)
+
+        # Customize the success message based on the received data
+        success_message = f"Successfully, judge '{public_key}' accepted to judge test '{test_id}'"
+
+        # Return a response with the success message
+        return jsonify({"message": success_message}), 200
+    
 if __name__ == '__main__':
     app.run()
