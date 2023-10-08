@@ -53,12 +53,12 @@
 
     {% block content %}
       {% if username %}
-        <div class="modal fade" id="noti-judge" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal fade" id="noti-examiner" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
           <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-body">
                   <h3>Hi {{ username }}! </h3></br>
-                  <h3>You are a judge!</h3>
+                  <h3>You are a examiner!</h3>
                 </div>
             </div>
           </div>
@@ -66,17 +66,17 @@
 
         <script>
           document.addEventListener('DOMContentLoaded', function() {
-            var judge = new bootstrap.Modal(document.getElementById('noti-judge'));
-            judge.show();
+            var examiner = new bootstrap.Modal(document.getElementById('noti-examiner'));
+            examiner.show();
 
             setTimeout(function() {
-              judge.hide();
+              examiner.hide();
             }, 5000);
           });
 
           $(document).ready(function() {
             $("#notification-icon").click(function() {
-              $("#noti-judge").modal("show");
+              $("#noti-examiner").modal("show");
             });
           });
         </script>
