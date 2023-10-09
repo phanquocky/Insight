@@ -5,6 +5,7 @@ from Keypair.hash import sha256_hash
 from datetime import datetime
 import config
 import random
+from bson.objectid import ObjectId
 
 uri = f"mongodb+srv://{config.USER}:{config.PASSWORD}@cluster0.becqcta.mongodb.net/?retryWrites=true&w=majority"
 
@@ -230,4 +231,9 @@ def find_room_with_mentor_and_challenger(mentor_pubkey, challenger_pubkey) :
 def update_room_with_examiners(room_id, examiners):
     # Update data to mongodb
     print("Update room with examiners successfully!")
+    return None
+
+def update_mail_status(id: str, is_read: bool):
+    mail_collection = db['Mail']
+    mail_collection.update_one({'_id': ObjectId(id)}, {'$set': {'is_read': is_read}})
     return None
