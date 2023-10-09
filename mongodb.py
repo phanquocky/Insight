@@ -116,12 +116,13 @@ def createUser():
     users_collection.insert_one(newUser.__dict__) 
     print("User created successfully!")
 
-def query_users_by_username(username, count):
+def query_users_by_username(username):
     # Truy vấn cơ sở dữ liệu để lấy danh sách người có tên là $name
     users_collection = db['User']
-    users = users_collection.find({'username': username}).limit(count)
-
-    return list(users)
+    # find only one user
+    user = users_collection.find_one({'username': username}, { "_id": 0 })
+    # find({},{ "_id": 0, "name": 1, "address": 1 })
+    return user
 
 def query_users_by_name(name, count):
     # Truy vấn cơ sở dữ liệu để lấy danh sách người có tên là $name

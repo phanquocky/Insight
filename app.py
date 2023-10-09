@@ -15,9 +15,11 @@ def before_request():
   session.permanent = True
   app.permanent_session_lifetime = timedelta(minutes = 15) #Phiên làm việc sẽ tự động xóa sau 15p nếu không có thêm bất cứ request nào lên server.
 
-@app.route('/')
-def main():
-    return redirect(url_for('home'))
+@app.route('/<username>')
+def main(username):
+    user = query_users_by_username(username)
+    # print("user = ", user)
+    return render_template("user_profile.html", user = user)
 
 @app.route('/home', methods=['GET', 'POST'])
 def home():
