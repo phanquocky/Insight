@@ -95,7 +95,7 @@ def challenge():
     elif request.method == 'GET':
         challenger_name = request.args.get('challenger')
         mentor_name = request.args.get('mentor')
-        mentor = query_users_by_name(mentor_name)
+        mentor = query_users_by_name(mentor_name, 1)
         score = mentor[0]['score']
 
         # room = find_room_with_mentor_and_challenger(mentor_name, challenger_name)
