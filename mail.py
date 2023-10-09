@@ -17,3 +17,9 @@
 #     print("successfull") 
 
 # send_invitaion(sender, receiver)
+
+# from mongodb import *
+# createMail()
+# update_mail_status('6523fed4c8cf08392fa63291', True)
+# mail = query_mail_by_addrto("")
+# print(mail)
