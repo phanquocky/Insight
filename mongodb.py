@@ -237,3 +237,8 @@ def update_mail_status(id: str, is_read: bool):
     mail_collection = db['Mail']
     mail_collection.update_one({'_id': ObjectId(id)}, {'$set': {'is_read': is_read}})
     return None
+
+def query_mail_by_addrto(add_to: str):
+    mail_collection = db['Mail']
+    mail = mail_collection.find({'addr_to': add_to})
+    return list(mail)
