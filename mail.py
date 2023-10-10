@@ -5,8 +5,8 @@
 # password = PASSWORD_GMAIL
 
 # #thêm mail người gửi và nhận
-# sender   = 'kt7456158@gmail.com'
-# receiver = 'kt7456158@gmail.com'
+# sender   = ''
+# receiver = ''
 
 # def send_invitaion(sender, receiver):
 #     msg = ("From: %s\r\nTo: %s\r\nsubject: test\n\r\nTest" % (sender, receiver))
@@ -17,9 +17,15 @@
 #     print("successfull") 
 
 # send_invitaion(sender, receiver)
-
-# from mongodb import *
-# createMail()
-# update_mail_status('6523fed4c8cf08392fa63291', True)
-# mail = query_mail_by_addrto("")
-# print(mail)
+from mongodb import *
+from bson.json_util import loads
+result = createMail(end = 12)
+mail = loads(query_mail_by_id(result))
+print(mail[0]['date_send'])
+print(mail[0]['date_end'])
+# from datetime import datetime, timedelta
+# a = datetime.now()
+# a = a + timedelta(days=-1)
+# print(a)
+# a = a + timedelta(days=1)
+# print(a)
