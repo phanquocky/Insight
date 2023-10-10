@@ -45,7 +45,7 @@ def signup():
     if request.form.get('signup-submit'):
         form = SignupForm(request.form)
         if form.validate():
-            new_user = User(username = form.username.data, password = form.password.data.encode('utf-8'))
+            new_user = User(name = form.username.data, username = form.username.data, password = form.password.data.encode('utf-8'))
             new_user.addToDB()
             flash('Signed up successfully.', category='success')
             return redirect(url_for('home'))
