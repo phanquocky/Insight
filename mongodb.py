@@ -175,10 +175,10 @@ def query_users_by_score(min_score = 0, max_score = 100, num_users = 20):
     print(listUser)
     return listUser 
 
-def update_user_mentor_state(username, mentor_state):
+def update_user_judge_state(username, judge_state):
     users_collection = db['User']
-    users_collection.update_one({'username': username}, {'$set': {'mentor_state': mentor_state}})
-    print("Update user mentor state successfully!")
+    users_collection.update_one({'username': username}, {'$set': {'judge_state': judge_state}})
+    print("Update user judge state successfully!")
 
 def update_user_score(_id, score):
     # Cập nhật điểm số của người dùng có id là $id

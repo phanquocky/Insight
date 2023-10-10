@@ -4,14 +4,39 @@
 <link rel="stylesheet" href="../static/user_profile.css">
 
 <div class="toggle-group pull-right p-3 text-center">
-  <p class="ms-2" for="mentor-check" lass="form-check-label"> <strong>Mentor</strong></p>
+  <p class="ms-2" for="judge-check" lass="form-check-label"> <strong>Judge</strong></p>
   <label class="switch">
-    <input id="mentor-check" type="checkbox" name="{{username}}"
-       {% if user.mentor_state == True %} checked {% endif %}
-      onchange="changeMentorState(event, '{{username}}', '{{user.score}}')" 
+    <input id="judge-check" type="checkbox" name="{{username}}"
+       {% if user.judge_state == True %} checked {% endif %}
+      onchange="changeJudgeState(event, '{{username}}', '{{user.score}}')" 
     >
     <span class="slider round"></span>
   </label>
+</div>
+
+<!-- Button trigger modal -->
+<button style="display: none;" id="buttonModal" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+  Launch static backdrop modal
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="staticBackdropLabel">Announcement</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Now, you are a judge. And you are <strong>already to  be judge </strong> for  another Competiton.</p>
+        <p> If you want to stop being a judge, please uncheck the judge button.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary"   data-bs-dismiss="modal">Understood</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script type="text/javascript">
@@ -24,27 +49,37 @@
 </script>
 
 <script>
-  function changeMentorState(event, username, score) {
-    const mentor_state = event.target.checked;
-    console.log(username, mentor_state, score)
-    if(mentor_state == true && score < 10) {
-      alert("You need to have at least 10 points to become a mentor!")
+  function changeJudgeState(event, username, score) {
+    const judge_state = event.target.checked;
+    console.log(username, judge_state, score)
+    if(judge_state == true && score < 10) {
+      alert("You need to have at least 10 points to become a judge!")
       event.target.checked = false;
       return;
     }
 
-    fetch(`/mentor/${username}`, {
+    fetch(`/${username}`, {
       method: 'PATCH',
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        mentor_state: mentor_state
+        judge_state: judge_state
       })
     })
     .then(response => response.json())
     .then(result => {
       console.log(result);
+      sessionStorage.setItem('user', result.user);
+
+      if(judge_state == true) {
+        document.getElementById("buttonModal").click();
+      }
+    })
+    .catch(error => {
+      console.log('Error:', error);
+      alert("Server is busy, try again later!")
+      event.target.checked = false;
     });
   }
 </script>

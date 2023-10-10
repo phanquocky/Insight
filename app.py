@@ -224,32 +224,29 @@ def get_metamask_address():
     # You can send a response back to the client if needed
     return f"Metamask Address: {metamask_address}"
 
-@app.route('/<username>')
+@app.route('/<username>',  methods=['GET', 'PATCH'])
 def user_profile(username):
-    user = query_users_by_username(username)
-    # print("user = ", user)
-    return render_template("user_profile.html", user = user, 
-                                                username = username, 
-                                                data=json.dumps(user))
-
-
-@app.route('/mentor/<username>', methods=['GET', 'PATCH']) 
-def update_profile(username):
     if request.method == 'GET':
-        return "HELLO"
+        user = query_users_by_username(username)
+        if user == None:
+            abort(404)
 
-    data = request.json
-    user = query_users_by_username(username)
-    print("user = ", user)
-    if user == None:
-        abort(400, "Invalid username")
-    
-    if 'mentor_state' in data:
-        if(user['mentor_state'] != data['mentor_state']):
-            user['mentor_state'] = data['mentor_state']
-            update_user_mentor_state(username, data['mentor_state'])
+        return render_template("user_profile.html", user = user, 
+                                                    username = username, 
+                                                    data=json.dumps(user))
+    else:
+        data = request.json
+        user = query_users_by_username(username)
+        print("user = ", user)
+        if user == None:
+            abort(404, "Invalid username")
+        
+        if 'judge_state' in data:
+            if('judge_state' not in user or user['judge_state'] != data['judge_state']):
+                user['judge_state'] = data['judge_state']
+                update_user_judge_state(username, data['judge_state'])
 
-    return json.dumps({'message': 'success', 'user': user})
+        return json.dumps({'message': 'success', 'user': user})
 
 if __name__ == '__main__':
     app.run()
