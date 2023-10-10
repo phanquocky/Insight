@@ -184,7 +184,7 @@ def verify_route():
             signature = data['signature']
         except Exception as e:
             print(e)
-            abort(400, "pubblic_key, message, signature are required!")
+            abort(400, "public_key, message, signature are required!")
 
         try:
             is_verified = None
@@ -275,15 +275,15 @@ def send_mail():
         abort(400, "addr_from, addr_to, content, date_end are required!")
     
     id = createMail(addr_from, addr_to, content, date_end)
-    respone = query_mail_by_id(id)
-    return respone
+    response = query_mail_by_id(id)
+    return response
 
 @app.route('/receive', methods=['GET'])
 def receive_mail():
     receiver = request.args['addr_to']
     quantity = request.args['quantity']
-    respone = query_mail_by_addrto(receiver, int(quantity))
-    return respone
+    response = query_mail_by_addrto(receiver, int(quantity))
+    return response
 
 if __name__ == '__main__':
     app.run()
