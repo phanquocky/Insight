@@ -208,7 +208,7 @@ def update_mentor(mentor, contestant):
     # Connect to MongoDB
     # client = MongoClient(config.MONGODB_URI)
     # db = client[config.MONGODB_DATABASE]
-    room_collection = db['rooms']
+    room_collection = db['Room']
 
     # Find the room with the specified mentor and contestant
     room = room_collection.find_one({"mentor": mentor, "contestant": contestant})
