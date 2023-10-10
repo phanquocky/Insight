@@ -255,3 +255,8 @@ def createMail(sender = '', receiver = '', mailcontent = '', end = '') -> str:
     result = mail_collection.insert_one(newMail.__dict__) 
     print("Mail created successfully!")
     return str(result.inserted_id)
+
+def query_mail_by_addrfrom(add_from: str):
+    mail_collection = db['Mail']
+    mail = mail_collection.find({'addr_from': add_from})
+    return dumps(list(mail))
