@@ -2,7 +2,7 @@ from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from mongoengine import Document, StringField, DateTimeField, IntField
 from Keypair.hash import sha256_hash
-from datetime import datetime
+from datetime import datetime, timedelta
 import config
 import random
 from bson.objectid import ObjectId
@@ -46,9 +46,10 @@ class Room:
         self.status = status
 
 class Mail:
-    def __init__(self, addr_from, addr_to, content, date_end, is_read = False) -> None:
+    def __init__(self, addr_from, addr_to, subject, content, date_end, is_read = False) -> None:
         self.addr_from = addr_from
         self.addr_to   = addr_to
+        self.subject   = subject
         self.content   = content
         self.date_send = datetime.now()
         self.date_end  = date_end
@@ -257,34 +258,38 @@ def update_room_with_examiners(room_id, examiners):
     print("Update room with examiners successfully!")
     return None
 
-def update_mail_status(id: str, is_read: bool):
+def update_mail_status(id: str, is_read: bool) -> None:
     mail_collection = db['Mail']
     mail_collection.update_one({'_id': ObjectId(id)}, {'$set': {'is_read': is_read}})
     return None
 
-def query_mail_by_addrto(add_to: str, count: int = None):
+def query_mail_by_addrto(add_to: str, count: int = None) -> list:
     mail_collection = db['Mail']
     mail = mail_collection.find({'addr_to': add_to}).limit(count)
     return dumps(list(mail))
 
-def createMail(sender = '', receiver = '', mailcontent = '', end = '') -> str:
+def createMail(sender = '', receiver = '', mailsubject = '',  mailcontent = '', end = 10) -> str:
     newMail = Mail(
         addr_from = sender,
         addr_to = receiver,
+        subject = mailsubject,
         content = mailcontent,
-        date_end=  end,
+        date_end= 0
     )
     mail_collection = db['Mail']
     result = mail_collection.insert_one(newMail.__dict__) 
+    mail = loads(query_mail_by_id(str(result.inserted_id)))
+    date = mail[0]['date_send'] + timedelta(end)
+    mail_collection.update_one({'_id': result.inserted_id}, {'$set': {'date_end': date}})
     print("Mail created successfully!")
     return str(result.inserted_id)
 
-def query_mail_by_addrfrom(add_from: str, count: int = None):
+def query_mail_by_addrfrom(add_from: str, count: int = None) -> list:
     mail_collection = db['Mail']
     mail = mail_collection.find({'addr_from': add_from}).limit(count)
     return dumps(list(mail))
 
-def query_mail_by_id(id: str):
+def query_mail_by_id(id: str) -> list:
     mail_collection = db['Mail']
     mail = mail_collection.find({'_id': ObjectId(id)})
     return dumps(list(mail))
