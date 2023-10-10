@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+
+<body>
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Notifications</h2>
+    <div class="table-responsive mx-auto" style="max-width: 60%;">
+        <table class="table" style="height: 250px;">
+            <tbody>
+            {% if username %}
+            <tr>
+                <td>You are an examiner!</td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td>Noti 2</td>
+            </tr>
+            <tr>
+                <td>Noti 3</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+
+{% endblock %}
+<!-- Link Bootstrap JS từ một CDN (nếu bạn cần sử dụng các tính năng JS của Bootstrap) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

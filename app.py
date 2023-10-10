@@ -33,6 +33,13 @@ def mail():
         username = session['username']
     return render_template("mail.html", username = username)
 
+@app.route('/notification', methods=['GET', 'POST'])
+def notify():
+    username = None
+    if 'username' in session:
+        username = session['username']
+    return render_template("notification.html", username = username)
+
 @app.route("/search", methods=['GET', 'POST'])
 def search():
     name = str(request.form.get('search'))
