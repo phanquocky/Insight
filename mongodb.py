@@ -239,9 +239,9 @@ def update_mail_status(id: str, is_read: bool):
     mail_collection.update_one({'_id': ObjectId(id)}, {'$set': {'is_read': is_read}})
     return None
 
-def query_mail_by_addrto(add_to: str):
+def query_mail_by_addrto(add_to: str, count: int = None):
     mail_collection = db['Mail']
-    mail = mail_collection.find({'addr_to': add_to})
+    mail = mail_collection.find({'addr_to': add_to}).limit(count)
     return dumps(list(mail))
 
 def createMail(sender = '', receiver = '', mailcontent = '', end = '') -> str:
@@ -256,9 +256,9 @@ def createMail(sender = '', receiver = '', mailcontent = '', end = '') -> str:
     print("Mail created successfully!")
     return str(result.inserted_id)
 
-def query_mail_by_addrfrom(add_from: str):
+def query_mail_by_addrfrom(add_from: str, count: int = None):
     mail_collection = db['Mail']
-    mail = mail_collection.find({'addr_from': add_from})
+    mail = mail_collection.find({'addr_from': add_from}).limit(count)
     return dumps(list(mail))
 
 def query_mail_by_id(id: str):
