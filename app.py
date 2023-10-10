@@ -128,51 +128,83 @@ def contest():
 
     min_score = int(min_score) if min_score else 0
     max_score = int(max_score) if max_score else 100
-    print(type (min_score), type (max_score))
 
     username = None
+    user = None
     if 'username' in session:
         username = session['username']
+        user = query_users_by_username(username)
+        print("user join contest", user)
+
+    mentors = query_users_by_score(min_score=min_score, max_score=max_score)
+    print("mentors in contest: ", mentors)
     return render_template('contest.html', 
-                           users = query_users_by_score(min_score=min_score, max_score=max_score),
+                           mentors = mentors,
                            min_score = min_score,
                            max_score = max_score,
-                           username = username)
+                           username = username,
+                           data = json.dumps(mentors),
+                           user = json.dumps(user))
 
 @app.route('/challenge', methods=['GET','POST'])
 def challenge():
     if request.method == 'POST':
-        user = request.json
-        print(user)
-        # update to mongodb
-        return "OK"
-    elif request.method == 'GET':
-        challenger_name = request.args.get('challenger')
-        mentor_name = request.args.get('mentor')
-        mentor = query_users_by_name(mentor_name, 1)
-        score = mentor[0]['score']
+        data = request.json
+        challenger = data['challenger']
+        mentor = data['mentor']
 
-        # room = find_room_with_mentor_and_challenger(mentor_name, challenger_name)
-        
-        # if(room == None):
-        #     createRoom(mentor_publickey, challenger_publickey)
+        print("challenger: ", challenger)
+        print("mentor: ", mentor)
 
-        # examiners = room['examiners']
-        # if examiners.is_empty():
-        #     find_examiner_above(int(score) if score else 0)
+        find_room_condition = {
+            "contestant": challenger['public_key'],
+            "status": {'$gte': 1}
+        }
 
-        # # Update examiners to mongodb
-        # update_room_with_examiners(room['id'], examiners)
+        if(len(find_rooms(find_room_condition)) > 0):
+            abort(400, {
+                "message": "Challenger is in another room"
+            })
 
-        examiners = find_examiner_above(int(score) if score else 0)
+        if(len(find_rooms({
+            "mentor": mentor['public_key'],
+            "contestant": challenger['public_key']
+        })) > 0):
+            abort(400, {"message": "Request is Solving"})
+
+        examiners = find_examiner_above(mentor['score'] if 'score' in mentor else 0)
         if not examiners:
-            examiners.append(mentor[0])
+            examiners.append(mentor['public_key'])
+
+        print("examiners: ", examiners)
+
+        examiners_public_key = [examiner['public_key'] for examiner in examiners]      
+        room = create_room(mentor = mentor['public_key'], challenger = challenger['public_key'],examiners = examiners_public_key)
+        return  {
+            "success": True,
+            "room" : {
+                "mentor": mentor['public_key'],
+                "challenger": challenger['public_key']
+            }
+        }
+    elif request.method == 'GET':
+        challenger_pubkey = request.args.get('challenger')
+        mentor_pubkey = request.args.get('mentor')
+
+        rooms = find_rooms({"mentor": mentor_pubkey, "contestant": challenger_pubkey})
+        if(rooms == None or len(rooms) == 0):
+            abort(404, {"message": "Room not found"})
         
+        print("======")
+        print("rooms: ", rooms)
+        examiners_public_key = rooms[0]['judges']
+        examiners = [find_users({"public_key": examiner})[0] for examiner in examiners_public_key]
+        print("examiners: ", examiners)
+    
         username = None
         if 'username' in session:
             username = session['username']
         return render_template('challenge.html', 
-                                mentor = mentor[0],
                                 examiners = examiners,
                                 username = username)
 

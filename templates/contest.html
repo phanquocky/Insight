@@ -2,28 +2,57 @@
 {% block content %}
   
 <script>
-  function confirmChallenge(user) {
-      const userName = user.name;
-      const confirmation = window.confirm(`Do you want to challenge with ${userName}?`);
-      if (confirmation) {
-          sendChallenge(user);
-          // get user's public_key in localStorage
-          // window.location.href = `/challenge?challenger=${localStorage.getItem('public_key')}&mentor=${user.public_key}`;
-          window.location.href = `/challenge?challenger=${localStorage.getItem('name')}&mentor=${user.name}`;
-      }
+  console.log("username: ", '{{username}}');
+  console.log("public_key: ", '{{public_key}}');
+  sessionStorage.setItem('public_key', '{{public_key}}');
+
+  function confirmChallenge(mentors, index, user) {
+    const challenger_username = '{{username}}';
+    if(challenger_username == "None"){
+      alert("You need login to challenge");
+      return;
+    }
+
+    const score = parseInt('{{score}}');
+    const mentor = mentors[index - 1];
+    if(user.score >= mentor.score) {
+      alert("You need to challenge with a mentor who has a higher score than you");
+      return;
+    }
+
+    const confirmation = window.confirm(`Do you want to challenge with ${mentor.name ? mentor.name : mentor.username}?`);
+    if (confirmation) {
+        sendChallenge(user, mentor);
+    }
   }
 
-  function sendChallenge(user) {
-      fetch('/challenge', {
-          method: 'POST',
-          body: JSON.stringify(user),
-          headers: {
-            "Content-Type": "application/json",
-          },
-      })
-      .then(response => response.text())
-      .then(result => console.log(result))
-      .catch(error => console.log('API NOT FOUND'));
+  function sendChallenge(user, mentor) {
+    console.log("user: ", user)
+    console.log("mentor: ", mentor)
+    let temp = {
+      "challenger": user,
+      "mentor": mentor
+    }
+    temp = JSON.stringify(temp)
+    console.log("temp: ", temp)
+    fetch('/challenge', {
+        method: 'POST',
+        body: temp,
+        headers: {
+          "Content-Type": "application/json",
+        },
+    })
+    .then(response => response.json())
+    .then(result => {
+      console.log(result);
+      room = result.room;
+      challenger = room.challenger;
+      mentor = room.mentor;
+      window.location.href = `/challenge?challenger=${challenger}&mentor=${mentor}`;
+    })
+    .catch(error => {
+      console.log('Error:', error);
+    })
   }
 </script>
 
@@ -44,7 +73,7 @@
     <button  style="width: 10%;" class="btn btn-success search-button">Find</button>
   </form>
 
-  {% if users %}
+  {% if mentors %}
     <table class="table table-striped mt-3 text-center">
       <thead>
         <tr>
@@ -57,17 +86,21 @@
       </thead>
 
       <tbody class="overflow-auto">
-        {% for user in users %}
+        {% for mentor in mentors %}
         <tr>
             <th scope="row" class="col-1">{{ loop.index }}</th>
-            <td class="col-4">{{ user.name }}</td>
-            <td class="col-1">{{ user.score }}</td>
-            <!-- <td class="5 overflow-auto">{{ user.public_key }}</td> -->
+            <!-- <td class="col-5">{{ user.username }}</td> -->
+            {% if mentor.name %}
+             <td class="col-4">{{ mentor.name }}</td>
+            {% else %}
+             <td class="col-4">{{ mentor.username }}</td>
+            {% endif %}
+
+            <td class="col-1">{{ mentor.score }}</td>
             <td class="col-2">
               <div class="btn-group" role="group" aria-label="inline-btn">
                 <button style="min-width: 5rem;" type="button" class="btn btn-outline-success"
-                 onclick="confirmChallenge({{user}})">
-                  <!-- onclick="confirmChallenge({{user|tojson|safe}})"> -->
+                        onclick="confirmChallenge({{data}}, {{loop.index}}, {{user}})">
                   Challenge
                 </button>
               </div>

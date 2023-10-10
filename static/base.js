@@ -1,6 +1,4 @@
 
-
-
 function login_user(event) {
   event.preventDefault();
   window.location.href = "/signup";
