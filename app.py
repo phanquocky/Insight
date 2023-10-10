@@ -15,11 +15,9 @@ def before_request():
   session.permanent = True
   app.permanent_session_lifetime = timedelta(minutes = 15) #Phiên làm việc sẽ tự động xóa sau 15p nếu không có thêm bất cứ request nào lên server.
 
-@app.route('/<username>')
-def main(username):
-    user = query_users_by_username(username)
-    # print("user = ", user)
-    return render_template("user_profile.html", user = user)
+@app.route('/')
+def main():
+    return redirect(url_for('home'))
 
 @app.route('/home', methods=['GET', 'POST'])
 def home():
@@ -225,6 +223,33 @@ def get_metamask_address():
     # You can do something with the Metamask address here (e.g., authenticate the user)
     # You can send a response back to the client if needed
     return f"Metamask Address: {metamask_address}"
+
+@app.route('/<username>')
+def user_profile(username):
+    user = query_users_by_username(username)
+    # print("user = ", user)
+    return render_template("user_profile.html", user = user, 
+                                                username = username, 
+                                                data=json.dumps(user))
+
+
+@app.route('/mentor/<username>', methods=['GET', 'PATCH']) 
+def update_profile(username):
+    if request.method == 'GET':
+        return "HELLO"
+
+    data = request.json
+    user = query_users_by_username(username)
+    print("user = ", user)
+    if user == None:
+        abort(400, "Invalid username")
+    
+    if 'mentor_state' in data:
+        if(user['mentor_state'] != data['mentor_state']):
+            user['mentor_state'] = data['mentor_state']
+            update_user_mentor_state(username, data['mentor_state'])
+
+    return json.dumps({'message': 'success', 'user': user})
 
 if __name__ == '__main__':
     app.run()

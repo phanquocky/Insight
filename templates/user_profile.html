@@ -1,4 +1,52 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2>Hello {{user.username}}</h2>
+
+<link rel="stylesheet" href="../static/user_profile.css">
+
+<div class="toggle-group pull-right p-3 text-center">
+  <p class="ms-2" for="mentor-check" lass="form-check-label"> <strong>Mentor</strong></p>
+  <label class="switch">
+    <input id="mentor-check" type="checkbox" name="{{username}}"
+       {% if user.mentor_state == True %} checked {% endif %}
+      onchange="changeMentorState(event, '{{username}}', '{{user.score}}')" 
+    >
+    <span class="slider round"></span>
+  </label>
+</div>
+
+<script type="text/javascript">
+  function save_user_info(data) {
+    console.log(data);
+    sessionStorage.setItem('user', data);
+    console.log("save to session storage")
+  }
+  save_user_info({{ data|safe }})
+</script>
+
+<script>
+  function changeMentorState(event, username, score) {
+    const mentor_state = event.target.checked;
+    console.log(username, mentor_state, score)
+    if(mentor_state == true && score < 10) {
+      alert("You need to have at least 10 points to become a mentor!")
+      event.target.checked = false;
+      return;
+    }
+
+    fetch(`/mentor/${username}`, {
+      method: 'PATCH',
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        mentor_state: mentor_state
+      })
+    })
+    .then(response => response.json())
+    .then(result => {
+      console.log(result);
+    });
+  }
+</script>
+
 {% endblock %}
