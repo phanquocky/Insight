@@ -224,5 +224,20 @@ def get_metamask_address():
     # You can send a response back to the client if needed
     return f"Metamask Address: {metamask_address}"
 
+@app.route('/send', methods=['POST'])
+def send_mail():
+    data = request.form
+    try:
+        addr_from = data['addr_from']
+        addr_to = data['addr_to']
+        content = data['content']
+        date_end = data['date_end']
+    except Exception as e:
+        print(e)
+        abort(400, "addr_from, addr_to, content, date_end are required!")
+    
+    id = createMail(addr_from, addr_to, content, date_end)
+    respone = query_mail_by_id(id)
+    return respone
 if __name__ == '__main__':
     app.run()
