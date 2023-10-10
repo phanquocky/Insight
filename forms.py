@@ -51,8 +51,8 @@ class LoginForm(Form):
         if not Form.validate(self):
             return False
 
-        user = query_users_by_username(username = self.username.data, count = 1)
-        if user and check_password(user[0]['password'], self.password.data.encode('utf-8')):
+        user = query_users_by_username(username = self.username.data)
+        if user and check_password(user['password'], self.password.data.encode('utf-8')):
             return True
         else:
             self.password.errors.append('Invalid username or password')

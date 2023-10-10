@@ -15,7 +15,7 @@ client = MongoClient(uri)
 db = client['Insight']
 
 class User:
-    def __init__(self, name = None, username = None, password = None, date_of_birth = None, metamask_id = None, public_key = None, score = 0):
+    def __init__(self, name = None, username = None, password = None, date_of_birth = None, metamask_id = None, public_key = None, score = 0, mentor_state = False):
         self.name = name
         self.username = username
         self.password = password
@@ -24,6 +24,7 @@ class User:
         self.metamask_id = metamask_id
         self.public_key = public_key
         self.score = score
+        self.mentor_state = mentor_state
     def addToDB(self):
         users_collection = db['User']
         self.password = sha256_hash(self.password)
@@ -116,12 +117,12 @@ def createUser():
     users_collection.insert_one(newUser.__dict__) 
     print("User created successfully!")
 
-def query_users_by_username(username, count):
+def query_users_by_username(username):
     # Truy vấn cơ sở dữ liệu để lấy danh sách người có tên là $name
     users_collection = db['User']
-    users = users_collection.find({'username': username}).limit(count)
-
-    return list(users)
+    # find only one user
+    user = users_collection.find_one({'username': username}, {"_id": 0, "create_date": 0})
+    return user
 
 def query_users_by_name(name, count):
     # Truy vấn cơ sở dữ liệu để lấy danh sách người có tên là $name
@@ -145,27 +146,11 @@ def query_users_by_name(name, count):
     print(listUser)
     return listUser
 
-
 def query_all_users():
     # Truy vấn cơ sở dữ liệu để lấy danh sách tất cả người dùng
     users_collection = db['User']
-    users = users_collection.find({}).sort('score', 1)
-
-    listUser = []
-
-    # In ra màn hình danh sách 
-    for user in users:
-        userProfile = {
-            "name": user['name'],
-            "public_key": user['public_key'],
-            "score": user['score']
-        }
-        listUser.append(userProfile)
-    
-    print("all users: ")
-    print("number of users: ", len(listUser))
-    print(listUser)
-    return listUser
+    users = list(users_collection.find({}).sort('score', 1))
+    return users
 
 def query_users_by_score(min_score = 0, max_score = 100, num_users = 20): 
     # Truy vấn cơ sở dữ liệu để lấy danh sách người dùng có điểm số trong khoảng $min_score và $max_score
@@ -190,10 +175,15 @@ def query_users_by_score(min_score = 0, max_score = 100, num_users = 20):
     print(listUser)
     return listUser 
 
-def update_user_score(id, score):
+def update_user_judge_state(username, judge_state):
+    users_collection = db['User']
+    users_collection.update_one({'username': username}, {'$set': {'judge_state': judge_state}})
+    print("Update user judge state successfully!")
+
+def update_user_score(_id, score):
     # Cập nhật điểm số của người dùng có id là $id
     users_collection = db['User']
-    users_collection.update_one({'_id': id}, {'$set': {'score': score}})
+    users_collection.update_one({'_id': _id}, {'$set': {'score': score}})
     print("Update user score successfully!")
 
 def find_examiner_above(min_score, need_examiner = 5):
