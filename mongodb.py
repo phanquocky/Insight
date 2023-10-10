@@ -260,3 +260,8 @@ def query_mail_by_addrfrom(add_from: str):
     mail_collection = db['Mail']
     mail = mail_collection.find({'addr_from': add_from})
     return dumps(list(mail))
+
+def query_mail_by_id(id: str):
+    mail_collection = db['Mail']
+    mail = mail_collection.find({'_id': ObjectId(id)})
+    return dumps(list(mail))
