@@ -242,7 +242,7 @@ def query_mail_by_addrto(add_to: str, count: int = None) -> list:
     mail = mail_collection.find({'addr_to': add_to}).limit(count)
     return dumps(list(mail))
 
-def createMail(sender = '', receiver = '', mailsubject = '',  mailcontent = '', end = 1) -> str:
+def createMail(sender = '', receiver = '', mailsubject = '',  mailcontent = '', end = 10) -> str:
     newMail = Mail(
         addr_from = sender,
         addr_to = receiver,

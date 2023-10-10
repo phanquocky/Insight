@@ -310,10 +310,12 @@ def send_mail():
         addr_to = data['addr_to']
         subject = data['subject']
         content = data['content']
-        date_end = data['date_end']
+        date_end = '10'
+        if('date_end' in data):
+            date_end = data['date_end']
     except Exception as e:
         print(e)
-        abort(400, "addr_from, addr_to, content, date_end are required!")
+        abort(400, "addr_from, addr_to, content are required!")
     
     id = createMail(addr_from, addr_to, subject, content, int(date_end))
     response = query_mail_by_id(id)
