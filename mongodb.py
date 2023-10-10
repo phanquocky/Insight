@@ -244,13 +244,14 @@ def query_mail_by_addrto(add_to: str):
     mail = mail_collection.find({'addr_to': add_to})
     return dumps(list(mail))
 
-def createMail():
+def createMail(sender = '', receiver = '', mailcontent = '', end = '') -> str:
     newMail = Mail(
-        addr_from = "",
-        addr_to = "",
-        content = "",
-        date_end=  "",
+        addr_from = sender,
+        addr_to = receiver,
+        content = mailcontent,
+        date_end=  end,
     )
     mail_collection = db['Mail']
-    mail_collection.insert_one(newMail.__dict__) 
+    result = mail_collection.insert_one(newMail.__dict__) 
     print("Mail created successfully!")
+    return str(result.inserted_id)
