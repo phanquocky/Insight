@@ -102,25 +102,25 @@ def get_metamask_address():
     # You can send a response back to the client if needed
     return f"Metamask Address: {metamask_address}"
 
-@app.route('/judge_confirm', methods=['POST'])
-def judge_confirm():
-    if request.method == 'POST':
-        public_key = request.form.get('public_key')
-        test_id = request.form.get('test_id')
+# example: http://127.0.0.1:5000/mentor_confirm?mentor=1432&contestant=123
+@app.route('/mentor_confirm', methods=['GET'])
+def mentor_confirm():
+    if request.method == 'GET':
+        mentor_public_key = request.args.get('mentor')
+        contestant = request.args.get('contestant')
 
-        if public_key is None or test_id is None:
-            return jsonify({"error": "Error: Both Public key and Test id is required."}), 400
+        if mentor_public_key is None or contestant is None:
+            return jsonify({"error": "Error: Both Mentor Public Key and Contestant are required."}), 400
 
-        # Perform any necessary processing with the received data
-        # For example, you can call a function like store_judge_data(public_key, test_id)
+        # Call the update_mentor function with mentor_public_key and contestant as arguments
+        confirmation_result = update_mentor(mentor_public_key, contestant)
 
-        update_judge(test_id, public_key)
-
-        # Customize the success message based on the received data
-        success_message = f"Successfully, judge '{public_key}' accepted to judge test '{test_id}'"
-
-        # Return a response with the success message
-        return jsonify({"message": success_message}), 200
+        if confirmation_result:
+            success_message = f"Successfully confirmed mentor with Public Key '{mentor_public_key}' for contestant '{contestant}'."
+            return jsonify({"message": success_message}), 200
+        else:
+            error_message = f"Error: Unable to confirm mentor with Public Key '{mentor_public_key}' for contestant '{contestant}'."
+            return jsonify({"error": error_message}), 400
     
 if __name__ == '__main__':
     app.run()

@@ -204,25 +204,26 @@ def update_room_with_examiners(room_id, examiners):
     print("Update room with examiners successfully!")
     return None
 
-def update_judge(test_id, public_key):
-    # Find the Room with the specified test_id
-    room_collection = db['Room']
-    room = room_collection.find_one({'test': test_id})
+def update_mentor(mentor, contestant):
+    # Connect to MongoDB
+    # client = MongoClient(config.MONGODB_URI)
+    # db = client[config.MONGODB_DATABASE]
+    room_collection = db['rooms']
 
-    if room is None:
-        print(f"Room with test_id {test_id} not found.")
-        return
+    # Find the room with the specified mentor and contestant
+    room = room_collection.find_one({"mentor": mentor, "contestant": contestant})
 
-    # Create the judge data with the user's public_key and judge_sign
-    judge_data = {
-        "public_key": public_key,
-        "judge_sign": "hahahihi"
-    }
-
-    # Add the new judge to the Room's judges attribute
-    room['judges'].append(judge_data)
-
-    # Update the Room in the database
-    room_collection.update_one({'test': test_id}, {'$set': room})
-
-    print(f"Judge with public_key {public_key} added to the Room with test_id {test_id} successfully.")
+    if room:
+        # Check if the status is already 1, if not, update it to 1
+        if room["status"] != 1:
+            room_collection.update_one({"_id": room["_id"]}, {"$set": {"status": 1}})
+            client.close()
+            return True
+        else:
+            # Room status is already 1, nothing to update
+            client.close()
+            return True
+    else:
+        # Room not found
+        client.close()
+        return False
