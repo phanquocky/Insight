@@ -26,8 +26,8 @@ class SignupForm(Form):
         if not Form.validate(self):
             return False
 
-        user = query_users_by_username(username = self.username.data, count = 1)
-        if len(user) > 0:
+        user = query_users_by_username(username = self.username.data)
+        if user is not None:
             self.username.errors.append('That username is already taken.')
             return False
 
