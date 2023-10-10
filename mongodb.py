@@ -5,6 +5,8 @@ from Keypair.hash import sha256_hash
 from datetime import datetime
 import config
 import random
+from bson.objectid import ObjectId
+from bson.json_util import dumps, loads
 
 uri = f"mongodb+srv://{config.USER}:{config.PASSWORD}@cluster0.becqcta.mongodb.net/?retryWrites=true&w=majority"
 
@@ -221,3 +223,35 @@ def update_room_with_examiners(room_id, examiners):
     # Update data to mongodb
     print("Update room with examiners successfully!")
     return None
+
+def update_mail_status(id: str, is_read: bool):
+    mail_collection = db['Mail']
+    mail_collection.update_one({'_id': ObjectId(id)}, {'$set': {'is_read': is_read}})
+    return None
+
+def query_mail_by_addrto(add_to: str, count: int = None):
+    mail_collection = db['Mail']
+    mail = mail_collection.find({'addr_to': add_to}).limit(count)
+    return dumps(list(mail))
+
+def createMail(sender = '', receiver = '', mailcontent = '', end = '') -> str:
+    newMail = Mail(
+        addr_from = sender,
+        addr_to = receiver,
+        content = mailcontent,
+        date_end=  end,
+    )
+    mail_collection = db['Mail']
+    result = mail_collection.insert_one(newMail.__dict__) 
+    print("Mail created successfully!")
+    return str(result.inserted_id)
+
+def query_mail_by_addrfrom(add_from: str, count: int = None):
+    mail_collection = db['Mail']
+    mail = mail_collection.find({'addr_from': add_from}).limit(count)
+    return dumps(list(mail))
+
+def query_mail_by_id(id: str):
+    mail_collection = db['Mail']
+    mail = mail_collection.find({'_id': ObjectId(id)})
+    return dumps(list(mail))

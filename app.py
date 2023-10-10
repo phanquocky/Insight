@@ -248,5 +248,28 @@ def user_profile(username):
 
         return json.dumps({'message': 'success', 'user': user})
 
+@app.route('/send', methods=['POST'])
+def send_mail():
+    data = request.form
+    try:
+        addr_from = data['addr_from']
+        addr_to = data['addr_to']
+        content = data['content']
+        date_end = data['date_end']
+    except Exception as e:
+        print(e)
+        abort(400, "addr_from, addr_to, content, date_end are required!")
+    
+    id = createMail(addr_from, addr_to, content, date_end)
+    respone = query_mail_by_id(id)
+    return respone
+
+@app.route('/receive', methods=['GET'])
+def receive_mail():
+    receiver = request.args['addr_to']
+    quantity = request.args['quantity']
+    respone = query_mail_by_addrto(receiver, int(quantity))
+    return respone
+
 if __name__ == '__main__':
     app.run()
