@@ -1,5 +1,5 @@
 import json
-from flask import Flask, render_template, request, flash, url_for, session, redirect, abort
+from flask import Flask, render_template, request, flash, url_for, session, redirect, abort, jsonify
 from datetime import datetime, timedelta
 from mongodb import *
 from config import SECRECT_KEY
@@ -146,7 +146,7 @@ def contest():
         print("user join contest", user)
 
     mentors = query_users_by_score(min_score=min_score, max_score=max_score)
-    print("mentors in contest: ", mentors)
+    # print("mentors in contest: ", mentors)
     return render_template('contest.html', 
                            mentors = mentors,
                            min_score = min_score,
@@ -170,35 +170,34 @@ def challenge():
             "status": {'$gte': 1}
         }
 
+        # Check if challenger is in another room (Join another contest)
         if(len(find_rooms(find_room_condition)) > 0):
-            abort(400, {
-                "message": "Challenger is in another room"
-            })
+            return jsonify({'result':'failed', 'message': 'Challenger is in another room'})
 
+        # Gui request ve mentor nhieu lan
         if(len(find_rooms({
             "mentor": mentor['public_key'],
             "contestant": challenger['public_key']
         })) > 0):
-            abort(400, {"message": "Request is Solving"})
+            return jsonify({'result':'success', 'message': 'Request is already', 
+                            'challenger': challenger['public_key'],
+                            'mentor': mentor['public_key']})
 
         examiners = find_examiner_above(mentor['score'] if 'score' in mentor else 0)
         if not examiners:
             examiners.append(mentor['public_key'])
 
-        print("examiners: ", examiners)
-
         examiners_public_key = [examiner['public_key'] for examiner in examiners]      
+        print("create room: ", mentor['public_key'], challenger['public_key'])
         room = create_room(mentor = mentor['public_key'], challenger = challenger['public_key'],examiners = examiners_public_key)
         
         time_expire = 3 
         api_link = "Day la API"
-        send_mail_to_user(challenger['public_key'], 
-                          mentor['public_key'], 
+        send_mail_to_user(mentor['public_key'], 
+                          challenger['public_key'], 
                           "You have a new challenge", 
                           "You have a new challenge from " + challenger['public_key'] + ". Click this link to accept it or it will be expired after {} days. ({})".format(time_expire, api_link), 
                           time_expire)
-        print("Send mail from {} to {}".format(challenger['username'], mentor['username']))
-        print("Send mail from {} to {}".format(challenger['public_key'], mentor['public_key']))
 
         return  jsonify({'result':'success', 
                          'message': 'Room is create',
@@ -213,11 +212,8 @@ def challenge():
         if(rooms == None or len(rooms) == 0):
             abort(404, {"message": "Room not found"})
         
-        print("======")
-        print("rooms: ", rooms)
         examiners_public_key = rooms[0]['judges']
         examiners = [find_users({"public_key": examiner})[0] for examiner in examiners_public_key]
-        print("examiners: ", examiners)
     
         username = None
         if 'username' in session:
@@ -310,7 +306,6 @@ def verify_route():
                 print(e)
                 alert_message = "alert-danger"
                 return render_template('verify.html', public_key = public_key, message = message, signature = signature, alert_message = alert_message, username = username)
-
 
 @app.route('/login')
 def index():

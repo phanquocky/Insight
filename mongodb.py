@@ -2,7 +2,7 @@ from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from mongoengine import Document, StringField, DateTimeField, IntField
 from Keypair.hash import sha256_hash
-from datetime import datetime
+from datetime import datetime, timedelta
 import config
 import random
 from bson.objectid import ObjectId
@@ -167,9 +167,13 @@ def query_all_users():
     users = list(users_collection.find({}).sort('score', 1))
     return users
 
-def query_users_by_score(min_score = 0, max_score = 100, num_users = 20): 
+def query_users_by_score(min_score = 0, max_score = 100, num_users = None):
     users_collection = db['User']
-    users = users_collection.find({'score': {'$gte': min_score, '$lte': max_score}}, {"_id": 0, "create_date": 0}).sort('score', 1).limit(num_users)
+    users = []
+    if(num_users == None):
+        users = users_collection.find({'score': {'$gte': min_score, '$lte': max_score}}, {"_id": 0, "create_date": 0}).sort('score', 1)       
+    else:
+        users = users_collection.find({'score': {'$gte': min_score, '$lte': max_score}}, {"_id": 0, "create_date": 0}).sort('score', 1).limit(num_users)
 
     listUser = []
 
@@ -215,14 +219,14 @@ def find_examiner_above(min_score, need_examiner = 5):
     need_examiner -= len(list_a) + len(list_b)
     list_examiner = list_a + list_b
 
-    print("list a", list_a)
-    print("list b", list_b)
+    # print("list a", list_a)
+    # print("list b", list_b)
 
     min_score += 10
     while min_score <= 100 and need_examiner > 0:
         list_c = query_examiners_by_score(min_score, min_score+9, need_examiner)
         list_examiner += list_c
-        print("list c", list_c)
+        # print("list c", list_c)
         need_examiner -= len(list_c)
         min_score += 10
 

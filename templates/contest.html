@@ -43,15 +43,23 @@
         },
     })
     .then(response => response.json())
-    .then(result => {
-      console.log(result);
-      room = result.room;
-      challenger = room.challenger;
-      mentor = room.mentor;
+    .then(response => {
+      console.log("response = ", response);
+      if(response.result == "failed") {
+        alert(response.message);
+        return;
+      }
+
+      let challenger = response.challenger;
+      let mentor     = response.mentor;
+      console.log("response = ", response); 
+      console.log("challenger = ", challenger);
+      console.log("mentor = ", mentor);
       window.location.href = `/challenge?challenger=${challenger}&mentor=${mentor}`;
     })
     .catch(error => {
       console.log('Error:', error);
+      alert("Server is busy, try again later!")
     })
   }
 </script>
