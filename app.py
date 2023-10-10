@@ -243,7 +243,8 @@ def send_mail():
 @app.route('/receive', methods=['GET'])
 def receive_mail():
     receiver = request.args['addr_to']
-    respone = query_mail_by_addrto(receiver)
+    quantity = request.args['quantity']
+    respone = query_mail_by_addrto(receiver, int(quantity))
     return respone
 
 if __name__ == '__main__':
