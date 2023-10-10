@@ -23,5 +23,4 @@ $ flask --app app.py --debug run // auto reloading
 ```
 
 In flask, default port is 5000.
-
-Open your web browser and go to http://localhost:5000 or go to https://loccalhost:5000/signUp to see simple Sign up page or https://loccalhost:5000/search to see demo load data.
+Open your web browser and go to http://localhost:5000.

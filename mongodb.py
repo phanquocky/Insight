@@ -1,9 +1,12 @@
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from mongoengine import Document, StringField, DateTimeField, IntField
+from Keypair.hash import sha256_hash
 from datetime import datetime
 import config
 import random
+from bson.objectid import ObjectId
+from bson.json_util import dumps, loads
 
 uri = f"mongodb+srv://{config.USER}:{config.PASSWORD}@cluster0.becqcta.mongodb.net/?retryWrites=true&w=majority"
 
@@ -14,14 +17,20 @@ client = MongoClient(uri)
 db = client['Insight']
 
 class User:
-    def __init__(self, name, password, date_of_birth, metamask_id, public_key, score = 0):
+    def __init__(self, name = None, username = None, password = None, date_of_birth = None, metamask_id = None, public_key = None, score = 0, mentor_state = False):
         self.name = name
+        self.username = username
         self.password = password
         self.create_date = datetime.now()
         self.date_of_birth = date_of_birth
         self.metamask_id = metamask_id
         self.public_key = public_key
         self.score = score
+        self.mentor_state = mentor_state
+    def addToDB(self):
+        users_collection = db['User']
+        self.password = sha256_hash(self.password)
+        users_collection.insert_one(self.__dict__) 
 
 class Room:
     def __init__(self, mentor, test, test_sign, judges, contestant, submission, submission_sign, level, final_result, status):
@@ -35,6 +44,18 @@ class Room:
         self.level = level
         self.final_result = final_result
         self.status = status
+
+class Mail:
+    def __init__(self, addr_from, addr_to, content, date_end, is_read = False) -> None:
+        self.addr_from = addr_from
+        self.addr_to   = addr_to
+        self.content   = content
+        self.date_send = datetime.now()
+        self.date_end  = date_end
+        self.is_read   = is_read 
+    def addToDB(self):
+        users_collection = db['Mail']
+        users_collection.insert_one(self.__dict__) 
 
 # Test room
 def createRoomRandom():
@@ -87,6 +108,7 @@ def createRoomRandom():
 def createUser():
     newUser = User(
         name = "John Doe",
+        username = "haha",
         password = "password123",
         date_of_birth = "11/08/2003",
         metamask_id = "0x123abc",
@@ -97,11 +119,26 @@ def createUser():
     users_collection.insert_one(newUser.__dict__) 
     print("User created successfully!")
 
-def query_users_by_name(name):
+def query_user_by_public_key(key):
+    # Truy vấn cơ sở dữ liệu để lấy danh sách người có public key là $key
+    users_collection = db['User']
+    # find only one user
+    user = users_collection.find_one({'public_key': key})
+    return user
+
+def query_users_by_username(username):
     # Truy vấn cơ sở dữ liệu để lấy danh sách người có tên là $name
     users_collection = db['User']
-    users = users_collection.find({'name': name})
+    # find only one user
+    user = users_collection.find_one({'username': username}, {"_id": 0, "create_date": 0})
+    return user
 
+def query_users_by_name(name, count):
+    # Truy vấn cơ sở dữ liệu để lấy danh sách người có tên là $name
+    users_collection = db['User']
+    users = users_collection.find({'name': name}).limit(count)
+
+    return list(users)
     listUser = []
 
     # In ra màn hình danh sách 
@@ -121,23 +158,8 @@ def query_users_by_name(name):
 def query_all_users():
     # Truy vấn cơ sở dữ liệu để lấy danh sách tất cả người dùng
     users_collection = db['User']
-    users = users_collection.find({}).sort('score', 1)
-
-    listUser = []
-
-    # In ra màn hình danh sách 
-    for user in users:
-        userProfile = {
-            "name": user['name'],
-            "public_key": user['public_key'],
-            "score": user['score']
-        }
-        listUser.append(userProfile)
-    
-    print("all users: ")
-    print("number of users: ", len(listUser))
-    print(listUser)
-    return listUser
+    users = list(users_collection.find({}).sort('score', 1))
+    return users
 
 def query_users_by_score(min_score = 0, max_score = 100, num_users = 20): 
     # Truy vấn cơ sở dữ liệu để lấy danh sách người dùng có điểm số trong khoảng $min_score và $max_score
@@ -162,10 +184,15 @@ def query_users_by_score(min_score = 0, max_score = 100, num_users = 20):
     print(listUser)
     return listUser 
 
-def update_user_score(id, score):
+def update_user_judge_state(username, judge_state):
+    users_collection = db['User']
+    users_collection.update_one({'username': username}, {'$set': {'judge_state': judge_state}})
+    print("Update user judge state successfully!")
+
+def update_user_score(_id, score):
     # Cập nhật điểm số của người dùng có id là $id
     users_collection = db['User']
-    users_collection.update_one({'_id': id}, {'$set': {'score': score}})
+    users_collection.update_one({'_id': _id}, {'$set': {'score': score}})
     print("Update user score successfully!")
 
 def find_examiner_above(min_score, need_examiner = 5):
@@ -203,6 +230,38 @@ def update_room_with_examiners(room_id, examiners):
     # Update data to mongodb
     print("Update room with examiners successfully!")
     return None
+
+def update_mail_status(id: str, is_read: bool):
+    mail_collection = db['Mail']
+    mail_collection.update_one({'_id': ObjectId(id)}, {'$set': {'is_read': is_read}})
+    return None
+
+def query_mail_by_addrto(add_to: str, count: int = None):
+    mail_collection = db['Mail']
+    mail = mail_collection.find({'addr_to': add_to}).limit(count)
+    return dumps(list(mail))
+
+def createMail(sender = '', receiver = '', mailcontent = '', end = '') -> str:
+    newMail = Mail(
+        addr_from = sender,
+        addr_to = receiver,
+        content = mailcontent,
+        date_end=  end,
+    )
+    mail_collection = db['Mail']
+    result = mail_collection.insert_one(newMail.__dict__) 
+    print("Mail created successfully!")
+    return str(result.inserted_id)
+
+def query_mail_by_addrfrom(add_from: str, count: int = None):
+    mail_collection = db['Mail']
+    mail = mail_collection.find({'addr_from': add_from}).limit(count)
+    return dumps(list(mail))
+
+def query_mail_by_id(id: str):
+    mail_collection = db['Mail']
+    mail = mail_collection.find({'_id': ObjectId(id)})
+    return dumps(list(mail))
 
 def update_mentor(mentor, contestant):
     # Connect to MongoDB

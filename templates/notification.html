@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+
+<body>
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Notifications</h2>
+    <div class="table-responsive mx-auto" style="max-width: 100%;">
+        <table class="table table-striped mt-3">
+            <thead>
+                <tr>
+                    <th>From</th>
+                    <th>Content</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% if username %}
+                <tr>
+                    <td>Admin</td>
+                    <td>You are an examiner!</td>
+                </tr>
+            {% endif %}
+            {% for mail in mails %}
+                <tr>
+                    <td>{{ mail.addr_from }}</td>
+                    <td>{{ mail.content }}</td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+
+{% endblock %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

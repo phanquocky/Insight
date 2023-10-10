@@ -18,8 +18,11 @@
     <div class="form-group row">
       <label for="hash-message" class="col-sm-2 col-form-label"><strong>Hash of Message</strong></label>
       <div class="col-sm-10">
-        <input name="message" type="text" class="form-control" id="hash-message" placeholder="Enter your message" value={{message}}
-              required
+        <input name="message" type="text" class="form-control" id="hash-message" placeholder="Enter your message" 
+          required
+          {% if message %}
+            value= {{message}}
+          {% endif %}
         />
       </div>
     </div>  
@@ -121,7 +124,18 @@
     const message = messageInput.value;
     const private_key = privateKeyInput.value;
 
+
     if (message && private_key) {
+      if(message.length % 2) {
+        alert("Message is WRONG FORMAT. Please try again.")
+        return;
+      }
+
+      if(private_key.length % 2) {
+        alert("Private key is WRONG FORMAT. Please try again.")
+        return;
+      }
+      
       const data = {
         message,
         private_key
@@ -138,13 +152,14 @@
         },
         body: dataJson,
       })
-      .then(response => response.json())
+      .then(response =>  {console.log(response); return response.json()})
       .then(data => {
         console.log('Success:', data);
         signMessageInput.value = data.signature;
       })
       .catch((error) => {
-          alert("Your private key is invalid. Please try again.");
+          alert("Private key is invalid. Please try again.")
+          console.log(error)
           signMessageInput.value = "";
       });
     }

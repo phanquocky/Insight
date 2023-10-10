@@ -1,2 +1,4 @@
 USER = ''
 PASSWORD = ''
+SECRECT_KEY = ''
+#PASSWORD_GMAIL = ''
