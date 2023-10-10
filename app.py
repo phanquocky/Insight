@@ -239,5 +239,12 @@ def send_mail():
     id = createMail(addr_from, addr_to, content, date_end)
     respone = query_mail_by_id(id)
     return respone
+
+@app.route('/receive', methods=['GET'])
+def receive_mail():
+    receiver = request.args['addr_to']
+    respone = query_mail_by_addrto(receiver)
+    return respone
+
 if __name__ == '__main__':
     app.run()
