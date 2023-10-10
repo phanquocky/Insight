@@ -146,21 +146,6 @@ def query_users_by_name(name, count):
     users = users_collection.find({'name': name}).limit(count)
 
     return list(users)
-    listUser = []
-
-    # In ra màn hình danh sách 
-    for user in users:
-        userProfile = {
-            "id": user['_id'],
-            "name": user['name'],
-            "DoB": user['date_of_birth'],
-            "public_key": user['public_key'],
-            "score": user['score']
-        }
-        listUser.append(userProfile)
-    
-    print(listUser)
-    return listUser
 
 def query_all_users():
     # Truy vấn cơ sở dữ liệu để lấy danh sách tất cả người dùng
@@ -179,9 +164,6 @@ def query_users_by_score(min_score = 0, max_score = 100, num_users = 20):
         listUser.append(user)
     
     listUser.reverse()
-    # print("users with score in range: ", min_score, " - ", max_score)  
-    # print("number of users: ", len(listUser))
-    # print(listUser)
     return listUser 
 
 def query_examiners_by_score(min_score = 0, max_score = 100, num_users = 20): 
@@ -216,14 +198,10 @@ def find_examiner_above(min_score, need_examiner = 5):
     need_examiner -= len(list_a) + len(list_b)
     list_examiner = list_a + list_b
 
-    print("list a", list_a)
-    print("list b", list_b)
-
     min_score += 10
     while min_score <= 100 and need_examiner > 0:
         list_c = query_examiners_by_score(min_score, min_score+9, need_examiner)
         list_examiner += list_c
-        print("list c", list_c)
         need_examiner -= len(list_c)
         min_score += 10
 
@@ -303,8 +281,6 @@ def send_mail_to_user(From, To, subject, content, time):
 
 def update_mentor(mentor, contestant):
     # Connect to MongoDB
-    # client = MongoClient(config.MONGODB_URI)
-    # db = client[config.MONGODB_DATABASE]
     room_collection = db['Room']
 
     # Find the room with the specified mentor and contestant
