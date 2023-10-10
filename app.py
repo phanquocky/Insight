@@ -27,6 +27,45 @@ def home():
         username = session['username']
     return render_template("base.html", username = username)
 
+@app.route('/mail', methods=['GET', 'POST'])
+def mail():
+    username = None
+    if 'username' in session:
+        username = session['username']
+    return render_template("mail.html", username = username)
+
+@app.route('/notification', methods=['GET', 'POST'])
+def notify():
+    username = None
+    #NOTE!!!:
+    #I have not yet tested with database, so if you wanna test with database,
+    #remove the comments below and of course, comment my static mails[]
+
+    #receiver = request.args.get('addr_to')
+    #quantity = int(request.args.get('quantity'))
+    #response = query_mail_by_addrto(receiver, quantity)
+    #mails = json.loads(response)
+
+    mails = [{
+                "addr_from": "huongtran@gmail.com",
+                "addr_to": "hieunt.wk@gmail.com",
+                "content": "Good morning, my dear!",
+                "date_send": "2023-10-10T10:30:00.000Z",
+                "date_end": "2023-10-15",
+                "is_read": False
+            },
+            {
+                "addr_from": "thangngocdinh@gmail.com",
+                "addr_to": "hieunt.wk@gmail.com",
+                "content": "Hi, nice to meet you!",
+                "date_send": "2023-10-11T11:45:00.000Z",
+                "date_end": "2023-10-16",
+                "is_read": True
+            }]
+    if 'username' in session:
+        username = session['username']
+    return render_template('notification.html', mails=mails, username=username)
+
 @app.route("/search", methods=['GET', 'POST'])
 def search():
     name = str(request.form.get('search'))
@@ -185,7 +224,7 @@ def verify_route():
             signature = data['signature']
         except Exception as e:
             print(e)
-            abort(400, "pubblic_key, message, signature are required!")
+            abort(400, "public_key, message, signature are required!")
 
         try:
             is_verified = None
@@ -276,15 +315,15 @@ def send_mail():
         abort(400, "addr_from, addr_to, content, date_end are required!")
     
     id = createMail(addr_from, addr_to, content, date_end)
-    respone = query_mail_by_id(id)
-    return respone
+    response = query_mail_by_id(id)
+    return response
 
 @app.route('/receive', methods=['GET'])
 def receive_mail():
     receiver = request.args['addr_to']
     quantity = request.args['quantity']
-    respone = query_mail_by_addrto(receiver, int(quantity))
-    return respone
+    response = query_mail_by_addrto(receiver, int(quantity))
+    return response
 
 if __name__ == '__main__':
     app.run()
