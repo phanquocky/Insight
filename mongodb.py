@@ -289,6 +289,13 @@ def query_mail_by_id(id: str):
     mail = mail_collection.find({'_id': ObjectId(id)})
     return dumps(list(mail))
 
+def send_mail_to_user(From, To, subject, content, time):
+    date_end = datetime.now() + timedelta(days = time)
+    id = createMail(From, To, content, date_end)
+    response = query_mail_by_id(id)
+    print("mail :", response)
+    return id
+
 def update_mentor(mentor, contestant):
     # Connect to MongoDB
     # client = MongoClient(config.MONGODB_URI)

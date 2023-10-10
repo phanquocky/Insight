@@ -6,6 +6,7 @@ from config import SECRECT_KEY
 from Keypair.sign_verify import *
 from Keypair.generation import *
 from forms import *
+from bson.json_util import dumps, loads
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = SECRECT_KEY 
@@ -64,6 +65,14 @@ def notify():
             }]
     if 'username' in session:
         username = session['username']
+
+    if username is not None:
+        user = query_users_by_username(username)
+        print("user receive mail = ", user)
+        mails = query_mail_by_addrto(user['public_key'], 10)
+        mails = loads(mails)
+
+    print("mails = ", mails)
     return render_template('notification.html', mails=mails, username=username)
 
 @app.route("/search", methods=['GET', 'POST'])
@@ -180,13 +189,22 @@ def challenge():
 
         examiners_public_key = [examiner['public_key'] for examiner in examiners]      
         room = create_room(mentor = mentor['public_key'], challenger = challenger['public_key'],examiners = examiners_public_key)
-        return  {
-            "success": True,
-            "room" : {
-                "mentor": mentor['public_key'],
-                "challenger": challenger['public_key']
-            }
-        }
+        
+        time_expire = 3 
+        api_link = "Day la API"
+        send_mail_to_user(challenger['public_key'], 
+                          mentor['public_key'], 
+                          "You have a new challenge", 
+                          "You have a new challenge from " + challenger['public_key'] + ". Click this link to accept it or it will be expired after {} days. ({})".format(time_expire, api_link), 
+                          time_expire)
+        print("Send mail from {} to {}".format(challenger['username'], mentor['username']))
+        print("Send mail from {} to {}".format(challenger['public_key'], mentor['public_key']))
+
+        return  jsonify({'result':'success', 
+                         'message': 'Room is create',
+                         'challenger': challenger['public_key'],
+                         'mentor': mentor['public_key']})
+    
     elif request.method == 'GET':
         challenger_pubkey = request.args.get('challenger')
         mentor_pubkey = request.args.get('mentor')
