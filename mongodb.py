@@ -6,6 +6,7 @@ from datetime import datetime
 import config
 import random
 from bson.objectid import ObjectId
+from bson.json_util import dumps, loads
 
 uri = f"mongodb+srv://{config.USER}:{config.PASSWORD}@cluster0.becqcta.mongodb.net/?retryWrites=true&w=majority"
 
@@ -241,7 +242,7 @@ def update_mail_status(id: str, is_read: bool):
 def query_mail_by_addrto(add_to: str):
     mail_collection = db['Mail']
     mail = mail_collection.find({'addr_to': add_to})
-    return list(mail)
+    return dumps(list(mail))
 
 def createMail():
     newMail = Mail(
