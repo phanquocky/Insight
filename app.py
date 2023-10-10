@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from mongodb import *
 from config import SECRECT_KEY
 from Keypair.sign_verify import *
+from Keypair.generation import *
 from forms import *
 
 app = Flask(__name__)
@@ -43,12 +44,11 @@ def signup():
         return render_template("base.html", username = session['username'])
 
     if request.form.get('signup-submit'):
-        form = SignupForm(request.form)
+        form = SignupForm(request.form)  
         if form.validate():
-            new_user = User(name = form.username.data, username = form.username.data, password = form.password.data.encode('utf-8'))
+            new_user = User(name = form.username.data, username = form.username.data, password = form.password.data.encode('utf-8'), public_key = form.public_key.data)
             new_user.addToDB()
             flash('Signed up successfully.', category='success')
-            return redirect(url_for('home'))
         return render_template('signup.html', form=form)
     
     elif request.form.get('login-submit'):
@@ -60,6 +60,21 @@ def signup():
         return render_template('signup.html', form=form, login = True)
     
     return render_template('signup.html')
+
+@app.route('/generateKey', methods = ['POST'])
+def generateKey():
+    text = request.json
+    private_key, public_key = generate_key_pair_from_user_pw(text['username'].encode('utf-8'), text['password'].encode('utf-8'))
+
+    while query_user_by_public_key(public_key) is not None:
+        private_key, public_key = generate_key_pair_from_user_pw(text['username'].encode('utf-8'), text['password'].encode('utf-8'))
+
+    data = {
+        'private_key': private_key,
+        'public_key': public_key
+    }
+
+    return json.dumps(data)
 
 @app.route('/logout')
 def logout():

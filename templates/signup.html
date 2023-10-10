@@ -13,6 +13,9 @@
             {% for message in form.confirm.errors %}
                 <div class="alert-danger">{{ message }}</div>
             {% endfor %}
+            {% for message in form.public_key.errors %}
+                <div class="alert-danger">{{ message }}</div>
+            {% endfor %}
         {% endif %}
     {% endif %}
     <div class="wrapper" style="margin-top: 50px;">
@@ -26,51 +29,63 @@
         </div>
         <div class="form-container">
            <div class="slide-controls">
-              <input type="radio" name="slide" id="login" checked>
-              <input type="radio" name="slide" id="signup">
-              <label for="login" class="slide login">Login</label>
-              <label for="signup" class="slide signup">Sign Up</label>
-              <div class="slider-tab"></div>
+                <input type="radio" name="slide" id="login" checked>
+                <input type="radio" name="slide" id="signup">
+                <label for="login" class="slide login">Login</label>
+                <label for="signup" class="slide signup">Sign Up</label>
+                <div class="slider-tab"></div>
            </div>
            <div class="form-inner">
-              <form class="login" name="login" role="form" action="{{ url_for('signup') }}" method="POST">
-                 <div class="field">
-                    <input name="username" type="text" class="form-control" placeholder="Username" required autofocus>
-                 </div>
-                 <div class="field">
-                    <input name="password" type="password" class="form-control" placeholder="Password" required>
-                 </div>
-                 <div class="pass-link">
-                    <a href="#">Reset password?</a>
-                 </div>
-                 <div class="field btn">
-                    <div class="btn-layer"></div>
-                    <input type="submit" name="login-submit" value="Login">
-                 </div>
-                 <div class="signup-link">
-                    Don't Have Account? <a href="">Create A New</a>
-                 </div>
-              </form>
-              <form class="signup" name="signup" role="form" action="{{ url_for('signup') }}" method="POST">
-                 <div class="field">
-                    <input name="username" type="text" class="form-control" placeholder="Username" required autofocus>
-                 </div>
-                 <div class="field">
-                    <input name="password" type="password" class="form-control" placeholder="Password" required>
-                 </div>
-                 <div class="field">
-                    <input name="confirm" type="password" class="form-control" placeholder="Confirm Password" required>
-                 </div>
-                 <div class="field btn">
-                    <div class="btn-layer"></div>
-                    <input type="submit" name="signup-submit" value="Sign Up">
-                 </div>
-              </form>
-           </div>
+                <form class="login" name="login" role="form" action="{{ url_for('signup') }}" method="POST">
+                    <div class="field">
+                        <input name="username" type="text" class="form-control" placeholder="Username" required autofocus>
+                    </div>
+                    <div class="field">
+                        <input name="password" type="password" class="form-control" placeholder="Password" required>
+                    </div>
+                    <div class="pass-link">
+                        <a href="#">Reset password?</a>
+                    </div>
+                    <div class="field btn">
+                        <div class="btn-layer"></div>
+                        <input type="submit" name="login-submit" value="Login">
+                    </div>
+                    <div class="signup-link">
+                        Don't Have Account? <a href="">Create A New</a>
+                    </div>
+                </form>
+                <form class="signup" name="signup" role="form" action="{{ url_for('signup') }}" method="POST">
+                    <div class="field">
+                        <input id="username" name="username" type="text" class="form-control" placeholder="Username" required autofocus>
+                    </div>
+                    <div class="field">
+                        <input id="password" name="password" type="password" class="form-control" placeholder="Password" required>
+                    </div>
+                    <div class="field">
+                        <input id="confirm" name="confirm" type="password" class="form-control" placeholder="Confirm Password" required>
+                    </div>
+                    <div class="field">
+                        <input id="public_key" name="public_key" type="text" class="form-control" placeholder="Your Public Key" required readonly>
+                    </div>
+                    <div class="field" style="margin-top: 5px;">
+                        <input id="private_key" name="private_key" type="text" class="form-control" placeholder="Your Private Key" required readonly>
+                    </div>
+                    <div class="col-sm-4">
+                        <button id="generateButton" class="btn btn-primary btn-sm" data-style="expand-right" type="button" style="height: 100%; padding: 6px; margin-top: 5px;">
+                            <span class="ladda-label">Generate</span>
+                            <div id="spinner" class='d-none ml-2 spinner-border spinner-border-sm' style="margin-left: 2px;"></div>
+                        </button>
+                    </div>
+                    <div class="field btn">
+                        <div class="btn-layer"></div>
+                        <input type="submit" name="signup-submit" value="Sign Up">
+                    </div>
+                </form>
+            </div>
         </div>
-     </div>
+    </div>
 
-     <script src="../static/signup.js"></script>
+    <script src="../static/signup.js"></script>
 {% endblock %}
 
 

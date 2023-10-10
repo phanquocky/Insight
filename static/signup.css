@@ -148,6 +148,8 @@ form .field input:focus::placeholder{
   text-decoration: underline;
 }
 form .btn{
+  --bs-btn-padding-x: 0;
+  --bs-btn-padding-y: 0;
   height: 50px;
   width: 100%;
   border-radius: 5px;

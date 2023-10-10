@@ -16,13 +16,18 @@ class SignupForm(Form):
         validators.EqualTo('confirm', message='Passwords must match')
     ])
     confirm = PasswordField('Repeat Password')
+    public_key = StringField('Public key', [
+        validators.DataRequired('Please generate your keys.'),
+    ])
+    private_key = StringField('Private key', [
+        validators.DataRequired('Please generate your keys.'),
+    ])
     submit = SubmitField('Create account')
 
     def __init__(self, *args, **kwargs):
         Form.__init__(self, *args, **kwargs)
 
     def validate(self, extra_validators=None):
-        print('hahaa')
         if not Form.validate(self):
             return False
 

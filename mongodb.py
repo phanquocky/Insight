@@ -119,6 +119,13 @@ def createUser():
     users_collection.insert_one(newUser.__dict__) 
     print("User created successfully!")
 
+def query_user_by_public_key(key):
+    # Truy vấn cơ sở dữ liệu để lấy danh sách người có public key là $key
+    users_collection = db['User']
+    # find only one user
+    user = users_collection.find_one({'public_key': key})
+    return user
+
 def query_users_by_username(username):
     # Truy vấn cơ sở dữ liệu để lấy danh sách người có tên là $name
     users_collection = db['User']
