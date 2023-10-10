@@ -26,6 +26,13 @@ def home():
         username = session['username']
     return render_template("base.html", username = username)
 
+@app.route('/mail', methods=['GET', 'POST'])
+def mail():
+    username = None
+    if 'username' in session:
+        username = session['username']
+    return render_template("mail.html", username = username)
+
 @app.route("/search", methods=['GET', 'POST'])
 def search():
     name = str(request.form.get('search'))
