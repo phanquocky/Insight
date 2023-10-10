@@ -8,18 +8,26 @@
     <h2 class="text-center mb-4">Notifications</h2>
     <div class="table-responsive mx-auto" style="max-width: 60%;">
         <table class="table" style="height: 250px;">
+            <thead>
+                <tr>
+                    <th>From</th>
+                    <th>Content</th>
+                </tr>
+            </thead>
             <tbody>
             {% if username %}
-            <tr>
-                <td>You are an examiner!</td>
-            </tr>
+                <tr>
+                    <td>Admin</td>
+                    <td>You are an examiner!</td>
+                </tr>
             {% endif %}
-            <tr>
-                <td>Noti 2</td>
-            </tr>
-            <tr>
-                <td>Noti 3</td>
-            </tr>
+            {% for mail in mails %}
+                <tr>
+                    <td>{{ mail.addr_from }}</td>
+                    <td>{{ mail.content }}</td>
+                </tr>
+            {% endfor %}
+
             </tbody>
         </table>
     </div>

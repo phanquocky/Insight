@@ -36,9 +36,34 @@ def mail():
 @app.route('/notification', methods=['GET', 'POST'])
 def notify():
     username = None
+    #NOTE!!!:
+    #I have not yet tested with database, so if you wanna test with database,
+    #remove the comments below and of course, comment my static mails[]
+
+    #receiver = request.args.get('addr_to')
+    #quantity = int(request.args.get('quantity'))
+    #response = query_mail_by_addrto(receiver, quantity)
+    #mails = json.loads(response)
+
+    mails = [{
+                "addr_from": "huongtran@gmail.com",
+                "addr_to": "hieunt.wk@gmail.com",
+                "content": "Good morning, my dear!",
+                "date_send": "2023-10-10T10:30:00.000Z",
+                "date_end": "2023-10-15",
+                "is_read": False
+            },
+            {
+                "addr_from": "thangngocdinh@gmail.com",
+                "addr_to": "hieunt.wk@gmail.com",
+                "content": "Hi, nice to meet you!",
+                "date_send": "2023-10-11T11:45:00.000Z",
+                "date_end": "2023-10-16",
+                "is_read": True
+            }]
     if 'username' in session:
         username = session['username']
-    return render_template("notification.html", username = username)
+    return render_template('notification.html', mails=mails, username=username)
 
 @app.route("/search", methods=['GET', 'POST'])
 def search():
