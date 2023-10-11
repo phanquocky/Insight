@@ -335,5 +335,4 @@ def get_test_from_db(room_id):
 def query_mentor_rooms(public_key):
     rooms_collection: Collection = db['Room']
     mentor_rooms = rooms_collection.find({'mentor': public_key})
-
     return mentor_rooms

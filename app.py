@@ -25,9 +25,11 @@ def main():
 @app.route('/home', methods=['GET', 'POST'])
 def home():
     username = None
+    public_key = None
     if 'username' in session:
         username = session['username']
-    return render_template("base.html", username = username)
+        public_key = session['public_key']
+    return render_template("base.html", username = username, public_key = public_key)
 
 @app.route('/mail', methods=['GET', 'POST'])
 def mail():
@@ -104,6 +106,7 @@ def signup():
         form = LoginForm(request.form)
         if form.validate():
             session['username'] = form.username.data
+            session['public_key'] = query_users_by_username(session['username'])['public_key']
             flash('Logged in successfully.', category='success')
             return redirect(url_for('home'))
         return render_template('signup.html', form=form, login = True)
@@ -129,6 +132,7 @@ def generateKey():
 def logout():
     # Xóa thông tin đăng nhập khỏi session để người dùng đăng xuất
     session.pop('username', None)
+    session.pop('public_key', None)
     return redirect(url_for('home'))
 
 @app.route('/contest', methods=['GET','POST'])
