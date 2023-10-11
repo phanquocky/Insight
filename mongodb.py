@@ -1,3 +1,4 @@
+from pymongo.collection import Collection
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from mongoengine import Document, StringField, DateTimeField, IntField
@@ -304,3 +305,35 @@ def update_mentor(mentor, contestant):
         # Room not found
         client.close()
         return False
+
+def save_test_to_db(room_id, file):
+    rooms_collection: Collection = db['Room']
+    room = rooms_collection.find_one({'_id': ObjectId(room_id)})
+
+    if room:
+        # Đọc nội dung của file PDF và chuyển đổi thành bytes
+        file_content = file.read()
+        file_bytes = bytes(file_content)
+
+        # Cập nhật trường test của đối tượng Room với dữ liệu dưới dạng bytes
+        rooms_collection.update_one({'_id': ObjectId(room_id)}, {'$set': {'test': file_bytes}})
+        print("Test uploaded successfully!")
+    else:
+        print("Room not found.")
+
+def get_test_from_db(room_id):
+    rooms_collection: Collection = db['Room']
+    room = rooms_collection.find_one({'_id': ObjectId(room_id)})
+
+    if room and 'test' in room:
+        # Trả về nội dung của file PDF từ trường 'test' trong đối tượng Room
+        return room['test']
+    else:
+        # Trường hợp không tìm thấy đề thi hoặc không có nội dung, trả về None
+        return None
+
+def query_mentor_rooms(public_key):
+    rooms_collection: Collection = db['Room']
+    mentor_rooms = rooms_collection.find({'mentor': public_key})
+
+    return mentor_rooms
