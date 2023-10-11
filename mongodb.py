@@ -153,9 +153,13 @@ def query_all_users():
     users = list(users_collection.find({}).sort('score', 1))
     return users
 
-def query_users_by_score(min_score = 0, max_score = 100, num_users = 20): 
+def query_users_by_score(min_score = 0, max_score = 100, num_users = None):
     users_collection = db['User']
-    users = users_collection.find({'score': {'$gte': min_score, '$lte': max_score}}, {"_id": 0, "create_date": 0}).sort('score', 1).limit(num_users)
+    users = []
+    if(num_users == None):
+        users = users_collection.find({'score': {'$gte': min_score, '$lte': max_score}}, {"_id": 0, "create_date": 0}).sort('score', 1)       
+    else:
+        users = users_collection.find({'score': {'$gte': min_score, '$lte': max_score}}, {"_id": 0, "create_date": 0}).sort('score', 1).limit(num_users)
 
     listUser = []
 
