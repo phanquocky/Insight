@@ -7,6 +7,7 @@ from Keypair.sign_verify import *
 from Keypair.generation import *
 from forms import *
 from bson.json_util import dumps, loads
+from api_link_create import *
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = SECRECT_KEY 
@@ -192,9 +193,10 @@ def challenge():
         room = create_room(mentor = mentor['public_key'], challenger = challenger['public_key'],examiners = examiners_public_key)
         
         time_expire = 3 
-        api_link = "Day la API"
-        send_mail_to_user(mentor['public_key'], 
-                          challenger['public_key'], 
+        api_link = mentor_confirm_link(mentor['public_key'], challenger['public_key'])
+        print("api_link: ", api_link)
+        send_mail_to_user(challenger['public_key'], 
+                         mentor['public_key'], 
                           "You have a new challenge", 
                           "You have a new challenge from " + challenger['public_key'] + ". Click this link to accept it or it will be expired after {} days. ({})".format(time_expire, api_link), 
                           time_expire)
