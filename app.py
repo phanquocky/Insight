@@ -102,7 +102,8 @@ def signup():
             new_user = User(name = form.username.data, 
                             username = form.username.data, 
                             password = form.password.data.encode('utf-8'), 
-                            public_key = form.public_key.data)
+                            public_key = form.public_key.data,
+                            metamask_id = form.metamask_id.data)
             new_user.addToDB()
             flash('Signed up successfully.', category='success')
         return render_template('signup.html', form=form)
@@ -111,9 +112,8 @@ def signup():
         form = LoginForm(request.form)
         if form.validate():
             session['username'] = form.username.data
-            session['metamask_id'] = form.metamask_id.data
+            session['metamask_id'] = query_users_by_username(session['username'])['metamask_id']
             session['public_key'] = query_users_by_username(session['username'])['public_key']
-            update_user_metamask(session['username'], form.metamask_id.data)
 
             flash('Logged in successfully.', category='success')
             return redirect(url_for('home'))

@@ -10,16 +10,15 @@
         {% for message in form.password.errors %}
             <div class="alert-danger">{{ message }}</div>
         {% endfor %}
-        {% if login %}
-            {% for message in form.metamask_id.errors %}
-                <div class="alert-danger">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
+        
         {% if not login %}
             {% for message in form.confirm.errors %}
                 <div class="alert-danger">{{ message }}</div>
             {% endfor %}
             {% for message in form.public_key.errors %}
+                <div class="alert-danger">{{ message }}</div>
+            {% endfor %}
+            {% for message in form.metamask_id.errors %}
                 <div class="alert-danger">{{ message }}</div>
             {% endfor %}
         {% endif %}
@@ -49,15 +48,6 @@
                     <div class="field">
                         <input name="password" type="password" class="form-control" placeholder="Password" required>
                     </div>
-                    <div class="field">
-                        <input id="metamaskID" name="metamask_id" type="text" class="form-control" placeholder="Your Metamask ID" required readonly>
-                    </div>
-                    <div class="col-sm-4">
-                        <button id="connectButton" class="btn btn-primary btn-sm" data-style="expand-right" type="button" style="height: 100%; padding: 6px; margin-top: 5px;">
-                            <span class="ladda-label">Connect</span>
-                            <div id="spinner-connect" class='d-none ml-2 spinner-border spinner-border-sm' style="margin-left: 2px;"></div>
-                        </button>
-                    </div>
                     <div class="pass-link">
                         <a href="#">Reset password?</a>
                     </div>
@@ -69,6 +59,7 @@
                         Don't Have Account? <a href="">Create A New</a>
                     </div>
                 </form>
+
                 <form class="signup" name="signup" role="form" action="{{ url_for('signup') }}" method="POST">
                     <div class="field">
                         <input id="username" name="username" type="text" class="form-control" placeholder="Username" required autofocus>
@@ -89,6 +80,15 @@
                         <button id="generateButton" class="btn btn-primary btn-sm" data-style="expand-right" type="button" style="height: 100%; padding: 6px; margin-top: 5px;">
                             <span class="ladda-label">Generate</span>
                             <div id="spinner" class='d-none ml-2 spinner-border spinner-border-sm' style="margin-left: 2px;"></div>
+                        </button>
+                    </div>
+                    <div class="field">
+                        <input id="metamaskID" name="metamask_id" type="text" class="form-control" placeholder="Your Metamask ID" required readonly>
+                    </div>
+                    <div class="col-sm-4">
+                        <button id="connectButton" class="btn btn-primary btn-sm" data-style="expand-right" type="button" style="height: 100%; padding: 6px; margin-top: 5px;">
+                            <span class="ladda-label">Connect</span>
+                            <div id="spinner-connect" class='d-none ml-2 spinner-border spinner-border-sm' style="margin-left: 2px;"></div>
                         </button>
                     </div>
                     <div class="field btn">

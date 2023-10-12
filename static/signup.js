@@ -21,6 +21,11 @@ document.getElementById("generateButton").addEventListener("click", async(e) => 
     let username = document.getElementById('username');
     let password = document.getElementById('password');
     let confirm = document.getElementById('confirm');
+
+    if (username.value.length == 0) {
+        alert("Please enter your username!");
+        return;
+    }
     if (password.value !== confirm.value) {
         alert("Passwords must match!");
         return;
