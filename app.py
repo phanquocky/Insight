@@ -105,9 +105,10 @@ def signup():
     elif request.form.get('login-submit'):
         form = LoginForm(request.form)
         if form.validate():
-            print(form.metamask_id.data)
             session['username'] = form.username.data
             session['public_key'] = query_users_by_username(session['username'])['public_key']
+            update_user_metamask(session['username'], form.metamask_id.data)
+            
             flash('Logged in successfully.', category='success')
             return redirect(url_for('home'))
         return render_template('signup.html', form=form, login = True)

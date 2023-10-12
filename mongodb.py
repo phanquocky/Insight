@@ -1,3 +1,4 @@
+from flask import jsonify
 from pymongo.collection import Collection
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
@@ -126,6 +127,16 @@ def find_users(condition):
     users_collection = db['User']
     users = users_collection.find(condition)
     return list(users)
+
+def update_user_metamask(username, metamaskID):
+    # Tìm và cập nhật thông tin người dùng
+    users_collection = db['User']
+    result = users_collection.update_one({'username': username}, {'$set': {'metamask_id': metamaskID}})
+    
+    if result.modified_count > 0:
+        return jsonify({'message': 'Metamask của người dùng được cập nhật thành công.'})
+    else:
+        return jsonify({'message': 'Không tìm thấy người dùng hoặc không có sự thay đổi nào.'}, 404)
 
 def query_user_by_public_key(key):
     # Truy vấn cơ sở dữ liệu để lấy danh sách người có public key là $key
