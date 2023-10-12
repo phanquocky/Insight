@@ -52,14 +52,14 @@
                 <div class="dropdown">
                     <button class="btn btn-outline-danger dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                       Action
+                        <ul id="dropdown-menu" class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                          <li><a class="dropdown-item" href="#">Profile</a></li>
+                          <li><a class="dropdown-item" href="/mentor">Room mentor</a></li>
+                          <li><a class="dropdown-item" href="/examiner">Room examiner</a></li>
+                          <li><hr class="dropdown-divider"></li>
+                          <li><a class="dropdown-item" href="#" onclick="logout_user(event)">Log out</a></li>
+                        </ul>
                     </button>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                      <li><a class="dropdown-item" href="#">Profile</a></li>
-                      <li><a class="dropdown-item" href="/mentor">Room mentor</a></li>
-                      <li><a class="dropdown-item" href="/examiner">Room examiner</a></li>
-                      <li><hr class="dropdown-divider"></li>
-                      <li><a class="dropdown-item" href="#" onclick="logout_user(event)">Log out</a></li>
-                    </ul>
                   </div>
               {% else %}
                 <button id="loginButton" class="btn btn-outline-success" onclick="login_user(event)">Login/Sign Up</button>
