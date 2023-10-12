@@ -60,9 +60,7 @@ class LoginForm(Form):
             return False
 
         user = query_users_by_username(username = self.username.data)
-        if user and check_password(user['password'], self.password.data.encode('utf-8')):
-            return True
-        elif user and self.metamask_id.data == user['metamask_id']:
+        if user and check_password(user['password'], self.password.data.encode('utf-8')) and self.metamask_id.data == user['metamask_id']:
             return True
         elif user and not user['metamask_id']:
             return True
