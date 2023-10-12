@@ -319,13 +319,6 @@ def verify_route():
                 alert_message = "alert-danger"
                 return render_template('verify.html', public_key = public_key, message = message, signature = signature, alert_message = alert_message, username = username)
 
-@app.route('/login')
-def index():
-    username = None
-    if 'username' in session:
-        username = session['username']
-    return render_template('index.html', username = username)
-
 @app.route('/get_metamask_address', methods=['POST'])
 def get_metamask_address():
     metamask_address = request.form['metamaskAddress']
