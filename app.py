@@ -322,14 +322,6 @@ def verify_route():
                 alert_message = "alert-danger"
                 return render_template('verify.html', public_key = public_key, message = message, signature = signature, alert_message = alert_message, username = username)
 
-@app.route('/get_metamask_address', methods=['POST'])
-def get_metamask_address():
-    metamask_address = request.form['metamaskAddress']
-    print(metamask_address)
-    
-    # You can do something with the Metamask address here (e.g., authenticate the user)
-    # You can send a response back to the client if needed
-    return f"Metamask Address: {metamask_address}"
 
 @app.route('/<username>',  methods=['GET', 'PATCH'])
 def user_profile(username):
