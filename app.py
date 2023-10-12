@@ -453,7 +453,13 @@ def mentor():
     mentor_rooms = query_mentor_rooms(public_key)
 
     for room in mentor_rooms:
-        room['contestant'] = query_user_by_public_key(room['contestant'])['name']
+        contestant_user = query_user_by_public_key(room['contestant'])
+        # print("contestant_user: ", contestant_user)
+        room['contestant'] = contestant_user['name'] if contestant_user['name'] else contestant_user['username']
+        if(room['status'] == 0):
+            room['status'] = "waiting..."
+        else:
+            room['status'] = "accepted"
     return render_template('mentor.html', mentor_rooms=mentor_rooms, username=username)
 
 # Đoạn này làm để trả tải về máy
