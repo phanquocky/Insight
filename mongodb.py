@@ -270,12 +270,13 @@ def delete_room(condition):
     room_collection.delete_one(condition)
     print("Delete room successfully!")
 
-
-def update_room_with_examiners(room_id, examiners):
-    # Update data to mongodb
-    print("Update room with examiners successfully!")
-    return None
-
+def update_room_status_by_id(room_id, status):
+    # Cập nhật trạng thái của phòng thi có id là $room_id
+    print("room_id = ", room_id)
+    print("room_id = ", room_id['$oid'])
+    room_collection = db['Room']
+    room_collection.update_one({'_id': ObjectId(room_id['$oid'])}, {'$set': {'status': status}})
+    print("Update room status successfully!")
 
 def update_mail_status(id: str, is_read: bool) -> None:
     mail_collection = db['Mail']
@@ -322,7 +323,7 @@ def send_mail_to_user(From, To, subject, content, time):
     date_end = datetime.now() + timedelta(days=time)
     id = createMail(From, To, content, date_end)
     response = query_mail_by_id(id)
-    print("mail :", response)
+    # print("mail :", response)
     return id
 
 
@@ -379,7 +380,8 @@ def get_test_from_db(room_id):
 
 def query_mentor_rooms(public_key):
     rooms_collection: Collection = db['Room']
-    mentor_rooms = rooms_collection.find({'mentor': public_key})
+    # status >= 0
+    mentor_rooms = rooms_collection.find({'mentor': public_key, 'status': {'$gte': 0}})
     return list(mentor_rooms)
 
 

@@ -201,10 +201,11 @@ def challenge():
         examiners_public_key = [examiner['public_key'] for examiner in examiners]      
         print("create room: ", mentor['public_key'], challenger['public_key'])
         room = create_room(mentor = mentor['public_key'], challenger = challenger['public_key'],examiners = examiners_public_key)
-        
+        print("room created: ", room)
+
         time_expire = 3 
         api_link = mentor_confirm_link(mentor['public_key'], challenger['public_key'])
-        print("api_link: ", api_link)
+        # print("api_link: ", api_link)
         send_mail_to_user(challenger['public_key'], 
                          mentor['public_key'], 
                           "You have a new challenge", 
@@ -233,6 +234,35 @@ def challenge():
         return render_template('challenge.html', 
                                 examiners = examiners,
                                 username = username)
+
+@app.route('/challenge_request', methods=['GET'])
+def challenge_request():
+    username = None
+    if 'username' in session:
+        username = session['username']
+        public_key = session['public_key']
+
+    rooms = find_rooms({"mentor": public_key, "status": 0})
+    if(len(rooms) > 0):
+        for room in rooms:
+            user = query_user_by_public_key(room['contestant'])
+            room['contestant_info'] = user
+            room['json'] = dumps(room)
+
+    return render_template('challenge_request.html', username = username, 
+                                                     rooms = rooms)
+
+@app.route('/update_room_state', methods=['PATCH'])
+def update_room_state():
+    try:
+        data = request.json
+        room_id = data['room_id']
+        state = data['state']
+        update_room_status_by_id(room_id, state)
+        return jsonify({'status': 200})
+    except Exception as e:
+        print(e)
+        abort(400, "Invalid data")
 
 @app.route('/sign', methods=['GET','POST'])
 def sign_route():
@@ -404,7 +434,6 @@ def mentor_confirm():
         else:
             error_message = f"Error: Unable to confirm mentor with Public Key '{mentor_public_key}' for contestant '{contestant}'."
             return jsonify({"error": error_message}), 400
-
 
 @app.route('/mentor', methods=['POST', 'GET'])
 def mentor():
