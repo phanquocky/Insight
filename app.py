@@ -1,5 +1,5 @@
 import json
-from flask import Flask, render_template, request, flash, url_for, session, redirect, abort, jsonify
+from flask import Flask, render_template, request, flash, url_for, session, redirect, abort, jsonify, make_response
 from datetime import datetime, timedelta
 from mongodb import *
 from config import SECRECT_KEY
@@ -25,9 +25,11 @@ def main():
 @app.route('/home', methods=['GET', 'POST'])
 def home():
     username = None
+    public_key = None
     if 'username' in session:
         username = session['username']
-    return render_template("base.html", username = username)
+        public_key = session['public_key']
+    return render_template("base.html", username = username, public_key = public_key)
 
 @app.route('/mail', methods=['GET', 'POST'])
 def mail():
@@ -104,6 +106,7 @@ def signup():
         form = LoginForm(request.form)
         if form.validate():
             session['username'] = form.username.data
+            session['public_key'] = query_users_by_username(session['username'])['public_key']
             flash('Logged in successfully.', category='success')
             return redirect(url_for('home'))
         return render_template('signup.html', form=form, login = True)
@@ -129,6 +132,7 @@ def generateKey():
 def logout():
     # Xóa thông tin đăng nhập khỏi session để người dùng đăng xuất
     session.pop('username', None)
+    session.pop('public_key', None)
     return redirect(url_for('home'))
 
 @app.route('/contest', methods=['GET','POST'])
@@ -394,6 +398,59 @@ def mentor_confirm():
         else:
             error_message = f"Error: Unable to confirm mentor with Public Key '{mentor_public_key}' for contestant '{contestant}'."
             return jsonify({"error": error_message}), 400
-    
+
+
+@app.route('/mentor', methods=['POST', 'GET'])
+def mentor():
+    # Lấy dữ liệu từ MongoDB
+    username = None
+    public_key = None
+    if 'username' in session:
+        username = session['username']
+        public_key = session['public_key']
+
+    if request.method == 'POST':
+        room_id = request.form['room_id']
+        uploaded_file = request.files['file']
+        save_test_to_db(room_id, uploaded_file)
+        return redirect('/mentor')  # Chuyển hướng người dùng sau khi tải lên thành công
+
+    mentor_rooms = query_mentor_rooms(public_key)
+    return render_template('mentor.html', mentor_rooms=mentor_rooms, username=username)
+
+# Đoạn này làm để trả tải về máy
+# @app.route('/view_test/<room_id>', methods=['GET'])
+# def view_test(room_id):
+#     # Truy vấn cơ sở dữ liệu để lấy nội dung của file Test dựa trên room_id
+#     room_content = get_test_from_db(room_id)
+#
+#     # Kiểm tra xem room_content có tồn tại không
+#     if room_content is None:
+#         return "Test not found", 404
+#
+#     # Tạo tạm thời một file PDF từ dãy binary
+#     temp_pdf_path = f'test_{room_id}.pdf'
+#     with open(temp_pdf_path, 'wb') as temp_pdf:
+#         temp_pdf.write(room_content)
+#
+#     # Trả về file PDF dưới dạng response
+#     return send_file(temp_pdf_path, as_attachment=True, download_name=f'test_{room_id}.pdf')
+
+@app.route('/view_test/<room_id>', methods=['GET'])
+def view_test(room_id):
+    # Truy vấn cơ sở dữ liệu để lấy nội dung của file Test dựa trên room_id
+    room_content = get_test_from_db(room_id)
+
+    # Kiểm tra xem room_content có tồn tại không
+    if room_content is None:
+        return "Test not found", 404
+
+    # Trả về nội dung của file Test dưới dạng response PDF
+    response = make_response(room_content)
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = f'inline; filename=test_{room_id}.pdf'
+    return response
+
+
 if __name__ == '__main__':
     app.run()

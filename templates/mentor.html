@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<script>
+{## Đoạn này làm để trả tải về máy#}
+{##}
+{#function viewTest(roomID) {#}
+{#  var xhr = new XMLHttpRequest();#}
+{#  xhr.open('GET', '/view_test/' + roomID, true);#}
+{#  xhr.responseType = 'arraybuffer';#}
+{##}
+{#  xhr.onload = function () {#}
+{#    if (xhr.status == 200) {#}
+{#      // Nếu nhận được dữ liệu thành công, tạo một blob từ arrayBuffer#}
+{#      var arrayBuffer = xhr.response;#}
+{#      var blob = new Blob([arrayBuffer], { type: 'application/pdf' });#}
+{##}
+{#      // Tạo một URL cho blob và tạo liên kết tải về#}
+{#      var url = window.URL.createObjectURL(blob);#}
+{#      var a = document.createElement('a');#}
+{#      a.href = url;#}
+{#      a.download = 'test.pdf';  // Tên file khi tải về#}
+{#      document.body.appendChild(a);#}
+{#      a.click();#}
+{##}
+{#      // Giải phóng URL và element a sau khi tải xong#}
+{#      window.URL.revokeObjectURL(url);#}
+{#      document.body.removeChild(a);#}
+{#    } else {#}
+{#      alert('Error! Please try again!');#}
+{#    }#}
+{#  };#}
+{##}
+{#  // Gửi yêu cầu lấy dữ liệu PDF từ server#}
+{#  xhr.send();#}
+{#}#}
+
+function viewTest(roomID) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', '/view_test/' + roomID, true);
+  xhr.responseType = 'arraybuffer';
+
+  xhr.onload = function () {
+    if (xhr.status == 200) {
+      // Nếu nhận được dữ liệu thành công, tạo một blob từ arrayBuffer và mở cửa sổ mới chứa PDF
+      var arrayBuffer = xhr.response;
+      var blob = new Blob([arrayBuffer], { type: 'application/pdf' });
+      var url = URL.createObjectURL(blob);
+
+      // Mở cửa sổ mới chứa PDF
+      window.open(url, '_blank');
+    } else {
+      alert('Error! Please try again!');
+    }
+  };
+
+  // Gửi yêu cầu lấy dữ liệu PDF từ server
+  xhr.send();
+}
+
+function uploadTest(roomId) {
+  // Lấy file đề thi từ người dùng
+  var fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = '.pdf';  // Chỉ chấp nhận file PDF
+
+  fileInput.onchange = function () {
+    var file = fileInput.files[0];
+    var formData = new FormData();
+    formData.append('file', file);
+    formData.append('room_id', roomId);
+
+    // Gửi yêu cầu POST để tải lên file đề thi lên server
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/mentor', true);
+    xhr.onload = function () {
+        if (xhr.status == 200) {
+            alert('Successful!');
+            // Cập nhật giao diện hoặc thực hiện các hành động cần thiết sau khi tải lên thành công
+        } else {
+            alert('Error! Please try again!');
+        }
+    };
+    xhr.send(formData);
+  };
+
+  // Kích hoạt sự kiện click trên input[type=file] để chọn file
+  fileInput.click();
+}
+
+</script>
+
+  <h1 class="text-center mt-3">Mentor Room</h1>
+
+  {% if mentor_rooms %}
+    <table class="table table-bordered mt-3 text-center">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">RoomID</th>
+          <th scope="col">Test</th>
+          <th scope="col">Submission</th>
+          <th scope="col">Level</th>
+          <th scope="col">Status</th>
+          <th scope="col">Action</th>
+        </tr>
+      </thead>
+
+      <tbody class="overflow-auto">
+        {% for mentor in mentor_rooms %}
+        <tr>
+          <th scope="row" class="col-1">{{ loop.index }}</th>
+          <td class="col-3">{{ mentor._id }}</td>
+          {% if not mentor.test %}
+            <td class="col-1">null</td>
+          {% else %}
+            <td class="col-1">Not null</td>
+          {% endif %}
+          <td class="col-1">{{ mentor.submission }}</td>
+          <td class="col-1">{{ mentor.level }}</td>
+          <td class="col-1">{{ mentor.status }}</td>
+          <td class="col-2">
+            {% if not mentor.test %}
+              <button class="btn btn-primary" onclick="uploadTest('{{ mentor._id }}')">Upload Test</button>
+            {% else %}
+              <!-- Hiển thị nút xem đề thi -->
+              <button class="btn btn-success" onclick="viewTest('{{ mentor._id }}')">View Test</button>
+            {% endif %}
+          </td>
+        </tr>
+          {% endfor %}
+      </tbody>
+    </table>
+
+  {% else %}
+    <h2 class="text-center mt-3">No room found</h2>
+  {% endif %}
+
+{% endblock %}
