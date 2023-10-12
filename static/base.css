@@ -1,3 +1,14 @@
 #username{
   cursor: pointer;
 }
+
+#dropdownMenuButton{
+  position: relative;
+}
+
+#dropdown-menu.show[data-bs-popper]{
+  position: absolute;
+  top: 110%;
+  right: 0 !important;
+  left: auto !important;
+}
