@@ -10,6 +10,11 @@
         {% for message in form.password.errors %}
             <div class="alert-danger">{{ message }}</div>
         {% endfor %}
+        {% if login %}
+            {% for message in form.metamask_id.errors %}
+                <div class="alert-danger">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
         {% if not login %}
             {% for message in form.confirm.errors %}
                 <div class="alert-danger">{{ message }}</div>
