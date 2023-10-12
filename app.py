@@ -422,6 +422,9 @@ def mentor():
         return redirect('/mentor')  # Chuyển hướng người dùng sau khi tải lên thành công
 
     mentor_rooms = query_mentor_rooms(public_key)
+
+    for room in mentor_rooms:
+        room['contestant'] = query_user_by_public_key(room['contestant'])['name']
     return render_template('mentor.html', mentor_rooms=mentor_rooms, username=username)
 
 # Đoạn này làm để trả tải về máy
@@ -457,6 +460,39 @@ def view_test(room_id):
     response.headers['Content-Disposition'] = f'inline; filename=test_{room_id}.pdf'
     return response
 
+@app.route('/contestant', methods=['POST', 'GET'])
+def contestant_room():
+    username = None
+    public_key = None
+    if 'username' in session:
+        username = session['username']
+        public_key = session['public_key']
+
+    if request.method == 'POST':
+        room_id = request.form['room_id']
+        uploaded_file = request.files['file']
+        save_submit_to_db(room_id, uploaded_file)
+        return redirect('/contestant')  # Chuyển hướng người dùng sau khi tải lên thành công
+
+    contestant_rooms = query_contestant_rooms(public_key)
+    for room in contestant_rooms:
+        room['mentor'] = query_user_by_public_key(room['mentor'])['name']
+    return render_template('contestant.html', contestant_rooms=contestant_rooms, username=username)
+
+@app.route('/view_submit/<room_id>', methods=['GET'])
+def view_submit(room_id):
+    # Truy vấn cơ sở dữ liệu để lấy nội dung của file Test dựa trên room_id
+    room_content = get_submit_from_db(room_id)
+
+    # Kiểm tra xem room_content có tồn tại không
+    if room_content is None:
+        return "Test not found", 404
+
+    # Trả về nội dung của file Test dưới dạng response PDF
+    response = make_response(room_content)
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = f'inline; filename=test_{room_id}.pdf'
+    return response
 
 if __name__ == '__main__':
     app.run()
