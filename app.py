@@ -73,11 +73,11 @@ def notify():
 
     if username is not None:
         user = query_users_by_username(username)
-        print("user receive mail = ", user)
+        # print("user receive mail = ", user)
         mails = query_mail_by_addrto(user['public_key'], 10)
         mails = loads(mails)
 
-    print("mails = ", mails)
+    # print("mails = ", mails)
     return render_template('notification.html', mails=mails, username=username)
 
 @app.route("/search", methods=['GET', 'POST'])
@@ -154,7 +154,7 @@ def contest():
     if 'username' in session:
         username = session['username']
         user = query_users_by_username(username)
-        print("user join contest", user)
+        # print("user join contest", user)
 
     mentors = query_users_by_score(min_score=min_score, max_score=max_score)
     # print("mentors in contest: ", mentors)
