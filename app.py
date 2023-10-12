@@ -99,7 +99,10 @@ def signup():
     if request.form.get('signup-submit'):
         form = SignupForm(request.form)  
         if form.validate():
-            new_user = User(name = form.username.data, username = form.username.data, password = form.password.data.encode('utf-8'), public_key = form.public_key.data)
+            new_user = User(name = form.username.data, 
+                            username = form.username.data, 
+                            password = form.password.data.encode('utf-8'), 
+                            public_key = form.public_key.data)
             new_user.addToDB()
             flash('Signed up successfully.', category='success')
         return render_template('signup.html', form=form)
