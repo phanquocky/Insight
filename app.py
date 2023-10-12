@@ -29,7 +29,8 @@ def home():
     if 'username' in session:
         username = session['username']
         public_key = session['public_key']
-    return render_template("base.html", username = username, public_key = public_key)
+        metamask_id = session['metamask_id']
+    return render_template("base.html", username = username, public_key = public_key, metamask_id = metamask_id)
 
 @app.route('/mail', methods=['GET', 'POST'])
 def mail():
@@ -106,9 +107,10 @@ def signup():
         form = LoginForm(request.form)
         if form.validate():
             session['username'] = form.username.data
+            session['metamask_id'] = form.metamask_id.data
             session['public_key'] = query_users_by_username(session['username'])['public_key']
             update_user_metamask(session['username'], form.metamask_id.data)
-            
+
             flash('Logged in successfully.', category='success')
             return redirect(url_for('home'))
         return render_template('signup.html', form=form, login = True)
@@ -135,6 +137,7 @@ def logout():
     # Xóa thông tin đăng nhập khỏi session để người dùng đăng xuất
     session.pop('username', None)
     session.pop('public_key', None)
+    session.pop('metamask_id', None)
     return redirect(url_for('home'))
 
 @app.route('/contest', methods=['GET','POST'])
