@@ -2,6 +2,7 @@
 
 {% block content %}
     <link rel="stylesheet" href="../static/signup.css">
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.6.0/dist/web3.min.js"></script>
     {% if form %}
         {% for message in form.username.errors %}
             <div class="alert-danger">{{ message }}</div>

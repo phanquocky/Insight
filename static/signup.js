@@ -21,7 +21,7 @@ document.getElementById("generateButton").addEventListener("click", async(e) => 
     let username = document.getElementById('username');
     let password = document.getElementById('password');
     let confirm = document.getElementById('confirm');
-    if (password.value != confirm.value) {
+    if (password.value !== confirm.value) {
         alert("Passwords must match!");
         return;
     }
@@ -52,5 +52,39 @@ document.getElementById("generateButton").addEventListener("click", async(e) => 
     private.value = response["private_key"];
     spinner.classList.add("d-none");
 });
+
+document.getElementById("connectButton").addEventListener("click", async(e) => {
+    e.preventDefault();
+
+    let metamask = document.getElementById('metamaskID');
+    let spinner = document.getElementById('spinner-connect');
+    spinner.classList.remove("d-none");
+    await sleep(300);
+
+    let metamaskAddress = await getMetamaskAddress();
+    console.log(metamaskAddress);
+    metamask.value = metamaskAddress;
+    
+    spinner.classList.add("d-none");
+});
+
+async function getMetamaskAddress() {
+    if (typeof web3 !== 'undefined') {
+        web3 = new Web3(web3.currentProvider);
+        try {
+            const accounts = await web3.eth.requestAccounts();
+            var metamaskAddress = accounts[0];
+            console.log(metamaskAddress);
+            return metamaskAddress;
+        } catch (error) {
+            console.error("Error when getting Metamask address: " + error.message);
+            return null;
+        }
+    } else {
+        console.error("Web3 is not available. Please install Metamask.");
+        return null;
+    }
+}
+
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
