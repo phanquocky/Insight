@@ -26,6 +26,7 @@ def main():
 def home():
     username = None
     public_key = None
+    metamask_id = None
     if 'username' in session:
         username = session['username']
         public_key = session['public_key']
