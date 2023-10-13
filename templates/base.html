@@ -124,7 +124,7 @@
           return
         }
 
-        if('{{metamask_id}}' == '') {
+        if('{{metamask_id}}' == '' || '{{metamask_id}}' == 'None') {
           alert('Please login again!')
           return
         }
@@ -158,6 +158,11 @@
           alert('Please connect to the correct metamask account.\nYour metamask account is {{metamask_id}}')
           return
         }
+      }
+    
+      const connectMetamaskButton = document.getElementById("connect-metamask-btn");
+      if( '{{username}}' && localStorage.getItem('metamask_id')) {
+          connectMetamaskButton.innerHTML = localStorage.getItem('metamask_id');
       }
     </script>
   </body>
