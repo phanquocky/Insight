@@ -73,6 +73,21 @@ document.getElementById("connectButton").addEventListener("click", async(e) => {
     spinner.classList.add("d-none");
 });
 
+document.getElementById("connectButtonLogin").addEventListener("click", async(e) => {
+    e.preventDefault();
+
+    let metamask = document.getElementById('metamaskID-login');
+    let spinner = document.getElementById('spinner-connect-login');
+    spinner.classList.remove("d-none");
+    await sleep(300);
+
+    let metamaskAddress = await getMetamaskAddress();
+    console.log(metamaskAddress);
+    metamask.value = metamaskAddress;
+    
+    spinner.classList.add("d-none");
+});
+
 async function getMetamaskAddress() {
     if (typeof web3 !== 'undefined') {
         web3 = new Web3(web3.currentProvider);
