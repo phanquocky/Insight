@@ -63,7 +63,7 @@ class LoginForm(Form):
         if user and check_password(user['password'], self.password.data.encode('utf-8')):
             return True
         else:
-            self.password.errors.append('Invalid username, password or metamask address.')
+            self.password.errors.append('Invalid username or password.')
             return False
 
 def check_password(password, text):
