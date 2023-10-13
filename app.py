@@ -50,10 +50,8 @@ def send_email():
             subject = request.form['subject']
             message = request.form['message']
             expire_time = 3
-            createMail(From, To, message, expire_time)
             send_mail_to_user(From, To, subject, message, expire_time)
-
-    return
+            return render_template("mail.html", username = username)
 @app.route('/notification', methods=['GET', 'POST'])
 def notify():
     username = None
