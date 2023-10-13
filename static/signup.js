@@ -82,6 +82,8 @@ document.getElementById("connectButtonLogin").addEventListener("click", async(e)
     await sleep(300);
 
     let metamaskAddress = await getMetamaskAddress();
+    if (!metamaskAddress || metamaskAddress === 'undefined' || metamaskAddress === null) 
+        metamaskAddress = '';
     console.log(metamaskAddress);
     metamask.value = metamaskAddress;
     
@@ -101,7 +103,7 @@ async function getMetamaskAddress() {
             return null;
         }
     } else {
-        console.error("Web3 is not available. Please install Metamask.");
+        alert("Web3 is not available. Please install Metamask.");
         return null;
     }
 }
