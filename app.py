@@ -41,12 +41,18 @@ def mail():
     return render_template("mail.html", username = username)
 @app.route('/send-mail', methods=['GET', 'POST'])
 def send_email():
+    username = None
+    if 'username' in session:
+        username = session['username']
     if request.method == 'POST':
-            email = request.form['email']
+            From = query_users_by_username(username)
+            To = request.form['email']
             subject = request.form['subject']
             message = request.form['message']
             expire_time = 3
-            send_mail_to_user(From, email, subject, message, expire_time)
+            createMail(From, To, message, expire_time)
+            send_mail_to_user(From, To, subject, message, expire_time)
+
     return
 @app.route('/notification', methods=['GET', 'POST'])
 def notify():
