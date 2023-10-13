@@ -46,7 +46,7 @@ def send_email():
         username = session['username']
     if request.method == 'POST':
             From = query_users_by_username(username)
-            To = request.form['email']
+            To = request.form['To']
             subject = request.form['subject']
             message = request.form['message']
             expire_time = 3
