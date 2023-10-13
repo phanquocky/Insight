@@ -50,6 +50,9 @@ class LoginForm(Form):
         validators.DataRequired('Please enter a password.'),
         validators.Length(min=6, message='Passwords is at least 6 characters.'),
     ])
+    metamask_id = StringField('Metamask ID', [
+        validators.DataRequired('Please connect to Metamask.'),
+    ])
     submit = SubmitField('Sign In')
 
     def __init__(self, *args, **kwargs):
@@ -60,10 +63,10 @@ class LoginForm(Form):
             return False
 
         user = query_users_by_username(username = self.username.data)
-        if user and check_password(user['password'], self.password.data.encode('utf-8')):
+        if user and check_password(user['password'], self.password.data.encode('utf-8')) and query_users_by_username(self.username.data)['metamask_id'] == self.metamask_id.data:
             return True
         else:
-            self.password.errors.append('Invalid username or password.')
+            self.password.errors.append('Invalid username, password or metamask id.')
             return False
 
 def check_password(password, text):

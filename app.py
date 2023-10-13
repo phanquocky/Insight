@@ -124,7 +124,7 @@ def signup():
         form = LoginForm(request.form)
         if form.validate():
             session['username'] = form.username.data
-            session['metamask_id'] = query_users_by_username(session['username'])['metamask_id']
+            session['metamask_id'] = form.metamask_id.data
             session['public_key'] = query_users_by_username(session['username'])['public_key']
 
             flash('Logged in successfully.', category='success')
