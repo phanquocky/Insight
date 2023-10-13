@@ -282,25 +282,30 @@ def update_room_state():
 @app.route('/sign', methods=['GET','POST'])
 def sign_route():
     username = None
+    metamask_id = None
+    public_key = None
     if 'username' in session:
         username = session['username']
+        metamask_id = session['metamask_id']
+        public_key = session['public_key']
 
     if request.method == 'POST':
         data = request.json
         try:
             message = data['message']   
             private_key_hex = data['private_key']
+
+            message = message.replace("0x", "")
+            private_key_hex = private_key_hex.replace("0x", "")
         except Exception as e:
             print(e)
             abort(400, "message, private_key are required!")
 
         try:
-            print("private_key_hex: ", private_key_hex)
             private_key = hex_string_to_private_key(private_key_hex)
-            print("private_key: ", private_key)
             signature, private_key = sign(hex_string_to_bytes(message), private_key)
             signature_hex = signature.hex()
-            print("signature_hex: ", signature_hex)
+            signature_hex = "0x" + signature_hex
             return json.dumps({'signature': signature_hex})
         except Exception as e:
             print(e)
@@ -309,22 +314,38 @@ def sign_route():
         message = request.args.get('message')
         if(message == None):
             message = ""
-        return render_template('sign.html', message = message, username = username)
+        return render_template('sign.html', message = message, 
+                                            username = username,
+                                            metamask_id = metamask_id,
+                                            public_key = public_key)
 
 @app.route('/verify', methods=['GET','POST'])
 def verify_route():
     username = None
+    public_key = None
+    metamask_id = None
     if 'username' in session:
         username = session['username']
+        public_key = session['public_key']
+        metamask_id = session['metamask_id']
+
     public_key = message = signature = None
     alert_message = ""
 
     if request.method == 'POST':
         data = request.json
         try:
-            public_key = data['public_key']
+            public_key = data['public_key'] 
             message = data['message']
             signature = data['signature']
+
+            public_key = public_key.replace("0x", "")
+            message = message.replace("0x", "")
+            signature = signature.replace("0x", "")
+
+            print("public_key: ", public_key)
+            print("message: ", message)
+            print("signature: ", signature)
         except Exception as e:
             print(e)
             abort(400, "public_key, message, signature are required!")
@@ -342,15 +363,24 @@ def verify_route():
         message = request.args.get('message')
         signature = request.args.get('signature')
 
+        print("public_key:", public_key)
+        print("message:", message)
+        print("signature:", signature)
+
         if(public_key == None or message == None or signature == None):
-            return render_template('verify.html', username = username)
+            return render_template('verify.html', username = username, metamask_id = metamask_id, public_key = public_key)
         else:
             public_key = str(public_key)
             message = str(message)
             signature = str(signature)
-            print("public_key: ", public_key)
-            print("message: ", message)
-            print("signature: ", signature)
+
+            public_key = public_key.replace("0x", "")
+            message = message.replace("0x", "")
+            signature = signature.replace("0x", "")
+
+            print("public_key:", public_key, len(public_key))
+            print("message:", message, len(message))
+            print("signature:", signature, len(signature))
             try:
                 is_verified = None
                 is_verified = verify(hex_string_to_bytes(message), hex_string_to_bytes(signature),  hex_string_to_public_key(public_key))
@@ -358,7 +388,7 @@ def verify_route():
                     alert_message = "alert-success"
                 else:
                     alert_message = "alert-danger"
-                return render_template('verify.html', alert_message = alert_message, public_key = public_key, message = message, signature = signature, username = username)
+                return render_template('verify.html', alert_message = alert_message, public_key = public_key, metamask_id = metamask_id, message = message, signature = signature, username = username)
             except Exception as e:
                 print(e)
                 alert_message = "alert-danger"

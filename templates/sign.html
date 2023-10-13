@@ -12,51 +12,135 @@
 </style>
 <h1 class="text-center">Sign Message</h1>
 
-<div class="card mt-3 ms-3">
-  <h4 class="card-header"> Sign </h4>
-  <form id="form-sign" class="card-body" method="post">
-    <div class="form-group row">
-      <label for="hash-message" class="col-sm-2 col-form-label"><strong>Hash of Message</strong></label>
-      <div class="col-sm-10">
-        <input name="message" type="text" class="form-control" id="hash-message" placeholder="Enter your message" 
-          required
-          {% if message %}
-            value= {{message}}
-          {% endif %}
-        />
-      </div>
-    </div>  
+<div class="row">
+  <nav>
+    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+      <button class="nav-link active" id="nav-sign-tab" data-bs-toggle="tab" data-bs-target="#nav-sign" type="button" role="tab" aria-controls="nav-sign" aria-selected="true">Sign</button>
+      <button class="nav-link" id="nav-sign_metamask-tab" data-bs-toggle="tab" data-bs-target="#nav-sign_metamask" type="button" role="tab" aria-controls="nav-sign_metamask" aria-selected="false">Sign Metamask</button>
+    </div>
+  </nav>
+  <div class="tab-content" id="nav-tabContent">
+    <div class="tab-pane fade show active" id="nav-sign" role="tabpanel" aria-labelledby="nav-sign-tab">
+      <div class="card mt-3 ms-3">
+        <h4 class="card-header"> Sign </h4>
+        <form id="form-sign" class="card-body" method="post">
+          <div class="form-group row">
+            <label for="message" class="col-sm-2 col-form-label"><strong>Message</strong></label>
+            <div class="col-sm-10">
+              <input name="message" type="text" class="form-control" id="message" placeholder="Enter your message" 
+                required
+                {% if message %}
+                  value= {{message}}
+                {% endif %}
 
-    <div class="form-group row mt-3">
-      <label for="private-key" class="col-sm-2 col-form-label"><strong>Your Private Key</strong></label>
-      <div class="col-sm-10">
-        <div>
-          <input style="padding-right: 30px;" name="private_key" type="password" class="form-control" id="private-key" placeholder="Enter your message" defaultValue=""
-                required 
-          />
-          <span toggle="#private-key" class="col-1 me-1 fa fa-fw fa-eye field-icon toggle-password"></span>
-        </div>
-        
-        <input class="form-control mt-2" type="file"  accept=".txt" id="formFile"
-           onchange="handleFileInputChange(event)">
+                onkeyup="handleMessageChange(event)"
+              />
+            </div>
+          </div> 
+
+          <div class="form-group row mt-3">
+            <label for="hash-message" class="col-sm-2 col-form-label"><strong>Hash of Message</strong></label>
+            <div class="col-sm-10">
+              <input name="message" type="text" class="form-control" id="hash-message" placeholder="Enter your message" 
+                required disabled
+              />
+            </div>
+          </div>  
+      
+          <div class="form-group row mt-3">
+            <label for="private-key" class="col-sm-2 col-form-label"><strong>Your Private Key</strong></label>
+            <div class="col-sm-10">
+              <div>
+                <input style="padding-right: 30px;" name="private_key" type="password" class="form-control" id="private-key" placeholder="Enter your message" defaultValue=""
+                      required 
+                />
+                <span toggle="#private-key" class="col-1 me-1 fa fa-fw fa-eye field-icon toggle-password"></span>
+              </div>
+              
+              <input class="form-control mt-2" type="file"  accept=".txt" id="formFile"
+                 onchange="handleFileInputChange(event)"/>
+            </div>
+          </div>
+      
+          <div class="form-group row mt-3">
+            <label for="hash-message" class="col-sm-2 col-form-label"><strong>Sign of Message</strong></label>
+            <div class="col-sm-10">
+              <input name="message" type="text" class="form-control" id="sign-message" placeholder="Enter your message" defaultValue={{signature}}
+                    required disabled
+              />
+            </div>
+          </div> 
+      
+          <button id="button-sign" type="submit" class="btn btn-primary mt-3"
+              onclick="handleButtonSignClicked(event)">
+                Sign Message
+          </button>
+        </form>
       </div>
     </div>
+    <!-- Metamask -->
+    <div class="tab-pane fade show " id="nav-sign_metamask" role="tabpanel" aria-labelledby="nav-sign-tab">
+      <div class="card mt-3 ms-3">
+        <h4 class="card-header"> Sign Metamask </h4>
+        <form id="form-sign-metamask" class="card-body" method="post">
+          <div class="form-group row">
+            <label for="message" class="col-sm-2 col-form-label"><strong>Message</strong></label>
+            <div class="col-sm-10">
+              <input name="message" type="text" class="form-control" id="message-metamask" placeholder="Enter your message" 
+                required
+                {% if message %}
+                  value= {{message}}
+                {% endif %}
 
-    <div class="form-group row mt-3">
-      <label for="hash-message" class="col-sm-2 col-form-label"><strong>Sign of Message</strong></label>
-      <div class="col-sm-10">
-        <input name="message" type="text" class="form-control" id="sign-message" placeholder="Enter your message" defaultValue={{signature}}
-              required disabled
-        />
+                onkeyup="handleMessageChangeMetamask(event)"
+              />
+            </div>
+          </div> 
+
+          <div class="form-group row mt-3">
+            <label for="hash-message" class="col-sm-2 col-form-label"><strong>Hash of Message</strong></label>
+            <div class="col-sm-10">
+              <input name="message" type="text" class="form-control" id="hash-message-metamask" placeholder="Enter your message" 
+                required disabled
+              />
+            </div>
+          </div>  
+      
+          <!-- <div class="form-group row mt-3">
+            <label for="private-key" class="col-sm-2 col-form-label"><strong>Your Private Key</strong></label>
+            <div class="col-sm-10">
+              <div>
+                <input style="padding-right: 30px;" name="private_key" type="password" class="form-control" id="private-key-metamask" placeholder="Enter your message"
+                      required 
+                />
+                <span toggle="#private-key" class="col-1 me-1 fa fa-fw fa-eye field-icon toggle-password"></span>
+              </div>
+              
+              <input class="form-control mt-2" type="file"  accept=".txt" id="formFile-metamask"
+                 onchange="handleFileInputChange(event)"/>
+            </div>
+          </div> -->
+      
+          <div class="form-group row mt-3">
+            <label for="hash-message" class="col-sm-2 col-form-label"><strong>Sign of Message</strong></label>
+            <div class="col-sm-10">
+              <input name="message" type="text" class="form-control" id="sign-message-metamask" placeholder="Enter your message" defaultValue={{signature}}
+                    required disabled
+              />
+            </div>
+          </div> 
+      
+          <button id="button-sign-metamask" type="submit" class="btn btn-primary mt-3"
+              onclick="handleButtonSignMetamaskClicked(event)">
+                Sign Message
+          </button>
+        </form>
       </div>
-    </div> 
-
-    <button id="button-sign" type="submit" class="btn btn-primary mt-3"
-        onclick="handleButtonSignClicked(event)">
-          Sign Message
-    </button>
-  </form>
+    </div>
 </div>
+
+<script src="/static/util.js"></script>
+
 
 <script>
   /**
@@ -121,8 +205,8 @@
     const privateKeyInput = document.getElementById('private-key');
     const signMessageInput = document.getElementById('sign-message');
 
-    const message = messageInput.value;
-    const private_key = privateKeyInput.value;
+    const message = messageInput.value.replace("0x", "");
+    const private_key = privateKeyInput.value.replace("0x", "");
 
 
     if (message && private_key) {
@@ -164,6 +248,60 @@
       });
     }
   }
+
+  async function handleButtonSignMetamaskClicked(event){
+    event.preventDefault();
+
+    if (!window.ethereum) {
+      alert('Metamask not installed')
+      return
+    }
+
+    if('{{metamask_id}}' == '') {
+      alert('Please login again!')
+      return
+    }
+
+    const provider = new ethers.providers.Web3Provider(window.ethereum)
+
+    console.log("metamask = ", '{{metamask_id}}')
+
+    try{
+      const signer = provider.getSigner('{{metamask_id}}'); // signer.getAddress() == accounts[0]
+      const signerAddress = await signer.getAddress();
+      console.log("signerAddress = ", signerAddress)
+      if('{{metamask_id}}' != signerAddress) {
+        alert('Please connect to the correct metamask account.\nYour metamask account is {{metamask_id}}')
+        return
+      }
+      const signature_element = document.getElementById('sign-message-metamask');
+      signature_element.value = "";
+
+      signer.signMessage(ethers.utils.arrayify(document.getElementById('hash-message-metamask').value)).then((signature) => {
+        console.log("signature = ", signature)
+        signature_element.value = signature;
+      });
+    } catch (e) {
+      console.log(e);
+      alert('Please connect to the correct metamask account.\nYour metamask account is {{metamask_id}}')
+      return
+    }
+  }
+
+  function handleMessageChange(event) {
+    let messageInput = event.target.value;
+    messageInput = "0x" + toHex(messageInput);
+    const hashMessageInput = document.getElementById('hash-message');
+    hashMessageInput.value = ethers.utils.sha256(messageInput);
+  }
+
+  function handleMessageChangeMetamask(event) {
+    let messageInput = event.target.value;
+    messageInput = "0x" + toHex(messageInput);
+    const hashMessageInput = document.getElementById('hash-message-metamask');
+    hashMessageInput.value = ethers.utils.sha256(messageInput);
+  }
+
 
 </script>
 {% endblock %}

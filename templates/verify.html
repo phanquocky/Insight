@@ -9,53 +9,136 @@
 
 <h1 class="text-center">Verify Message</h1>
 
-<div style="padding-bottom: 0;" class="card mt-3 ms-3" >
-  <h4 class="card-header"> Verify </h4>
-  <form class="card-body alert {{alert_message}}" role="alert" method="get">
-    <div class="form-group row">
-      <label for="hash-message" class="col-sm-2 col-form-label"><strong>Hash of Message</strong></label>
-      <div class="col-sm-10">
-        <input name="message" type="text" class="form-control" id="hash-message" placeholder="Enter hash of message"
-              required
-              {% if message %}
-                value= {{message}}
-              {% endif %}
-        />
+<div class="row">
+  <nav>
+    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+      <button class="nav-link active" id="nav-verify-tab" data-bs-toggle="tab" data-bs-target="#nav-verify" type="button" role="tab" aria-controls="nav-verify" aria-selected="true">Verify</button>
+      <button class="nav-link" id="nav-verify_metamask-tab" data-bs-toggle="tab" data-bs-target="#nav-verify_metamask" type="button" role="tab" aria-controls="nav-verify_metamask" aria-selected="false">Verify Metamask</button>
+    </div>
+  </nav>
+  <div class="tab-content" id="nav-tabContent">
+    <div class="tab-pane fade show active" id="nav-verify" role="tabpanel" aria-labelledby="nav-sign-tab">
+      <div style="padding-bottom: 0;" class="card mt-3 ms-3" >
+        <h4 class="card-header"> Verify </h4>
+        <form class="card-body alert {{alert_message}}" role="alert" method="get">
+          <div class="form-group row">
+            <label for="hash-message" class="col-sm-2 col-form-label"><strong>Hash of Message</strong></label>
+            <div class="col-sm-10">
+              <input name="message" type="text" class="form-control" id="hash-message" placeholder="Enter hash of message"
+                    required
+                    {% if message %}
+                      value= {{message}}
+                    {% endif %}
+              />
+            </div>
+          </div>  
+      
+          <div class="form-group row mt-3">
+            <label for="private-key" class="col-sm-2 col-form-label"><strong>Signature of Message</strong></label>
+            <div class="col-sm-10">
+              <div>
+                <input style="padding-right: 30px;" name="signature" type="text" class="form-control" id="private-key" placeholder="Enter Signature of message" 
+                      required 
+                      {% if signature %}
+                        value= {{signature}}
+                      {% endif %}
+                />
+              </div>
+            </div>
+          </div>
+      
+          <div class="form-group row mt-3">
+            <label for="public-key" class="col-sm-2 col-form-label"><strong>Public key</strong></label>
+            <div class="col-sm-10">
+              <div>
+                <input style="padding-right: 30px;" name="public_key" type="text" class="form-control" id="public-key" placeholder="Enter public key" 
+                      required 
+                      {% if public_key %}
+                        value= {{public_key}}
+                      {% endif %}
+                />
+              </div>
+            </div>
+          </div>
+      
+          <button  type="submit" class="btn btn-primary mt-3">
+            Verify Message
+          </button>
+        </form>
       </div>
     </div>  
-
-    <div class="form-group row mt-3">
-      <label for="private-key" class="col-sm-2 col-form-label"><strong>Signature of Message</strong></label>
-      <div class="col-sm-10">
-        <div>
-          <input style="padding-right: 30px;" name="signature" type="text" class="form-control" id="private-key" placeholder="Enter signature of message" 
-                required 
-                {% if signature %}
-                  value= {{signature}}
-                {% endif %}
-          />
-        </div>
+  
+    <div class="tab-pane fade show " id="nav-verify_metamask" role="tabpanel" aria-labelledby="nav-sign-tab">
+      <div style="padding-bottom: 0;" class="card mt-3 ms-3" >
+        <h4 class="card-header"> Verify </h4>
+        <form id="verify-metamask-form" class="card-body alert" role="alert" method="get">
+          <div class="form-group row">
+            <label for="hash-message-metamask" class="col-sm-2 col-form-label"><strong>Hash of Message</strong></label>
+            <div class="col-sm-10">
+              <input name="message" type="text" class="form-control" id="hash-message-metamask" placeholder="Enter hash of message"
+                    required
+            </div>
+          </div>  
+      
+          <div class="form-group row mt-3">
+            <label for="private-key-metamask" class="col-sm-2 col-form-label"><strong>Signature of Message</strong></label>
+            <div class="col-sm-10">
+              <div>
+                <input style="padding-right: 30px;" name="signature " type="text" class="form-control" id="private-key-metamask" placeholder="Enter Signature of message" 
+                      required 
+                />
+              </div>
+            </div>
+          </div>
+      
+          <!-- <div class="form-group row mt-3">
+            <label for="public-key-metamask" class="col-sm-2 col-form-label"><strong>Public key</strong></label>
+            <div class="col-sm-10">
+              <div>
+                <input style="padding-right: 30px;" name="public_key" type="text" class="form-control" id="public-key-metamask" placeholder="Enter public key" 
+                      required 
+                      {% if public_key %}
+                        value= {{public_key}}
+                      {% endif %}
+                />
+              </div>
+            </div>
+          </div> -->
+      
+          <button id="verify-metamask-btn"  type="button" class="btn btn-primary mt-3"
+                  onclick="clickButtonVerifyMetamask(event)">
+            Verify Message
+          </button>
+        </form>
       </div>
     </div>
-
-    <div class="form-group row mt-3">
-      <label for="public-key" class="col-sm-2 col-form-label"><strong>Public key</strong></label>
-      <div class="col-sm-10">
-        <div>
-          <input style="padding-right: 30px;" name="public_key" type="text" class="form-control" id="public-key" placeholder="Enter public key" 
-                required 
-                {% if public_key %}
-                  value= {{public_key}}
-                {% endif %}
-          />
-        </div>
-      </div>
-    </div>
-
-    <button  type="submit" class="btn btn-primary mt-3">
-      Verify Message
-    </button>
-  </form>
+  </div>
 </div>
+
+<script>
+  async function clickButtonVerifyMetamask(event) {
+    event.preventDefault();
+    const hashMessage = ethers.utils.arrayify(document.getElementById("hash-message-metamask").value);
+    const signature = document.getElementById("private-key-metamask").value;
+    try{
+      const address = ethers.utils.verifyMessage(hashMessage, signature);
+      const form = document.getElementById("verify-metamask-form");
+      if(address == localStorage.getItem("metamask_id")) {
+        form.classList.remove("alert-danger");
+        form.classList.add("alert-success");
+      }
+      else {
+        form.classList.add("alert-danger");
+        form.classList.remove("alert-success");
+      }
+    }
+    catch(error){
+      console.log(error);
+      const form = document.getElementById("verify-metamask-form");
+      form.classList.add("alert-danger");
+      form.classList.remove("alert-success");
+    }
+  }
+</script>
 
 {% endblock %}
