@@ -138,9 +138,6 @@ def generateKey():
     text = request.json
     private_key, public_key = generate_key_pair_from_user_pw(text['username'].encode('utf-8'), text['password'].encode('utf-8'))
 
-    while query_user_by_public_key(public_key) is not None:
-        private_key, public_key = generate_key_pair_from_user_pw(text['username'].encode('utf-8'), text['password'].encode('utf-8'))
-
     data = {
         'private_key': private_key,
         'public_key': public_key
