@@ -191,7 +191,9 @@ function viewSubmit(roomID) {
           <th scope="col">Contestant</th>
           <th scope="col">Test</th>
           <th scope="col">Submission</th>
+          <th scope="col">Score</th>
           <th scope="col">Test Signature</th>
+          <th scope="col">Score Signature</th>
         </tr>
       </thead>
 
@@ -201,31 +203,42 @@ function viewSubmit(roomID) {
           <th scope="row" class="col-1">{{ loop.index }}</th>
           <td class="col-2">{{ mentor._id }}</td>
           <td class="col-2">{{ mentor.contestant }}</td>
+          
+          
+          <!-- test -->
           {% if not mentor.test %}
-            <td class="col-2">
+            <td class="col-1">
               <button class="btn btn-danger" onclick="uploadTest('{{ mentor._id }}')">Submit</button>
             </td>
           {% else %}
-            <td class="col-2">
+            <td class="col-1">
               <button class="btn btn-success" onclick="viewTest('{{ mentor._id }}')">View</button>
             </td>
           {% endif %}
 
+          <!-- Submission -->
           {% if not mentor.submission %}
-            <td class="col-2">None</td>
+            <td class="col-1">None</td>
           {% else %}
-            <td class="col-2">
+            <td class="col-1">
               <button class="btn btn-success" onclick="viewSubmit('{{ mentor._id }}')">View</button>
             </td>
           {% endif %}
-          
+
+          <!-- Score -->          
+          <td class="col-1">None</td>
+
+          <!-- Test Sign -->
           {% if mentor.test_sign %}
-           <td class="col-2">
+           <td class="col-1">
               <button class="btn btn-success" onclick="viewTestSignature('{{mentor._id}}')">View</button>
             </td>
           {% else %}
-          <td class="col-2">None</td>
+          <td class="col-1">None</td>
           {% endif %}
+
+          <!-- Score Sign -->
+          <td class="col-1">None</td>
         </tr>
         {% endfor %}
       </tbody>
