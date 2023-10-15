@@ -278,6 +278,19 @@ def update_room_status_by_id(room_id, status):
     room_collection.update_one({'_id': ObjectId(room_id['$oid'])}, {'$set': {'status': status}})
     print("Update room status successfully!")
 
+def update_room_mentor_sign(room_id, mentor_sign):
+    # Cập nhật chữ kí của mentor cho phòng thi có id là $room_id
+    room_collection = db['Room']
+    room_collection.update_one({'_id': ObjectId(room_id)}, {'$set': {'test_sign': mentor_sign}})
+    print("Update room mentor sign successfully!")
+
+def update_room_contestant_sign(room_id, contestant_sign):
+    # Cập nhật chữ kí của mentor cho phòng thi có id là $room_id
+    room_collection = db['Room']
+    room_collection.update_one({'_id': ObjectId(room_id)}, {'$set': {'submission_sign': contestant_sign}})
+    print("Update room mentor sign successfully!")
+
+
 def update_mail_status(id: str, is_read: bool) -> None:
     mail_collection = db['Mail']
     mail_collection.update_one({'_id': ObjectId(id)}, {'$set': {'is_read': is_read}})

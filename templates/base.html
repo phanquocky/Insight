@@ -152,7 +152,7 @@
           }
           const button = document.getElementById("connect-metamask-btn");
           button.innerHTML = signerAddress;
-          localStorage.setItem("metamask_id", signerAddress);
+          sessionStorage.setItem("metamask_id", signerAddress);
         } catch (e) {
           console.log(e);
           alert('Please connect to the correct metamask account.\nYour metamask account is {{metamask_id}}')
@@ -161,8 +161,8 @@
       }
     
       const connectMetamaskButton = document.getElementById("connect-metamask-btn");
-      if( '{{username}}' && localStorage.getItem('metamask_id')) {
-          connectMetamaskButton.innerHTML = localStorage.getItem('metamask_id');
+      if( '{{username}}' && sessionStorage.getItem('metamask_id')) {
+          connectMetamaskButton.innerHTML = sessionStorage.getItem('metamask_id');
       }
     </script>
   </body>

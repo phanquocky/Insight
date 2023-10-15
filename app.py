@@ -188,14 +188,14 @@ def challenge():
         print("challenger: ", challenger)
         print("mentor: ", mentor)
 
-        find_room_condition = {
-            "contestant": challenger['public_key'],
-            "status": {'$gte': 1}
-        }
+        # find_room_condition = {
+        #     "contestant": challenger['public_key'],
+        #     "status": {'$gte': 1}
+        # }
 
-        # Check if challenger is in another room (Join another contest)
-        if(len(find_rooms(find_room_condition)) > 0):
-            return jsonify({'result':'failed', 'message': 'Challenger is in another room'})
+        # # Check if challenger is in another room (Join another contest)
+        # if(len(find_rooms(find_room_condition)) > 0):
+        #     return jsonify({'result':'failed', 'message': 'Challenger is in another room'})
 
         # Gui request ve mentor nhieu lan
         if(len(find_rooms({
@@ -467,12 +467,15 @@ def mentor():
     # Lấy dữ liệu từ MongoDB
     username = None
     public_key = None
+    metamask_id = None
     if 'username' in session:
         username = session['username']
         public_key = session['public_key']
+        metamask_id = session['metamask_id']
 
     if request.method == 'POST':
         room_id = request.form['room_id']
+        print("room_id: ", room_id)
         uploaded_file = request.files['file']
         save_test_to_db(room_id, uploaded_file)
         return redirect('/mentor')  # Chuyển hướng người dùng sau khi tải lên thành công
@@ -487,7 +490,40 @@ def mentor():
             room['status'] = "waiting..."
         else:
             room['status'] = "accepted"
-    return render_template('mentor.html', mentor_rooms=mentor_rooms, username=username)
+    return render_template('mentor.html', mentor_rooms=mentor_rooms, 
+                                            username=username,
+                                            metamask_id=metamask_id)
+
+@app.route('/room/mentor/sign', methods=['POST'])
+def update_mentor_sign():
+    data = request.json
+    room_id = data['room_id']
+    signature = data['signature']
+    update_room_mentor_sign(room_id, signature)
+    print("update_mentor_sign: successfully")
+    return jsonify({'status': 200})
+
+@app.route('/room/mentor/test_signature', methods=['GET'])
+def view_signature():
+    room_id = request.args.get('room_id')
+    print("room_id: ", room_id)
+    room = find_rooms({'_id': ObjectId(room_id)})
+    if(len(room) == 0):
+        abort(404, "Invalid room id")
+    room = room[0]
+    if('test_sign' not in room):
+        abort(404, "Invalid room id")
+    return jsonify({'status': 200, 'signature': room['test_sign']})
+
+@app.route('/room/contestant/sign', methods=['POST'])
+def update_contestant_sign():
+    data = request.json
+    room_id = data['room_id']
+    signature = data['signature']
+    update_room_contestant_sign(room_id, signature)
+    print("update_mentor_sign: successfully")
+    return jsonify({'status': 200})
+
 
 # Đoạn này làm để trả tải về máy
 # @app.route('/view_test/<room_id>', methods=['GET'])
@@ -538,7 +574,7 @@ def contestant_room():
 
     contestant_rooms = query_contestant_rooms(public_key)
     for room in contestant_rooms:
-        room['mentor'] = query_user_by_public_key(room['mentor'])['name']
+        room['mentor'] = query_user_by_public_key(room['mentor'])['username']
     return render_template('contestant.html', contestant_rooms=contestant_rooms, username=username)
 
 @app.route('/view_submit/<room_id>', methods=['GET'])
