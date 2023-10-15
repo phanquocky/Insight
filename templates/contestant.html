@@ -26,7 +26,7 @@ function viewSubmit(roomID) {
   xhr.send();
 }
 
-function submitTest(roomId) {
+function submit(roomId) {
   var fileInput = document.createElement('input');
   fileInput.type = 'file';
   fileInput.accept = '.pdf';  // Chỉ chấp nhận file PDF
@@ -92,7 +92,15 @@ function submitTest(roomId) {
             console.log('Success:', data);
             xhr.send(formData);
           })
+          .catch((error) => {
+            console.error('Error:', error);
+            alert('Error! Please try again!')
+          });
         })    
+        .catch((error) => {
+          console.error('Error:', error);
+          alert('You need to sign this message')
+        });
     };
     reader.readAsArrayBuffer(file); // Read the file as text
   };
@@ -123,6 +131,11 @@ function viewTest(roomID) {
   // Gửi yêu cầu lấy dữ liệu PDF từ server
   xhr.send();
 }
+
+function viewSubmitSign(roomID) {
+  console.log(roomID)
+  window.open('/room/contestant/submission_signature?room_id=' + roomID)
+}
 </script>
 
   <h1 class="text-center mt-3">Contestant Room</h1>
@@ -146,26 +159,35 @@ function viewTest(roomID) {
         <tr>
           <th scope="row" class="col-1">{{ loop.index }}</th>
           <td class="col-3">{{ contestant._id }}</td>
-          <td class="col-2">{{ contestant.mentor }}</td> -->
+          <td class="col-2">{{ contestant.mentor }}</td> 
+
+          <!-- test -->
           {% if not contestant.test %}
-            <td class="col-1">None</td>
-            <td class="col-1">No submission</td>
+            <td class="col-2">No submission</td>
           {% else %}
-            <td class="col-1">
-              <button class="btn btn-success" onclick="viewTest('{{ contestant._id }}')">View Test</button>
+            <td class="col-2">
+              <button type="button" class="btn btn-success" onclick="viewTest('{{ contestant._id }}')">View</button>
             </td>
-            {% if not contestant.submission %}
-              <td class="col-1">
-                <button class="btn btn-danger" onclick="submitTest('{{ contestant._id }}')">Submit</button>
-              </td>
-            {% else %}
-              <td class="col-1">
-                <button class="btn btn-success" onclick="viewSubmit('{{ contestant._id }}')">View submit</button>
-              </td>
-            {% endif %}
           {% endif %}
-          <!-- <td class="col-1">{{ contestant.level }}</td> -->
-          <!-- <td class="col-1">{{ contestant.status }}</td>
+
+          {% if not contestant.submission %}
+            <td class="col-2">
+              <button style="cursor: pointer;" class="btn btn-danger" onclick="submit('{{ contestant._id }}')">Submit</button>
+            </td>
+          {% else %}
+            <td class="col-2">
+              <button style="cursor: pointer;"  class="btn btn-success" onclick="viewSubmit('{{ contestant._id }}')">View</button>
+            </td>
+          {% endif %}
+            
+          <!-- Submission Sign -->
+          {% if contestant.submission_sign %}
+            <td class="col-2">
+              <button style="cursor: pointer;" class="btn btn-success" onclick="viewSubmitSign('{{ contestant._id }}')">View</button>
+            </td>
+          {% else %}
+            <td class="col-2">None</td>
+          {% endif %}
         </tr>
           {% endfor %}
       </tbody>

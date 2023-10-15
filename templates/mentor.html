@@ -58,7 +58,6 @@ function viewTest(roomID) {
 }
 
 function viewTestSignature(room_id){
-  console.log(room_id)
   window.open('/room/mentor/test_signature?room_id=' + room_id)
 
   // const button = document.getElementById('button-launch-modal')
@@ -140,7 +139,15 @@ async function uploadTest(roomId) {
             console.log('Success:', data);
             xhr.send(formData);
           })
+          .catch((error) => {
+            console.error('Error:', error);
+            alert('Error! Please try again!')
+          });
         })    
+        .catch((error) => {
+          console.error('Error:', error);
+          alert('You need to sign this message')
+        });
     };
     reader.readAsArrayBuffer(file); // Read the file as text
   };

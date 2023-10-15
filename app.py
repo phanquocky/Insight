@@ -524,24 +524,16 @@ def update_contestant_sign():
     print("update_mentor_sign: successfully")
     return jsonify({'status': 200})
 
-
-# Đoạn này làm để trả tải về máy
-# @app.route('/view_test/<room_id>', methods=['GET'])
-# def view_test(room_id):
-#     # Truy vấn cơ sở dữ liệu để lấy nội dung của file Test dựa trên room_id
-#     room_content = get_test_from_db(room_id)
-#
-#     # Kiểm tra xem room_content có tồn tại không
-#     if room_content is None:
-#         return "Test not found", 404
-#
-#     # Tạo tạm thời một file PDF từ dãy binary
-#     temp_pdf_path = f'test_{room_id}.pdf'
-#     with open(temp_pdf_path, 'wb') as temp_pdf:
-#         temp_pdf.write(room_content)
-#
-#     # Trả về file PDF dưới dạng response
-#     return send_file(temp_pdf_path, as_attachment=True, download_name=f'test_{room_id}.pdf')
+@app.route('/room/contestant/submission_signature', methods=['GET'])
+def view_submission_signature():
+    room_id = request.args.get('room_id')
+    room = find_rooms({'_id': ObjectId(room_id)})
+    if(len(room) == 0):
+        abort(404, "Invalid room id")
+    room = room[0]
+    if('submission_sign' not in room):
+        abort(404, "Invalid room id")
+    return jsonify({'status': 200, 'signature': room['submission_sign']})
 
 @app.route('/view_test/<room_id>', methods=['GET'])
 def view_test(room_id):
@@ -562,9 +554,12 @@ def view_test(room_id):
 def contestant_room():
     username = None
     public_key = None
+    metamask_id = None
+
     if 'username' in session:
         username = session['username']
         public_key = session['public_key']
+        metamask_id = session['metamask_id']
 
     if request.method == 'POST':
         room_id = request.form['room_id']
@@ -575,7 +570,9 @@ def contestant_room():
     contestant_rooms = query_contestant_rooms(public_key)
     for room in contestant_rooms:
         room['mentor'] = query_user_by_public_key(room['mentor'])['username']
-    return render_template('contestant.html', contestant_rooms=contestant_rooms, username=username)
+    return render_template('contestant.html', contestant_rooms=contestant_rooms, 
+                                                username=username,
+                                                metamask_id=metamask_id)
 
 @app.route('/view_submit/<room_id>', methods=['GET'])
 def view_submit(room_id):
