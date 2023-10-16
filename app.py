@@ -481,6 +481,8 @@ def view_public_room(room_id):
     room = find_room_2_by_id(room_id)
     if(len(room) == 0):
         abort(404, "Invalid room id")
+
+    # room['']
     return render_template('render_room.html', room=room)
 
 @app.route('/room/public', methods=['POST'])
@@ -488,28 +490,41 @@ def view_room():
     data = request.json
     room_bytes = data.room_bytes
     room = loads(room_bytes)
+
+    # room['tests']
+
     return render_template('render_room.html', room=room)
 
 @app.route('/room/mentor/sign', methods=['POST'])
 def update_mentor_sign():
-    data = request.json
-    room_id = data['room_id']
-    signature = data['signature']
-    update_room_mentor_sign(room_id, signature)
-    print("update_mentor_sign: successfully")
-    return jsonify({'status': 200})
+    try:
+        data = request.json
+        room_id = data['room_id']
+        mentor_id = data['mentor_id']
+        signature = data['signature']
+
+        update_room_mentor_sign(room_id, mentor_id, signature)
+        print("update_mentor_sign: successfully")
+        return jsonify({'status': 200})
+    except Exception as e:
+        print(e)
+        return jsonify({'status': 400})
 
 @app.route('/room/mentor/test_signature', methods=['GET'])
 def view_signature():
     room_id = request.args.get('room_id')
-    print("room_id: ", room_id)
-    room = find_rooms({'_id': ObjectId(room_id)})
-    if(len(room) == 0):
-        abort(404, "Invalid room id")
-    room = room[0]
-    if('test_sign' not in room):
-        abort(404, "Invalid room id")
-    return jsonify({'status': 200, 'signature': room['test_sign']})
+    mentor_id = request.args.get('mentor_id')
+    room = find_room_2_by_id(room_id)
+    if(room is None):
+        jsonify({'status': 404, 'message': 'Invalid room id'})
+    
+    tests = room['tests']
+    for test in tests:
+        if(test['mentor_id'] == mentor_id):
+            if('test_sign' not in test ) or (test['test_sign'] is None):
+                abort(404, "Have not signed yet")
+            return jsonify({'status': 200, 'signature': test['test_sign']})
+    return jsonify({'status': 404, 'message': 'Invalid mentor id'})
 
 @app.route('/room/contestant/sign', methods=['POST'])
 def update_contestant_sign():
