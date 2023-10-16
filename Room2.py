@@ -51,13 +51,19 @@ def create_room_2(contestant, mentors):
     tests.append(test)
   
   room = Room2(mentors=new_mentors, tests=tests, contestant=new_contestant, final_result=None, updated_score=None)
+
+  room_collection = db['Room2']
+  result = room_collection.insert_one(room.__dict__)
+  # print("result = ", result.inserted_id)
+
+  room = find_room_2_by_id(result.inserted_id)
+  # print("room = ", room)
+
+  print('Phong thi created successfully!')
+  return dumps(room)
+
   
-  print("room: ", room.__dict__)
-
-  # room_collection = db['Room2']
-  # room_collection.insert_one(room.__dict__)
-
-  # print('Phong thi created successfully!')
-  return room
-
-   
+def find_room_2_by_id(room_id):
+  room_collection = db['Room2']
+  result = room_collection.find_one({"_id": ObjectId(room_id)})
+  return result
