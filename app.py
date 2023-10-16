@@ -1,7 +1,7 @@
 import json
 from flask import Flask, render_template, request, flash, url_for, session, redirect, abort, jsonify, make_response
 from datetime import datetime, timedelta
-from mongodb import *
+from mongodb_ver2 import *
 from config import SECRECT_KEY
 from Keypair.sign_verify import *
 from Keypair.generation import *
@@ -25,13 +25,11 @@ def main():
 @app.route('/home', methods=['GET', 'POST'])
 def home():
     username = None
-    public_key = None
     metamask_id = None
     if 'username' in session:
         username = session['username']
-        public_key = session['public_key']
         metamask_id = session['metamask_id']
-    return render_template("base.html", username = username, public_key = public_key, metamask_id = metamask_id)
+    return render_template("base.html", username = username, metamask_id = metamask_id)
 
 @app.route('/mail', methods=['GET', 'POST'])
 def mail():
@@ -107,31 +105,42 @@ def search():
 def signup():
     if  'username' in session:
         return render_template("base.html", username = session['username'])
+    
+    username = request.args.get('username')
+    score = request.args.get('score')
+
+    if not username or username == None or username == "None":
+        username = request.form.get("username", default = None, type = str)
+        score = request.form.get("score", default = None, type = str)
+    
+    print(username, score)
 
     if request.form.get('signup-submit'):
         form = SignupForm(request.form)  
         if form.validate():
-            new_user = User(name = form.username.data, 
-                            username = form.username.data, 
-                            password = form.password.data.encode('utf-8'), 
-                            public_key = form.public_key.data,
-                            metamask_id = form.metamask_id.data)
+            print(1)
+            new_user = User(username = form.username.data, 
+                            metamask_id = form.metamask_id.data,
+                            score = score)
             new_user.addToDB()
             flash('Signed up successfully.', category='success')
-        return render_template('signup.html', form=form)
+            return render_template('signup.html', username_login = username, score = score)
+        return render_template('signup.html', form=form, username_signup = username, score = score)
     
     elif request.form.get('login-submit'):
         form = LoginForm(request.form)
         if form.validate():
             session['username'] = form.username.data
             session['metamask_id'] = form.metamask_id.data
-            session['public_key'] = query_users_by_username(session['username'])['public_key']
 
             flash('Logged in successfully.', category='success')
             return redirect(url_for('home'))
-        return render_template('signup.html', form=form, login = True)
+        return render_template('signup.html', form=form, username_login = username, score = score, login = True)
     
-    return render_template('signup.html')
+    if query_user_by_username(username):
+        return render_template('signup.html', username_login = username, score = score)
+    else:
+        return render_template('signup.html', username_signup = username, score = score)
 
 @app.route('/generateKey', methods = ['POST'])
 def generateKey():

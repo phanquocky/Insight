@@ -1,27 +1,14 @@
 from flask_wtf import Form, FlaskForm
 from wtforms import StringField, SubmitField, validators, PasswordField, HiddenField, BooleanField, IntegerField, FormField
-from mongodb import query_users_by_username
-from mongodb import User
-from Keypair.hash import sha256_hash
+from mongodb_ver2 import query_user_by_username
+from mongodb_ver2 import User
 
 class SignupForm(Form):
     username = StringField('Username',  [
         validators.DataRequired('Please enter your username.'),
-        validators.Length(max=30, message='Username is at most 30 characters.'),
+        validators.Length(max=50, message='Username is at most 50 characters.'),
     ])
-    
-    password = PasswordField('Password', [
-        validators.DataRequired('Please enter a password.'),
-        validators.Length(min = 6, message='Passwords is at least 6 characters.'),
-        validators.EqualTo('confirm', message='Passwords must match')
-    ])
-    confirm = PasswordField('Repeat Password')
-    public_key = StringField('Public key', [
-        validators.DataRequired('Please generate your keys.'),
-    ])
-    private_key = StringField('Private key', [
-        validators.DataRequired('Please generate your keys.'),
-    ])
+    score = IntegerField('Score')
     metamask_id = StringField('Metamask ID', [
         validators.DataRequired('Please connect to Metamask.'),
     ])
@@ -34,7 +21,7 @@ class SignupForm(Form):
         if not Form.validate(self):
             return False
 
-        user = query_users_by_username(username = self.username.data)
+        user = query_user_by_username(username = self.username.data)
         if user is not None:
             self.username.errors.append('That username is already taken.')
             return False
@@ -44,12 +31,9 @@ class SignupForm(Form):
 class LoginForm(Form):
     username = StringField('Username',  [
         validators.DataRequired('Please enter your username.'),
-        validators.Length(max=30, message='Username is at most 30 characters.'),
+        validators.Length(max=50, message='Username is at most 50 characters.'),
     ])
-    password = PasswordField('Password', [
-        validators.DataRequired('Please enter a password.'),
-        validators.Length(min=6, message='Passwords is at least 6 characters.'),
-    ])
+    score = IntegerField('Score')
     metamask_id = StringField('Metamask ID', [
         validators.DataRequired('Please connect to Metamask.'),
     ])
@@ -62,16 +46,12 @@ class LoginForm(Form):
         if not Form.validate(self):
             return False
 
-        user = query_users_by_username(username = self.username.data)
-        if user and check_password(user['password'], self.password.data.encode('utf-8')) and query_users_by_username(self.username.data)['metamask_id'] == self.metamask_id.data:
+        user = query_user_by_username(username = self.username.data)
+        if user and query_user_by_username(self.username.data)['metamask_id'] == self.metamask_id.data:
             return True
         else:
-            self.password.errors.append('Invalid username, password or metamask id.')
+            self.username.errors.append('Invalid username or metamask id.')
             return False
 
-def check_password(password, text):
-    if password == sha256_hash(text):
-            return True
-    return False
         
 
