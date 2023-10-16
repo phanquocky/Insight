@@ -69,13 +69,15 @@
     })
     .then(response => response.json())
     .then(response => {
-      console.log("response = ", response);
       if(response.status == "failed") {
         alert(response.message);
         return;
       }
-
-      console.log("response = ", response);
+      else {
+        room_info = JSON.parse(response.data)
+        console.log(room_info)
+        window.location.href = `/contestant/` + room_info._id['$oid']; 
+      }
     })
     .catch(error => {
       console.log('Error:', error);
