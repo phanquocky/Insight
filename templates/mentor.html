@@ -124,9 +124,9 @@ async function uploadTest(roomId) {
   fileInput.click();
 }
 
-function viewSubmit(roomID) {
+function viewSubmit(roomID, mentorID) {
   var xhr = new XMLHttpRequest();
-  xhr.open('GET', '/view_submit/' + roomID, true);
+  xhr.open('GET', '/view_submit/' + roomID + "?mentor_id=" + mentorID, true);
   xhr.responseType = 'arraybuffer';
 
   xhr.onload = function () {
@@ -172,7 +172,6 @@ function viewSubmit(roomID) {
           <td class="col-2">{{ mentor._id }}</td>
           <td class="col-2">{{ mentor.contestant }}</td>
           
-          
           <!-- test -->
           {% if not mentor.test %}
             <td class="col-1">
@@ -194,7 +193,11 @@ function viewSubmit(roomID) {
           {% endif %}
 
           <!-- Score -->          
-          <td class="col-1">None</td>
+          {% if not room.tests[0]['score'] %}
+            <td class="col-1">None</td>
+          {% else %}
+            <td class="col-1">{{room.tests[0]['score']}}</td>
+          {% endif %}
 
           <!-- Test Sign -->
           {% if mentor.test_sign %}
