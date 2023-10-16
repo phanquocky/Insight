@@ -1,6 +1,58 @@
 {% extends "base.html" %}
 {% block content %}
 
+<script>
+function viewTest(roomID, mentorID) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', '/view_test/' + roomID + "?mentor_id=" + mentorID, true);
+  xhr.responseType = 'arraybuffer';
+
+  xhr.onload = function () {
+    if (xhr.status == 200) {
+      // Nếu nhận được dữ liệu thành công, tạo một blob từ arrayBuffer và mở cửa sổ mới chứa PDF
+      var arrayBuffer = xhr.response;
+      var blob = new Blob([arrayBuffer], { type: 'application/pdf' });
+      var url = URL.createObjectURL(blob);
+
+      // Mở cửa sổ mới chứa PDF
+      window.open(url, '_blank');
+    } else {
+      alert('Error! Please try again!');
+    }
+  };
+
+  // Gửi yêu cầu lấy dữ liệu PDF từ server
+  xhr.send();
+}
+
+function viewTestSignature(room_id, mentorID){
+  window.open('/room/mentor/test_signature?room_id=' + room_id + '&mentor_id=' + mentorID, '_blank');
+}
+
+function viewSubmit(roomID, mentorID) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', '/view_submit/' + roomID + "?mentor_id=" + mentorID, true);
+  xhr.responseType = 'arraybuffer';
+
+  xhr.onload = function () {
+    if (xhr.status == 200) {
+      // Nếu nhận được dữ liệu thành công, tạo một blob từ arrayBuffer và mở cửa sổ mới chứa PDF
+      var arrayBuffer = xhr.response;
+      var blob = new Blob([arrayBuffer], { type: 'application/pdf' });
+      var url = URL.createObjectURL(blob);
+
+      // Mở cửa sổ mới chứa PDF
+      window.open(url, '_blank');
+    } else {
+      alert('Error! Please try again!');
+    }
+  };
+
+  // Gửi yêu cầu lấy dữ liệu PDF từ server
+  xhr.send();
+}
+</script>
+
 <div class="container">
   <h1 class="">Room {{room._id}}</h1>
   
@@ -45,14 +97,14 @@
       {% for test in room.tests %}
       <tr>
         <th scope="row" class="col-1">{{ loop.index }}</th>
-        <td class="col-2">{{ test.mentor_id }}</td>
+        <td class="col-2">{{ test.mentor_name }}</td>
         
         <!-- Test -->
         {% if not test.test %}
         <td class="col-2"> None </td>
         {% else %}
         <td class="col-2">
-          <button class="btn btn-success" onclick="viewTest('{{ room._id }}', '{{loop.index - 1}}')">View</button> 
+          <button class="btn btn-success" onclick="viewTest('{{ room._id }}', '{{test.mentor_id}}')">View</button> 
         </td> 
         {% endif %}
 
