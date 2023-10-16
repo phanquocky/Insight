@@ -179,7 +179,7 @@ def query_all_users():
     return users
 
 
-def query_users_by_score(min_score=0, max_score=100, num_users=None):
+def query_users_by_score(min_score=1, max_score=100, num_users=None):
     users_collection = db['User']
     users = []
     if (num_users == None):
@@ -196,7 +196,7 @@ def query_users_by_score(min_score=0, max_score=100, num_users=None):
         listUser.append(user)
 
     listUser.reverse()
-    return listUser
+    return listUser, min_score, max_score
 
 
 def query_examiners_by_score(min_score=0, max_score=100, num_users=20):
