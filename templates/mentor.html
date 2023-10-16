@@ -36,7 +36,7 @@ function viewTestSignature(room_id){
   // modal.querySelector('.modal-body').textContent = signature
 }
 
-async function uploadTest(roomId, mentorID) {
+function uploadTest(roomId, mentorID) {
   // get file from mentor's computer
   var fileInput = document.createElement('input');
   fileInput.type = 'file';
@@ -45,23 +45,23 @@ async function uploadTest(roomId, mentorID) {
   console.log(fileInput)
 
   fileInput.onchange = async function () {
-    if (!window.ethereum) {
-      alert('Metamask not installed')
-      return
-    }
-    if('{{metamask_id}}' == '') {
-      alert('Please login again!')
-      return
-    }
-    const provider = new ethers.providers.Web3Provider(window.ethereum)
-    // console.log("metamask = ", '{{metamask_id}}')
-    const signer = provider.getSigner('{{metamask_id}}'); // signer.getAddress() == accounts[0]
-    const signerAddress = await signer.getAddress();
-    // console.log("signerAddress = ", signerAddress)
-    if('{{metamask_id}}' != signerAddress) {
-      alert('Please connect to the correct metamask account.\nYour metamask account is {{metamask_id}}')
-      return
-    }
+    {#if (!window.ethereum) {#}
+    {#  alert('Metamask not installed')#}
+    {#  return#}
+    {#}#}
+    {#if('{{metamask_id}}' == '') {#}
+    {#  alert('Please login again!')#}
+    {#  return#}
+    {#}#}
+    {#const provider = new ethers.providers.Web3Provider(window.ethereum)#}
+    {#// console.log("metamask = ", '{{metamask_id}}')#}
+    {#const signer = provider.getSigner('{{metamask_id}}'); // signer.getAddress() == accounts[0]#}
+    {#const signerAddress = await signer.getAddress();#}
+    {#// console.log("signerAddress = ", signerAddress)#}
+    {#if('{{metamask_id}}' != signerAddress) {#}
+    {#  alert('Please connect to the correct metamask account.\nYour metamask account is {{metamask_id}}')#}
+    {#  return#}
+    {#}#}
 
 
     var file = fileInput.files[0];
@@ -82,43 +82,44 @@ async function uploadTest(roomId, mentorID) {
         }
     };
 
+    xhr.send(formData)
 
-    // Here, you can read the file content, for example:
-    const reader = new FileReader();
-    reader.onload = function (e) {
-      const fileContent = e.target.result;
-      // You can do something with the file content here
-
-      const arr = new Uint8Array(fileContent);
-      hash_file = ethers.utils.sha256(arr);
-      signer.signMessage(hash_file)
-        .then((signature) => {
-          fetch('/room/mentor/sign', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              'room_id': roomId,
-              'signature': signature
-            })
-          })
-          .then((response) => response.json())
-          .then((data) => {
-            console.log('Success:', data);
-            xhr.send(formData);
-          })
-          .catch((error) => {
-            console.error('Error:', error);
-            alert('Error! Please try again!')
-          });
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-          alert('You need to sign this message')
-        });
-    };
-    reader.readAsArrayBuffer(file); // Read the file as text
+    {#// Here, you can read the file content, for example:#}
+    {#const reader = new FileReader();#}
+    {#reader.onload = function (e) {#}
+    {#  const fileContent = e.target.result;#}
+    {#  // You can do something with the file content here#}
+    {##}
+    {#  const arr = new Uint8Array(fileContent);#}
+    {#  hash_file = ethers.utils.sha256(arr);#}
+    {#  signer.signMessage(hash_file)#}
+    {#    .then((signature) => {#}
+    {#      fetch('/room/mentor/sign', {#}
+    {#        method: 'POST',#}
+    {#        headers: {#}
+    {#          'Content-Type': 'application/json'#}
+    {#        },#}
+    {#        body: JSON.stringify({#}
+    {#          'room_id': roomId,#}
+    {#          'signature': signature#}
+    {#        })#}
+    {#      })#}
+    {#      .then((response) => response.json())#}
+    {#      .then((data) => {#}
+    {#        console.log('Success:', data);#}
+    {#        xhr.send(formData);#}
+    {#      })#}
+    {#      .catch((error) => {#}
+    {#        console.error('Error:', error);#}
+    {#        alert('Error! Please try again!')#}
+    {#      });#}
+    {#    })#}
+    {#    .catch((error) => {#}
+    {#      console.error('Error:', error);#}
+    {#      alert('You need to sign this message')#}
+    {#    });#}
+    {#};#}
+    {#reader.readAsArrayBuffer(file); // Read the file as text#}
   };
 
   // Kích hoạt sự kiện click trên input[type=file] để chọn file
@@ -168,6 +169,7 @@ function viewSubmit(roomID) {
 
       <tbody class="overflow-auto">
         {% for room in mentor_rooms %}
+          {{ room['tests'][0]['test'] }}
         <tr>
           <th scope="row" class="col-1">{{ loop.index }}</th>
           <td class="col-2">{{ room._id }}</td>
@@ -177,7 +179,7 @@ function viewSubmit(roomID) {
           <!-- test -->
           {% if not room.tests['test'] %}
             <td class="col-1">
-              <button class="btn btn-danger" onclick="uploadTest('{{ room._id, room.mentors['id'] }}')">Upload</button>
+              <button class="btn btn-danger" onclick="uploadTest('{{ room._id }}', '{{ room.mentors.id }}')">Upload</button>
             </td>
           {% else %}
             <td class="col-1">
