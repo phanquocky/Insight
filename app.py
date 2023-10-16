@@ -559,9 +559,9 @@ def view_submission_signature():
 
 @app.route('/view_test/<room_id>', methods=['GET'])
 def view_test(room_id):
-    menter_id = request.args.get('mentor_id')
+    mentor_id = request.args.get('mentor_id')
     # Truy vấn cơ sở dữ liệu để lấy nội dung của file Test dựa trên room_id
-    room_content = get_test_from_room_2(room_id, menter_id)
+    room_content = get_test_from_room_2(room_id, mentor_id)
 
     # Kiểm tra xem room_content có tồn tại không
     if room_content is None:
@@ -570,7 +570,7 @@ def view_test(room_id):
     # Trả về nội dung của file Test dưới dạng response PDF
     response = make_response(room_content)
     response.headers['Content-Type'] = 'application/pdf'
-    response.headers['Content-Disposition'] = f'inline; filename=test_{room_id}_{menter_id}.pdf'
+    response.headers['Content-Disposition'] = f'inline; filename=test_{room_id}_{mentor_id}.pdf'
     return response
 
 @app.route('/contestant', methods=['POST', 'GET'])
@@ -599,8 +599,10 @@ def contestant_room():
 
 @app.route('/view_submit/<room_id>', methods=['GET'])
 def view_submit(room_id):
+    mentor_id = request.args.get('mentor_id')
+
     # Truy vấn cơ sở dữ liệu để lấy nội dung của file Test dựa trên room_id
-    room_content = get_submit_from_db(room_id)
+    room_content = get_submit_from_room_2(room_id, mentor_id)
 
     # Kiểm tra xem room_content có tồn tại không
     if room_content is None:
