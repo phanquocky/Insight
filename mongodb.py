@@ -388,6 +388,34 @@ def save_test_to_db(room_id, file):
     else:
         print("Room not found.")
 
+def upload_test_to_db(room_id, uploaded_file, mentor_id):
+    print('room_id')
+    print(room_id)
+    print('mentor_id')
+    print(mentor_id)
+
+    rooms_collection: Collection = db['Room2']
+    room = rooms_collection.find_one({'_id': ObjectId(room_id)})
+    print(room)
+
+    if room:
+        # Đọc nội dung của file PDF và chuyển đổi thành bytes
+        file_content = uploaded_file.read()
+        file_bytes = bytes(file_content)
+
+        # Tìm và cập nhật phần tử đúng trong mảng tests với mentor_id tương ứng
+        for test in room['tests']:
+            print(test)
+            print('\n')
+            if test['mentor_id'] == ObjectId(mentor_id):
+                test['test'] = file_bytes
+                rooms_collection.update_one({'_id': ObjectId(room_id)}, {'$set': {'tests': room['tests']}})
+                print("Test uploaded successfully!")
+                return
+
+        print("Mentor not found in tests array.")
+    else:
+        print("Room not found.")
 
 def get_test_from_db(room_id):
     rooms_collection: Collection = db['Room']
@@ -438,3 +466,20 @@ def get_submit_from_db(room_id):
     else:
         # Trường hợp không tìm thấy đề thi hoặc không có nội dung, trả về None
         return None
+
+def query_mentor_rooms2(username):
+    room_collection = db['Room2']
+    rooms_data = room_collection.find({'mentors.username': username})
+
+    mentor_rooms = []
+    for room_data in rooms_data:
+        mentors = [mentor for mentor in room_data['mentors'] if mentor['username'] == username]
+        if mentors:
+            mentor = mentors[0]
+            tests = [test for test in room_data['tests'] if test['mentor_id'] == ObjectId(mentor['id'])]
+            if tests:
+                room_data['mentors'] = mentor
+                room_data['tests'] = tests
+                mentor_rooms.append(room_data)
+
+    return mentor_rooms

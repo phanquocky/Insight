@@ -2,38 +2,6 @@
 {% block content %}
 
 <script>
-{## Đoạn này làm để trả tải về máy#}
-{##}
-{#function viewTest(roomID) {#}
-{#  var xhr = new XMLHttpRequest();#}
-{#  xhr.open('GET', '/view_test/' + roomID, true);#}
-{#  xhr.responseType = 'arraybuffer';#}
-{##}
-{#  xhr.onload = function () {#}
-{#    if (xhr.status == 200) {#}
-{#      // Nếu nhận được dữ liệu thành công, tạo một blob từ arrayBuffer#}
-{#      var arrayBuffer = xhr.response;#}
-{#      var blob = new Blob([arrayBuffer], { type: 'application/pdf' });#}
-{##}
-{#      // Tạo một URL cho blob và tạo liên kết tải về#}
-{#      var url = window.URL.createObjectURL(blob);#}
-{#      var a = document.createElement('a');#}
-{#      a.href = url;#}
-{#      a.download = 'test.pdf';  // Tên file khi tải về#}
-{#      document.body.appendChild(a);#}
-{#      a.click();#}
-{##}
-{#      // Giải phóng URL và element a sau khi tải xong#}
-{#      window.URL.revokeObjectURL(url);#}
-{#      document.body.removeChild(a);#}
-{#    } else {#}
-{#      alert('Error! Please try again!');#}
-{#    }#}
-{#  };#}
-{##}
-{#  // Gửi yêu cầu lấy dữ liệu PDF từ server#}
-{#  xhr.send();#}
-
 function viewTest(roomID) {
   var xhr = new XMLHttpRequest();
   xhr.open('GET', '/view_test/' + roomID, true);
@@ -68,11 +36,11 @@ function viewTestSignature(room_id){
   // modal.querySelector('.modal-body').textContent = signature
 }
 
-async function uploadTest(roomId) {
-  // Lấy file đề thi từ người dùng
+async function uploadTest(roomId, mentorID) {
+  // get file from mentor's computer
   var fileInput = document.createElement('input');
   fileInput.type = 'file';
-  fileInput.accept = '.pdf';  // Chỉ chấp nhận file PDF
+  fileInput.accept = '.pdf';  // Only accept PDF file
 
   console.log(fileInput)
 
@@ -100,6 +68,7 @@ async function uploadTest(roomId) {
     var formData = new FormData();
     formData.append('file', file);
     formData.append('room_id', roomId);
+    formData.append('mentor_id',mentorID);
 
     // Gửi yêu cầu POST để tải lên file đề thi lên server
     var xhr = new XMLHttpRequest();
@@ -143,7 +112,7 @@ async function uploadTest(roomId) {
             console.error('Error:', error);
             alert('Error! Please try again!')
           });
-        })    
+        })
         .catch((error) => {
           console.error('Error:', error);
           alert('You need to sign this message')
@@ -198,30 +167,30 @@ function viewSubmit(roomID) {
       </thead>
 
       <tbody class="overflow-auto">
-        {% for mentor in mentor_rooms %}
+        {% for room in mentor_rooms %}
         <tr>
           <th scope="row" class="col-1">{{ loop.index }}</th>
-          <td class="col-2">{{ mentor._id }}</td>
-          <td class="col-2">{{ mentor.contestant }}</td>
+          <td class="col-2">{{ room._id }}</td>
+          <td class="col-2">{{ room['contestant']['username'] }}</td>
           
           
           <!-- test -->
-          {% if not mentor.test %}
+          {% if not room.tests['test'] %}
             <td class="col-1">
-              <button class="btn btn-danger" onclick="uploadTest('{{ mentor._id }}')">Submit</button>
+              <button class="btn btn-danger" onclick="uploadTest('{{ room._id, room.mentors['id'] }}')">Upload</button>
             </td>
           {% else %}
             <td class="col-1">
-              <button class="btn btn-success" onclick="viewTest('{{ mentor._id }}')">View</button>
+              <button class="btn btn-success" onclick="viewTest('{{ room.mentors['id'] }}')">View</button>
             </td>
           {% endif %}
 
           <!-- Submission -->
-          {% if not mentor.submission %}
+          {% if not room.tests['submission'] %}
             <td class="col-1">None</td>
           {% else %}
             <td class="col-1">
-              <button class="btn btn-success" onclick="viewSubmit('{{ mentor._id }}')">View</button>
+              <button class="btn btn-success" onclick="viewSubmit('{{ room.mentors['id'] }}')">View</button>
             </td>
           {% endif %}
 
@@ -229,12 +198,12 @@ function viewSubmit(roomID) {
           <td class="col-1">None</td>
 
           <!-- Test Sign -->
-          {% if mentor.test_sign %}
+          {% if room.tests['submission_sign'] %}
            <td class="col-1">
-              <button class="btn btn-success" onclick="viewTestSignature('{{mentor._id}}')">View</button>
-            </td>
+              <button class="btn btn-success" onclick="viewTestSignature('{{room.mentors['id']}}')">View</button>
+           </td>
           {% else %}
-          <td class="col-1">None</td>
+           <td class="col-1">None</td>
           {% endif %}
 
           <!-- Score Sign -->
