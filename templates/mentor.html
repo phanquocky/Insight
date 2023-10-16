@@ -169,7 +169,6 @@ function viewSubmit(roomID) {
 
       <tbody class="overflow-auto">
         {% for room in mentor_rooms %}
-          {{ room['tests'][0]['test'] }}
         <tr>
           <th scope="row" class="col-1">{{ loop.index }}</th>
           <td class="col-2">{{ room._id }}</td>
@@ -177,7 +176,7 @@ function viewSubmit(roomID) {
           
           
           <!-- test -->
-          {% if not room.tests['test'] %}
+          {% if not room.tests[0]['test'] %}
             <td class="col-1">
               <button class="btn btn-danger" onclick="uploadTest('{{ room._id }}', '{{ room.mentors.id }}')">Upload</button>
             </td>
