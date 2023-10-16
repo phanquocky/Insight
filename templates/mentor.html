@@ -107,7 +107,7 @@ reader.onload = function (e) {
       .then((response) => response.json())
       .then((data) => {
         console.log('Success:', data);
-        // xhr.send(formData);
+        xhr.send(formData);
       })
       .catch((error) => {
         console.error('Error:', error);
@@ -150,6 +150,7 @@ function viewSubmit(roomID) {
   xhr.send();
 }
 </script>
+  <!-- {{mentor_rooms}} -->
 
   <h1 class="text-center mt-3">Mentor Room</h1>
 
@@ -183,33 +184,44 @@ function viewSubmit(roomID) {
             </td>
           {% else %}
             <td class="col-1">
-              <button class="btn btn-success" onclick="viewTest('{{ room.mentors['id'] }}')">View</button>
+              <button class="btn btn-success" onclick="viewTest(`{{ room.mentors['id'] }}`)">View</button>
             </td>
           {% endif %}
 
           <!-- Submission -->
-          {% if not room.tests['submission'] %}
+          {% if not room.tests[0]['submission'] %}
             <td class="col-1">None</td>
           {% else %}
             <td class="col-1">
-              <button class="btn btn-success" onclick="viewSubmit('{{ room.mentors['id'] }}')">View</button>
+              <button class="btn btn-success" onclick="viewSubmit(`{{ room.mentors['id'] }}`)">View</button>
             </td>
           {% endif %}
 
           <!-- Score -->          
+          {% if not room.tests[0]['score'] %}
+            <td class="col-1">None</td>
+          {% else %}
+            <td class="col-1">{{room.tests[0]['score']}}</td>
+          {% endif %}
           <td class="col-1">None</td>
 
           <!-- Test Sign -->
-          {% if room.tests['submission_sign'] %}
+          {% if room.tests[0]['test_sign'] %}
            <td class="col-1">
-              <button class="btn btn-success" onclick="viewTestSignature('{{room.mentors['id']}}')">View</button>
+              <button class="btn btn-success" onclick="viewTestSignature(`{{ room.mentors['id'] }}`)">View</button>
            </td>
           {% else %}
            <td class="col-1">None</td>
           {% endif %}
 
           <!-- Score Sign -->
-          <td class="col-1">None</td>
+          {% if room.tests[0]['score_sign'] %}
+           <td class="col-1">
+              <button class="btn btn-success" onclick="viewTestSignature(`{{ room.mentors['id'] }}`)">View</button>
+           </td>
+          {% else %}
+           <td class="col-1">None</td>
+          {% endif %}
         </tr>
         {% endfor %}
       </tbody>
