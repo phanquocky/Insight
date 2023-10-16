@@ -7,21 +7,10 @@
         {% for message in form.username.errors %}
             <div class="alert-danger">{{ message }}</div>
         {% endfor %}
-        {% for message in form.password.errors %}
+        
+        {% for message in form.metamask_id.errors %}
             <div class="alert-danger">{{ message }}</div>
         {% endfor %}
-        
-        {% if not login %}
-            {% for message in form.confirm.errors %}
-                <div class="alert-danger">{{ message }}</div>
-            {% endfor %}
-            {% for message in form.public_key.errors %}
-                <div class="alert-danger">{{ message }}</div>
-            {% endfor %}
-            {% for message in form.metamask_id.errors %}
-                <div class="alert-danger">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
     {% endif %}
     <div class="wrapper" style="margin-top: 50px; margin-bottom: 10px;">
         <div class="title-text">
@@ -43,11 +32,9 @@
            <div class="form-inner">
                 <form class="login" name="login" role="form" action="{{ url_for('signup') }}" method="POST">
                     <div class="field">
-                        <input name="username" type="text" class="form-control" placeholder="Username" required autofocus>
+                        <input name="username" type="text" class="form-control" placeholder="Username" {% if username_login %} value="{{ username_login }}" {% endif %} required autofocus>
                     </div>
-                    <div class="field">
-                        <input name="password" type="password" class="form-control" placeholder="Password" required>
-                    </div>
+                    <input name="score" type="hidden" {% if username_login %} value="{{ score }}" {% endif %}>
                     <div class="field">
                         <input id="metamaskID-login" name="metamask_id" type="text" class="form-control" placeholder="Your Metamask ID" required readonly>
                     </div>
@@ -57,52 +44,32 @@
                             <div id="spinner-connect-login" class='d-none ml-2 spinner-border spinner-border-sm' style="margin-left: 2px;"></div>
                         </button>
                     </div>
-                    <div class="pass-link">
-                        <a href="#">Reset password?</a>
-                    </div>
                     <div class="field btn">
                         <div class="btn-layer"></div>
                         <input type="submit" name="login-submit" value="Login">
                     </div>
                     <div class="signup-link">
-                        Don't Have Account? <a href="">Create A New</a>
+                        Don't Have Account? <a href="" {% if username_signup %} is-signup="true" {% endif %}>Create A New</a>
                     </div>
                 </form>
 
                 <form class="signup" name="signup" role="form" action="{{ url_for('signup') }}" method="POST">
                     <div class="field">
-                        <input id="username" name="username" type="text" class="form-control" placeholder="Username" required autofocus>
+                        <input id="username" name="username" type="text" class="form-control" placeholder="Username" required autofocus {% if username_signup %} value="{{ username_signup }}" readonly {% else %} disabled {% endif %}>
                     </div>
+                    <input name="score" type="hidden" {% if username_signup %} value="{{ score }}" {% endif %}>
                     <div class="field">
-                        <input id="password" name="password" type="password" class="form-control" placeholder="Password" required>
-                    </div>
-                    <div class="field">
-                        <input id="confirm" name="confirm" type="password" class="form-control" placeholder="Confirm Password" required>
-                    </div>
-                    <div class="field">
-                        <input id="public_key" name="public_key" type="text" class="form-control" placeholder="Your Public Key" required readonly>
-                    </div>
-                    <div class="field" style="margin-top: 5px;">
-                        <input id="private_key" name="private_key" type="text" class="form-control" placeholder="Your Private Key" required readonly>
+                        <input id="metamaskID" name="metamask_id" type="text" class="form-control" placeholder="Your Metamask ID" required readonly {% if not username_signup %} disabled {% endif %}>
                     </div>
                     <div class="col-sm-4">
-                        <button id="generateButton" class="btn btn-primary btn-sm" data-style="expand-right" type="button" style="height: 100%; padding: 6px; margin-top: 5px;">
-                            <span class="ladda-label">Generate</span>
-                            <div id="spinner" class='d-none ml-2 spinner-border spinner-border-sm' style="margin-left: 2px;"></div>
-                        </button>
-                    </div>
-                    <div class="field">
-                        <input id="metamaskID" name="metamask_id" type="text" class="form-control" placeholder="Your Metamask ID" required readonly>
-                    </div>
-                    <div class="col-sm-4">
-                        <button id="connectButton" class="btn btn-primary btn-sm" data-style="expand-right" type="button" style="height: 100%; padding: 6px; margin-top: 5px;">
+                        <button id="connectButton" class="btn btn-primary btn-sm" data-style="expand-right" type="button" style="height: 100%; padding: 6px; margin-top: 5px;" {% if not username_signup %} disabled {% endif %}>
                             <span class="ladda-label">Connect</span>
                             <div id="spinner-connect" class='d-none ml-2 spinner-border spinner-border-sm' style="margin-left: 2px;"></div>
                         </button>
                     </div>
                     <div class="field btn">
                         <div class="btn-layer"></div>
-                        <input type="submit" name="signup-submit" value="Sign Up">
+                        <input type="submit" name="signup-submit" value="Sign Up" {% if not username_signup %} disabled {% endif %}>
                     </div>
                 </form>
             </div>

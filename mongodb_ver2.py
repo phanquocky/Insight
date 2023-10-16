@@ -19,6 +19,9 @@ class User:
         self.username = username
         self.metamask_id = metamask_id
         self.score = score
+    def addToDB(self):
+        users_collection = db['User']
+        users_collection.insert_one(self.__dict__)
 
 def query_user_by_username(username):
     # Truy vấn cơ sở dữ liệu để lấy danh sách người có username là $username
