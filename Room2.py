@@ -73,12 +73,14 @@ def update_room_2_mentor_sign(room_id, mentor_id, test_sign):
   room = find_room_2_by_id(room_id)
   tests = room['tests']
   for test in tests:
-    if test['mentor_id'] == mentor_id:
+    if test['mentor_id'] == ObjectId(mentor_id):
       test['test_sign'] = test_sign
       break
+  # print("tests = ", tests)
+  # print("test_sign = ", test_sign)
   room_collection = db['Room2']
   result = room_collection.update_one({"_id": ObjectId(room_id)}, {"$set": {"tests": tests}})
-  print("update room 2 mentor sign successfully")  
+  # print("update room 2 mentor sign successfully")  
 
 
 def encode_to_byte_room_2(room_id):

@@ -513,7 +513,7 @@ def update_mentor_sign():
         mentor_id = data['mentor_id']
         signature = data['signature']
 
-        update_room_mentor_sign(room_id, mentor_id, signature)
+        update_room_2_mentor_sign(room_id, mentor_id, signature)
         print("update_mentor_sign: successfully")
         return jsonify({'status': 200})
     except Exception as e:
