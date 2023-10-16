@@ -27,13 +27,29 @@ function viewTest(roomID, mentorID) {
 
 function viewTestSignature(room_id, mentorID){
   window.open('/room/mentor/test_signature?room_id=' + room_id + '&mentor_id=' + mentorID, '_blank');
+}
 
-  // const button = document.getElementById('button-launch-modal')
-  // button.click()
+function viewSubmit(roomID, mentorID) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', '/view_submit/' + roomID + "?mentor_id=" + mentorID, true);
+  xhr.responseType = 'arraybuffer';
 
-  // const modal = document.getElementById('exampleModal')
-  // modal.querySelector('.modal-title').textContent = 'Test Signature'
-  // modal.querySelector('.modal-body').textContent = signature
+  xhr.onload = function () {
+    if (xhr.status == 200) {
+      // Nếu nhận được dữ liệu thành công, tạo một blob từ arrayBuffer và mở cửa sổ mới chứa PDF
+      var arrayBuffer = xhr.response;
+      var blob = new Blob([arrayBuffer], { type: 'application/pdf' });
+      var url = URL.createObjectURL(blob);
+
+      // Mở cửa sổ mới chứa PDF
+      window.open(url, '_blank');
+    } else {
+      alert('Error! Please try again!');
+    }
+  };
+
+  // Gửi yêu cầu lấy dữ liệu PDF từ server
+  xhr.send();
 }
 
 async function uploadTest(roomId) {
@@ -122,29 +138,6 @@ async function uploadTest(roomId) {
 
   // Kích hoạt sự kiện click trên input[type=file] để chọn file
   fileInput.click();
-}
-
-function viewSubmit(roomID, mentorID) {
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', '/view_submit/' + roomID + "?mentor_id=" + mentorID, true);
-  xhr.responseType = 'arraybuffer';
-
-  xhr.onload = function () {
-    if (xhr.status == 200) {
-      // Nếu nhận được dữ liệu thành công, tạo một blob từ arrayBuffer và mở cửa sổ mới chứa PDF
-      var arrayBuffer = xhr.response;
-      var blob = new Blob([arrayBuffer], { type: 'application/pdf' });
-      var url = URL.createObjectURL(blob);
-
-      // Mở cửa sổ mới chứa PDF
-      window.open(url, '_blank');
-    } else {
-      alert('Error! Please try again!');
-    }
-  };
-
-  // Gửi yêu cầu lấy dữ liệu PDF từ server
-  xhr.send();
 }
 </script>
 

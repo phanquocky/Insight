@@ -511,23 +511,33 @@ def mentor():
                                             username=username,
                                             metamask_id=metamask_id)
 
-@app.route('/room/public/<room_id>', methods=['GET'])
+@app.route('/public/room/<room_id>', methods=['GET'])
 def view_public_room(room_id):
     # print("room_id: ", room_id)
     room = find_room_2_by_id(room_id)
     if(len(room) == 0):
         abort(404, "Invalid room id")
 
-    # room['']
+    for test in room['tests']:
+        for mentor in room['mentors']:
+            if(mentor['id'] == test['mentor_id']):
+                test['mentor_name'] = mentor['username']
+                break
+
     return render_template('render_room.html', room=room)
 
-@app.route('/room/public', methods=['POST'])
+@app.route('/public/room', methods=['POST'])
 def view_room():
     data = request.json
     room_bytes = data.room_bytes
     room = loads(room_bytes)
 
-    # room['tests']
+    for test in room['tests']:
+        for mentor in room['mentors']:
+            if(mentor['id'] == test['mentor_id']):
+                test['mentor_name'] = mentor['username']
+                break
+            
 
     return render_template('render_room.html', room=room)
 
