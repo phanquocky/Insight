@@ -16,7 +16,7 @@ app.config['SESSION_COOKIE_SECURE'] = True
 @app.before_request
 def before_request():
   session.permanent = True
-  app.permanent_session_lifetime = timedelta(minutes = 15) #Phiên làm việc sẽ tự động xóa sau 15p nếu không có thêm bất cứ request nào lên server.
+  app.permanent_session_lifetime = timedelta(minutes = 30) #Phiên làm việc sẽ tự động xóa sau 30p nếu không có thêm bất cứ request nào lên server.
 
 @app.route('/')
 def main():
@@ -112,13 +112,10 @@ def signup():
     if not username or username == None or username == "None":
         username = request.form.get("username", default = None, type = str)
         score = request.form.get("score", default = None, type = str)
-    
-    print(username, score)
 
     if request.form.get('signup-submit'):
         form = SignupForm(request.form)  
         if form.validate():
-            print(1)
             new_user = User(username = form.username.data, 
                             metamask_id = form.metamask_id.data,
                             score = score)
