@@ -30,21 +30,26 @@
               <li class="nav-item">
                 <a class="nav-link" href="/contest">Contest</a>
               </li>
-              <li class="nav-item">
+              <!-- <li class="nav-item">
                 <a class="nav-link" href="/sign">Sign</a>
-              </li>
-              <li class="nav-item">
+              </li> -->
+
+              <!-- <li class="nav-item">
                 <a class="nav-link" href="/verify">Verify</a>
-              </li>
-              <li class="nav-item">
+              </li> -->
+              
+              <!-- <li class="nav-item">
                 <a class="nav-link" href="/mail">Mail</a>
-              </li>
-              <div>
-                <button id="connect-metamask-btn" class="btn btn-outline-primary  ms-5 mb-2"
-                        onclick="connectToMetamask(event)"  >
-                  Connect Wallet
-                </button>
-              </div>
+              </li> -->
+
+              {% if username %}  
+                <div>
+                  <button id="connect-metamask-btn" class="btn btn-outline-primary  ms-5 mb-2"
+                          onclick="connectToMetamask(event)"  >
+                    Connect Wallet
+                  </button>
+                </div>
+              {% endif %}
             </ul>
             <form class="d-flex" role="search">
               {% if username %}
@@ -64,9 +69,9 @@
                     </button>
                     <ul id="dropdown-menu" class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                       <li><a class="dropdown-item" href="/{{username}}">Profile</a></li>
-                      <li><a class="dropdown-item" href="/challenge_request">Challenge Request</a></li>
-                      <li><a class="dropdown-item" href="/mentor">Room mentor</a></li>
-                      <li><a class="dropdown-item" href="/contestant">Room contestant</a></li>
+                      <li><a class="dropdown-item" href="/mentor">Room Mentor</a></li>
+                      <li><a class="dropdown-item" href="/contestant">Room Contestant</a></li>
+                      <li><a class="dropdown-item" href="/#">Room Former</a></li>
                       <li><hr class="dropdown-divider"></li>
                       <li><a class="dropdown-item" href="#" onclick="logout_user(event)">Log out</a></li>
                     </ul>
@@ -94,22 +99,25 @@
           </div>
         </div>
 
+        <!-- Notification -->
         <script>
           document.addEventListener('DOMContentLoaded', function() {
-            var examiner = new bootstrap.Modal(document.getElementById('noti-examiner'));
-            examiner.show();
+            // var examiner = new bootstrap.Modal(document.getElementById('noti-examiner'));
+            // examiner.show();
 
-            setTimeout(function() {
-              examiner.hide();
-            }, 5000);
+            // setTimeout(function() {
+            //   examiner.hide();
+            // }, 5000);
           });
         </script>
       {% endif %}
     {% endblock %}
+
+    <!-- Mail Click -->
     <script>
-      document.getElementById("notification-icon").addEventListener("click", function() {
-        window.location.href = "/notification";
-      });
+      // document.getElementById("notification-icon").addEventListener("click", function() {
+      //   window.location.href = "/notification";
+      // });
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
