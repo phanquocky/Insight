@@ -80,6 +80,13 @@ def update_room_2_mentor_sign(room_id, mentor_id, test_sign):
   result = room_collection.update_one({"_id": ObjectId(room_id)}, {"$set": {"tests": tests}})
   print("update room 2 mentor sign successfully")  
 
+def get_test_from_room_2(room_id, mentor_id):
+  room = find_room_2_by_id(room_id)
+  tests = room['tests']
+  for test in tests:
+    if test['mentor_id'] == ObjectId(mentor_id):
+      return test['test']
+  return None
 
 def encode_to_byte_room_2(room_id):
   room_collection = db['Room2']
