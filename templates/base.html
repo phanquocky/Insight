@@ -41,12 +41,15 @@
               <!-- <li class="nav-item">
                 <a class="nav-link" href="/mail">Mail</a>
               </li> -->
-              <div>
-                <button id="connect-metamask-btn" class="btn btn-outline-primary  ms-5 mb-2"
-                        onclick="connectToMetamask(event)"  >
-                  Connect Wallet
-                </button>
-              </div>
+
+              {% if username %}  
+                <div>
+                  <button id="connect-metamask-btn" class="btn btn-outline-primary  ms-5 mb-2"
+                          onclick="connectToMetamask(event)"  >
+                    Connect Wallet
+                  </button>
+                </div>
+              {% endif %}
             </ul>
             <form class="d-flex" role="search">
               {% if username %}
@@ -96,18 +99,21 @@
           </div>
         </div>
 
+        <!-- Notification -->
         <script>
           document.addEventListener('DOMContentLoaded', function() {
-            var examiner = new bootstrap.Modal(document.getElementById('noti-examiner'));
-            examiner.show();
+            // var examiner = new bootstrap.Modal(document.getElementById('noti-examiner'));
+            // examiner.show();
 
-            setTimeout(function() {
-              examiner.hide();
-            }, 5000);
+            // setTimeout(function() {
+            //   examiner.hide();
+            // }, 5000);
           });
         </script>
       {% endif %}
     {% endblock %}
+
+    <!-- Mail Click -->
     <script>
       // document.getElementById("notification-icon").addEventListener("click", function() {
       //   window.location.href = "/notification";
