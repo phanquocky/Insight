@@ -466,30 +466,40 @@ def mentor_confirm():
 def mentor():
     # Lấy dữ liệu từ MongoDB
     username = None
-    public_key = None
+    # public_key = None
     metamask_id = None
     if 'username' in session:
         username = session['username']
-        public_key = session['public_key']
+        # public_key = session['public_key']
         metamask_id = session['metamask_id']
+
+    # if request.method == 'POST':
+    #     room_id = request.form['room_id']
+    #     print("room_id: ", room_id)
+    #     uploaded_file = request.files['file']
+    #     save_test_to_db(room_id, uploaded_file)
+    #     return redirect('/mentor')
+
+    mentor_rooms = query_mentor_rooms2(username)
+    # mentor_rooms = query_mentor_rooms(public_key)
 
     if request.method == 'POST':
         room_id = request.form['room_id']
-        print("room_id: ", room_id)
         uploaded_file = request.files['file']
-        save_test_to_db(room_id, uploaded_file)
-        return redirect('/mentor')  # Chuyển hướng người dùng sau khi tải lên thành công
+        mentor_id = request.form['mentor_id']
+        upload_test_to_db(room_id, uploaded_file, mentor_id)
+        return redirect('/mentor')
 
-    mentor_rooms = query_mentor_rooms(public_key)
+    # for room in mentor_rooms:
+    #     contestant_user = query_user_by_public_key(room['contestant'])
+    #     # print("contestant_user: ", contestant_user)
+    #     room['contestant'] = contestant_user['name'] if contestant_user['name'] else contestant_user['username']
+    #     if(room['status'] == 0):
+    #         room['status'] = "waiting..."
+    #     else:
+    #         room['status'] = "accepted"
+    # print(mentor_rooms)
 
-    for room in mentor_rooms:
-        contestant_user = query_user_by_public_key(room['contestant'])
-        # print("contestant_user: ", contestant_user)
-        room['contestant'] = contestant_user['name'] if contestant_user['name'] else contestant_user['username']
-        if(room['status'] == 0):
-            room['status'] = "waiting..."
-        else:
-            room['status'] = "accepted"
     return render_template('mentor.html', mentor_rooms=mentor_rooms, 
                                             username=username,
                                             metamask_id=metamask_id)
