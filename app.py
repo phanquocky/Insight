@@ -101,10 +101,39 @@ def search():
                            request_name = name,
                            username = username)
 
-@app.route('/signup', methods = ['GET', 'POST'])
+@app.route('/former_sign_up', methods = ['GET', 'POST'])
+def former_sign_up():
+    if  'username' in session:
+        return redirect(url_for('home'))
+
+    if request.form.get('signup-submit'):
+        form = SignupForm(request.form)  
+        if form.validate():
+            new_user = User( username = form.username.data, 
+                            metamask_id = form.metamask_id.data,
+                            score = form.score.data,
+                            former = True)
+            print(new_user)
+            new_user.addToDB()
+            flash('Signed up successfully.', category='success')
+        return render_template('former_sign_up.html', form=form, former = True)
+    
+    elif request.form.get('login-submit'):
+        form = LoginForm(request.form)
+        if form.validate():
+            session['username'] = form.username.data
+            session['metamask_id'] = form.metamask_id.data
+
+            flash('Logged in successfully.', category='success')
+            return redirect(url_for('home'))
+        return render_template('former_sign_up.html', form=form, former = True)
+    
+    return render_template('former_sign_up.html', former = True)
+
+@app.route('/sign_up', methods = ['GET', 'POST'])
 def signup():
     if  'username' in session:
-        return render_template("base.html", username = session['username'])
+        return redirect(url_for('home'))
     
     username = request.args.get('username')
     score = request.args.get('score')
@@ -129,10 +158,12 @@ def signup():
         if form.validate():
             session['username'] = form.username.data
             session['metamask_id'] = form.metamask_id.data
+            if form.score.data:
+                update_user_score(form.username.data, form.score.data)
 
             flash('Logged in successfully.', category='success')
             return redirect(url_for('home'))
-        return render_template('signup.html', form=form, username_login = username, score = score, login = True)
+        return render_template('signup.html', form=form, username_login = username, score = score)
     
     if query_user_by_username(username):
         return render_template('signup.html', username_login = username, score = score)
@@ -400,7 +431,7 @@ def verify_route():
 @app.route('/<username>',  methods=['GET', 'PATCH'])
 def user_profile(username):
     if request.method == 'GET':
-        user = query_users_by_username(username)
+        user = query_user_by_username(username)
         if user == None:
             abort(404)
 
@@ -409,7 +440,7 @@ def user_profile(username):
                                                     data=json.dumps(user))
     else:
         data = request.json
-        user = query_users_by_username(username)
+        user = query_user_by_username(username)
         print("user = ", user)
         if user == None:
             abort(404, "Invalid username")

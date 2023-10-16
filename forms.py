@@ -18,10 +18,13 @@ class SignupForm(Form):
         Form.__init__(self, *args, **kwargs)
 
     def validate(self, extra_validators=None):
+        print('hihi')
         if not Form.validate(self):
+            print('haha')
             return False
 
         user = query_user_by_username(username = self.username.data)
+        print(user)
         if user is not None:
             self.username.errors.append('That username is already taken.')
             return False
