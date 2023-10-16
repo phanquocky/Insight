@@ -2,9 +2,9 @@
 {% block content %}
 
 <script>
-function viewTest(roomID) {
+function viewTest(roomID, mentorID) {
   var xhr = new XMLHttpRequest();
-  xhr.open('GET', '/view_test/' + roomID, true);
+  xhr.open('GET', '/view_test/' + roomID + "?mentor_id=" + mentorID, true);
   xhr.responseType = 'arraybuffer';
 
   xhr.onload = function () {
@@ -184,7 +184,7 @@ function viewSubmit(roomID) {
             </td>
           {% else %}
             <td class="col-1">
-              <button class="btn btn-success" onclick="viewTest(`{{ room.mentors['id'] }}`)">View</button>
+              <button class="btn btn-success" onclick="viewTest('{{ room._id }}', `{{ room.mentors['id'] }}`)">View</button>
             </td>
           {% endif %}
 
