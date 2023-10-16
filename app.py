@@ -155,7 +155,6 @@ def generateKey():
 def logout():
     # Xóa thông tin đăng nhập khỏi session để người dùng đăng xuất
     session.pop('username', None)
-    session.pop('public_key', None)
     session.pop('metamask_id', None)
     return redirect(url_for('home'))
 
