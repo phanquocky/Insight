@@ -539,23 +539,37 @@ def view_signature():
 
 @app.route('/room/contestant/sign', methods=['POST'])
 def update_contestant_sign():
-    data = request.json
-    room_id = data['room_id']
-    signature = data['signature']
-    update_room_contestant_sign(room_id, signature)
-    print("update_mentor_sign: successfully")
-    return jsonify({'status': 200})
+    try:
+        data = request.json
+        room_id = data['room_id']
+        mentor_id = data['mentor_id']
+        signature = data['signature']
+
+        update_room_2_contestant_sign(room_id, mentor_id, signature)
+        print("update_mentor_sign: successfully")
+        return jsonify({'status': 200})
+    except Exception as e:
+        print(e)
+        return jsonify({'status': 400})
 
 @app.route('/room/contestant/submission_signature', methods=['GET'])
 def view_submission_signature():
     room_id = request.args.get('room_id')
-    room = find_rooms({'_id': ObjectId(room_id)})
-    if(len(room) == 0):
-        abort(404, "Invalid room id")
-    room = room[0]
-    if('submission_sign' not in room):
-        abort(404, "Invalid room id")
-    return jsonify({'status': 200, 'signature': room['submission_sign']})
+    mentor_id = request.args.get('mentor_id')
+
+    room = find_room_2_by_id(room_id) 
+
+    if(room is None):
+        return jsonify({'status': 404, 'message': 'Invalid room id'})
+
+    tests = room['tests']
+    for test in tests:
+        if(test['mentor_id'] == ObjectId(mentor_id)):
+            if('submission_sign' not in test ) or (test['submission_sign'] is None):
+                return jsonify({'status': 404, 'message': 'Have not signed yet'})
+            else :
+                return jsonify({'status': 200, 'signature': test['test_sign']})
+    return jsonify({'status': 404, 'message': 'Invalid mentor id'})
 
 @app.route('/view_test/<room_id>', methods=['GET'])
 def view_test(room_id):
