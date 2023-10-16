@@ -1,7 +1,7 @@
 import json
 from flask import Flask, render_template, request, flash, url_for, session, redirect, abort, jsonify, make_response
 from datetime import datetime, timedelta
-from mongodb import *
+from mongodb_ver2 import *
 from config import SECRECT_KEY
 from Keypair.sign_verify import *
 from Keypair.generation import *
@@ -106,30 +106,43 @@ def search():
 @app.route('/signup', methods = ['GET', 'POST'])
 def signup():
     if  'username' in session:
-        return render_template("base.html", username = session['username'])
+        return redirect(url_for('home'))
+    
+    username = str(request.args.get('username'))
+    score = request.args.get('score')
+
+    if not username or username == None or username == "None":
+        username = request.form.get("username", default = 'None', type = str)
+        score = request.form.get("score", default = 'None', type = str)
+    
+    print(username, score)
+        
+    if request.method == 'GET':
+        if query_user_by_username(username):
+            return render_template('signup.html', username_login = username, score = score)
+        else:
+            return render_template('signup.html', username_signup = username, score = score)
 
     if request.form.get('signup-submit'):
         form = SignupForm(request.form)  
         if form.validate():
-            new_user = User(name = form.username.data, 
-                            username = form.username.data, 
-                            password = form.password.data.encode('utf-8'), 
-                            public_key = form.public_key.data,
-                            metamask_id = form.metamask_id.data)
+            new_user = User(username = form.username.data, 
+                            metamask_id = form.metamask_id.data,
+                            score = score)
             new_user.addToDB()
             flash('Signed up successfully.', category='success')
-        return render_template('signup.html', form=form)
+            return render_template('signup.html', username_login = username, score = score)
+        return render_template('signup.html', form=form, username_signup = username, score = score)
     
     elif request.form.get('login-submit'):
         form = LoginForm(request.form)
         if form.validate():
             session['username'] = form.username.data
             session['metamask_id'] = form.metamask_id.data
-            session['public_key'] = query_users_by_username(session['username'])['public_key']
 
             flash('Logged in successfully.', category='success')
             return redirect(url_for('home'))
-        return render_template('signup.html', form=form, login = True)
+        return render_template('signup.html', form=form, username_login = username, score = score, login = True)
     
     return render_template('signup.html')
 
@@ -395,7 +408,7 @@ def verify_route():
 @app.route('/<username>',  methods=['GET', 'PATCH'])
 def user_profile(username):
     if request.method == 'GET':
-        user = query_users_by_username(username)
+        user = query_user_by_username(username)
         if user == None:
             abort(404)
 

@@ -15,10 +15,14 @@ db = client['Insight']
 
 
 class User:
-    def __init__(self, username=None, metamask_id=None, score=0):
+    def __init__(self, username = None, metamask_id = None, score = 0, isFormer = False):
         self.username = username
         self.metamask_id = metamask_id
         self.score = score
+        self.isFormer = isFormer
+    def addToDB(self):
+        users_collection = db['User']
+        users_collection.insert_one(self.__dict__)
 
 def query_user_by_username(username):
     # Truy vấn cơ sở dữ liệu để lấy danh sách người có username là $username

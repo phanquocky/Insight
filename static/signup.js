@@ -3,6 +3,14 @@ const loginForm = document.querySelector("form.login");
 const loginBtn = document.querySelector("label.login");
 const signupBtn = document.querySelector("label.signup");
 const signupLink = document.querySelector("form .signup-link a");
+        
+document.addEventListener("DOMContentLoaded", function() {
+    let isSignup = signupLink.getAttribute('is-signup');
+    if (isSignup == 'true') {
+        signupBtn.click();
+    }
+});
+
 signupBtn.onclick = (() => {
     loginForm.style.marginLeft = "-50%";
     loginText.style.marginLeft = "-50%";
@@ -16,47 +24,47 @@ signupLink.onclick = (() => {
     return false;
 });
 
-document.getElementById("generateButton").addEventListener("click", async(e) => {
-    e.preventDefault();
-    let username = document.getElementById('username');
-    let password = document.getElementById('password');
-    let confirm = document.getElementById('confirm');
+// document.getElementById("generateButton").addEventListener("click", async(e) => {
+//     e.preventDefault();
+//     let username = document.getElementById('username');
+//     let password = document.getElementById('password');
+//     let confirm = document.getElementById('confirm');
 
-    if (username.value.length == 0) {
-        alert("Please enter your username!");
-        return;
-    }
-    if (password.value !== confirm.value) {
-        alert("Passwords must match!");
-        return;
-    }
-    if (password.value.length < 6) {
-        alert("Passwords is at least 6 characters!");
-        return;
-    }
+//     if (username.value.length == 0) {
+//         alert("Please enter your username!");
+//         return;
+//     }
+//     if (password.value !== confirm.value) {
+//         alert("Passwords must match!");
+//         return;
+//     }
+//     if (password.value.length < 6) {
+//         alert("Passwords is at least 6 characters!");
+//         return;
+//     }
 
-    let spinner = document.getElementById('spinner');
-    let public = document.getElementById('public_key');
-    let private = document.getElementById('private_key');
+//     let spinner = document.getElementById('spinner');
+//     let public = document.getElementById('public_key');
+//     let private = document.getElementById('private_key');
 
-    spinner.classList.remove("d-none");
-    await sleep(300);
+//     spinner.classList.remove("d-none");
+//     await sleep(300);
 
-    let response = await fetch(`/generateKey`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            "username" : username.value,
-            "password": password.value
-            }),
-    }).then((res) => res.json());
+//     let response = await fetch(`/generateKey`, {
+//         method: "POST",
+//         headers: {
+//             "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify({
+//             "username" : username.value,
+//             "password": password.value
+//             }),
+//     }).then((res) => res.json());
    
-    public.value = response["public_key"];
-    private.value = response["private_key"];
-    spinner.classList.add("d-none");
-});
+//     public.value = response["public_key"];
+//     private.value = response["private_key"];
+//     spinner.classList.add("d-none");
+// });
 
 document.getElementById("connectButton").addEventListener("click", async(e) => {
     e.preventDefault();
@@ -75,6 +83,7 @@ document.getElementById("connectButton").addEventListener("click", async(e) => {
 
 document.getElementById("connectButtonLogin").addEventListener("click", async(e) => {
     e.preventDefault();
+    console.log("hehee");
 
     let metamask = document.getElementById('metamaskID-login');
     let spinner = document.getElementById('spinner-connect-login');
