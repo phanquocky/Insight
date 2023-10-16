@@ -28,14 +28,14 @@ class Room2:
 
 def create_room_2(contestant, mentors):
   new_contestant = {
-     "_id": contestant['_id'],
+     "id": contestant['_id'],
      "username": contestant['username']
   }
 
   new_mentors = []
   for mentor in mentors:
     new_mentors.append({
-      "_id": mentor['_id'],
+      "id": mentor['_id'],
       "username": mentor['username']
     })
   
@@ -45,6 +45,8 @@ def create_room_2(contestant, mentors):
       "mentor_id": mentor['_id'],
       "test": None,
       "test_sign": None,
+      "submission": None,
+      "submission_sign": None,
       "score": None,
       "score_sign": None
     }
@@ -61,9 +63,16 @@ def create_room_2(contestant, mentors):
 
   print('Phong thi created successfully!')
   return dumps(room)
-
   
 def find_room_2_by_id(room_id):
   room_collection = db['Room2']
   result = room_collection.find_one({"_id": ObjectId(room_id)})
   return result
+
+def encode_to_byte_room_2(room_id):
+  room_collection = db['Room2']
+  result = room_collection.find_one({"_id": ObjectId(room_id)})
+  return dumps(result)  
+
+def decode_to_dict_room_2(room_byte):
+  return loads(room_byte)
