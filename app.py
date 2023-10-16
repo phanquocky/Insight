@@ -192,15 +192,11 @@ def challenge():
         score = data['score']
         new_score = data['new_score']
 
-        print("challenger_id: ", challenger_id)
+        # print("challenger_id: ", challenger_id)
         challenger = find_users({"_id": ObjectId(challenger_id['$oid'])})[0]
-
-        # print("challenger: ", challenger)
-        # print("score, new_score:  ", score, new_score)
 
         # Find 5 mentors
         mentors = find_examiner(score, new_score)
-        # print(mentors)
         if len(mentors) == 0:
             return jsonify({'status':'failed', 'message': 'No mentor found'})
 
@@ -371,7 +367,6 @@ def verify_route():
                 alert_message = "alert-danger"
                 return render_template('verify.html', public_key = public_key, message = message, signature = signature, alert_message = alert_message, username = username)
 
-
 @app.route('/<username_search>',  methods=['GET', 'PATCH'])
 def user_profile(username_search):
     username = None
@@ -479,6 +474,21 @@ def mentor():
     return render_template('mentor.html', mentor_rooms=mentor_rooms, 
                                             username=username,
                                             metamask_id=metamask_id)
+
+@app.route('/room/public/<room_id>', methods=['GET'])
+def view_public_room(room_id):
+    # print("room_id: ", room_id)
+    room = find_room_2_by_id(room_id)
+    if(len(room) == 0):
+        abort(404, "Invalid room id")
+    return render_template('render_room.html', room=room)
+
+@app.route('/room/public', methods=['POST'])
+def view_room():
+    data = request.json
+    room_bytes = data.room_bytes
+    room = loads(room_bytes)
+    return render_template('render_room.html', room=room)
 
 @app.route('/room/mentor/sign', methods=['POST'])
 def update_mentor_sign():

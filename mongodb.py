@@ -245,8 +245,6 @@ def find_examiner(min_score, max_score, need_examiner=5):
         if len(temp) == 0:
             temp = list_examiner
         pos = random.randint(0, len(temp))
-        print("temp = ", temp)
-        print("pos = ", pos)
         list_add.append(temp[pos])
         temp.pop(pos)
         need_examiner -= 1
