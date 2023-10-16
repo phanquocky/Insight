@@ -127,9 +127,9 @@ reader.readAsArrayBuffer(file); // Read the file as text
   fileInput.click();
 }
 
-function viewSubmit(roomID) {
+function viewSubmit(roomID, mentorID) {
   var xhr = new XMLHttpRequest();
-  xhr.open('GET', '/view_submit/' + roomID, true);
+  xhr.open('GET', '/view_submit/' + roomID + "?mentor_id=" + mentorID, true);
   xhr.responseType = 'arraybuffer';
 
   xhr.onload = function () {
@@ -176,7 +176,6 @@ function viewSubmit(roomID) {
           <td class="col-2">{{ room._id }}</td>
           <td class="col-2">{{ room['contestant']['username'] }}</td>
           
-          
           <!-- test -->
           {% if not room.tests[0]['test'] %}
             <td class="col-1">
@@ -203,7 +202,6 @@ function viewSubmit(roomID) {
           {% else %}
             <td class="col-1">{{room.tests[0]['score']}}</td>
           {% endif %}
-          <td class="col-1">None</td>
 
           <!-- Test Sign -->
           {% if room.tests[0]['test_sign'] %}

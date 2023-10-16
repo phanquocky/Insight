@@ -90,6 +90,14 @@ def get_test_from_room_2(room_id, mentor_id):
       return test['test']
   return None
 
+def get_submit_from_room_2(room_id, mentor_id):
+  room = find_room_2_by_id(room_id)
+  tests = room['tests']
+  for test in tests:
+    if test['mentor_id'] == ObjectId(mentor_id):
+      return test['submission']
+  return None
+
 def encode_to_byte_room_2(room_id):
   room_collection = db['Room2']
   result = room_collection.find_one({"_id": ObjectId(room_id)})
