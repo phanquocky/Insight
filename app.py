@@ -393,14 +393,16 @@ def verify_route():
                 return render_template('verify.html', public_key = public_key, message = message, signature = signature, alert_message = alert_message, username = username)
 
 
-@app.route('/<username>',  methods=['GET', 'PATCH'])
-def user_profile(username):
+@app.route('/<username_search>',  methods=['GET', 'PATCH'])
+def user_profile(username_search):
+    username = None
     metamask_id = None
-    if 'metamask_id' in session:
+    if 'username' in session:
+        username = session['username']
         metamask_id = session['metamask_id']
 
     if request.method == 'GET':
-        user = query_users_by_username(username)
+        user = query_users_by_username(username_search)
         if user == None:
             abort(404)
 
