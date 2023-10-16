@@ -125,7 +125,6 @@
     <script>
       async function connectToMetamask(event) {
         event.preventDefault();
-        console.log(event);
 
         if (!window.ethereum) {
           alert('Metamask not installed')
@@ -169,7 +168,7 @@
       }
     
       const connectMetamaskButton = document.getElementById("connect-metamask-btn");
-      if( '{{username}}' && sessionStorage.getItem('metamask_id')) {
+      if( '{{metamask_id}}' && '{{metamask_id}}' != 'None' ) {
           connectMetamaskButton.innerHTML = sessionStorage.getItem('metamask_id');
       }
     </script>

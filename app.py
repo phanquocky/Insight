@@ -143,7 +143,7 @@ def generateKey():
         'public_key': public_key
     }
 
-    return json.dumps(data)
+    return dumps(data)
 
 @app.route('/logout')
 def logout():
@@ -161,73 +161,49 @@ def contest():
     min_score = int(min_score) if min_score else 0
     max_score = int(max_score) if max_score else 100
 
+    new_score = request.args.get('new_score')
+    print(new_score)
+
     username = None
     user = None
+    metamask_id = None
     if 'username' in session:
         username = session['username']
         user = query_users_by_username(username)
-        # print("user join contest", user)
+        metamask_id = session['metamask_id']
 
-    mentors = query_users_by_score(min_score=min_score, max_score=max_score)
-    # print("mentors in contest: ", mentors)
+    mentors, min_score, max_score = query_users_by_score(min_score=min_score, max_score=max_score)
     return render_template('contest.html', 
                            mentors = mentors,
                            min_score = min_score,
                            max_score = max_score,
+                           new_score = new_score,
                            username = username,
-                           data = json.dumps(mentors),
-                           user = json.dumps(user))
+                           user = user,
+                           user_json = dumps(user),
+                           metamask_id = metamask_id)
 
 @app.route('/challenge', methods=['GET','POST'])
 def challenge():
     if request.method == 'POST':
         data = request.json
-        challenger = data['challenger']
-        mentor = data['mentor']
+        print("data = ", data)
+        challenger_id = data['challenger_id']
+        score = data['score']
+        new_score = data['new_score']
 
-        print("challenger: ", challenger)
-        print("mentor: ", mentor)
+        # print("challenger_id: ", challenger_id)
+        challenger = find_users({"_id": ObjectId(challenger_id['$oid'])})[0]
 
-        # find_room_condition = {
-        #     "contestant": challenger['public_key'],
-        #     "status": {'$gte': 1}
-        # }
+        # Find 5 mentors
+        mentors = find_examiner(score, new_score)
+        if len(mentors) == 0:
+            return jsonify({'status':'failed', 'message': 'No mentor found'})
 
-        # # Check if challenger is in another room (Join another contest)
-        # if(len(find_rooms(find_room_condition)) > 0):
-        #     return jsonify({'result':'failed', 'message': 'Challenger is in another room'})
+        # Create room
+        room = create_room_2(challenger, mentors)
 
-        # Gui request ve mentor nhieu lan
-        if(len(find_rooms({
-            "mentor": mentor['public_key'],
-            "contestant": challenger['public_key']
-        })) > 0):
-            return jsonify({'result':'success', 'message': 'Request is already', 
-                            'challenger': challenger['public_key'],
-                            'mentor': mentor['public_key']})
-
-        examiners = find_examiner_above(mentor['score'] if 'score' in mentor else 0)
-        if not examiners:
-            examiners.append(mentor['public_key'])
-
-        examiners_public_key = [examiner['public_key'] for examiner in examiners]      
-        print("create room: ", mentor['public_key'], challenger['public_key'])
-        room = create_room(mentor = mentor['public_key'], challenger = challenger['public_key'],examiners = examiners_public_key)
-        print("room created: ", room)
-
-        time_expire = 3 
-        api_link = mentor_confirm_link(mentor['public_key'], challenger['public_key'])
-        # print("api_link: ", api_link)
-        send_mail_to_user(challenger['public_key'], 
-                         mentor['public_key'], 
-                          "You have a new challenge", 
-                          "You have a new challenge from " + challenger['public_key'] + ". Click this link to accept it or it will be expired after {} days. ({})".format(time_expire, api_link), 
-                          time_expire)
-
-        return  jsonify({'result':'success', 
-                         'message': 'Room is create',
-                         'challenger': challenger['public_key'],
-                         'mentor': mentor['public_key']})
+        return  jsonify({'status':'success', 'data': room})
     
     elif request.method == 'GET':
         challenger_pubkey = request.args.get('challenger')
@@ -303,7 +279,7 @@ def sign_route():
             signature, private_key = sign(hex_string_to_bytes(message), private_key)
             signature_hex = signature.hex()
             signature_hex = "0x" + signature_hex
-            return json.dumps({'signature': signature_hex})
+            return dumps({'signature': signature_hex})
         except Exception as e:
             print(e)
             abort(400, "Invalid data")
@@ -350,7 +326,7 @@ def verify_route():
         try:
             is_verified = None
             is_verified = verify(hex_string_to_bytes(message), hex_string_to_bytes(signature),  hex_string_to_public_key(public_key))
-            return json.dumps({'is_verified': is_verified})        
+            return dumps({'is_verified': is_verified})        
         except Exception as e:
             print(e)
             abort(400, "Invalid data")
@@ -391,17 +367,22 @@ def verify_route():
                 alert_message = "alert-danger"
                 return render_template('verify.html', public_key = public_key, message = message, signature = signature, alert_message = alert_message, username = username)
 
+@app.route('/<username_search>',  methods=['GET', 'PATCH'])
+def user_profile(username_search):
+    username = None
+    metamask_id = None
+    if 'username' in session:
+        username = session['username']
+        metamask_id = session['metamask_id']
 
-@app.route('/<username>',  methods=['GET', 'PATCH'])
-def user_profile(username):
     if request.method == 'GET':
-        user = query_users_by_username(username)
+        user = query_users_by_username(username_search)
         if user == None:
             abort(404)
 
         return render_template("user_profile.html", user = user, 
                                                     username = username, 
-                                                    data=json.dumps(user))
+                                                    metamask_id = metamask_id)
     else:
         data = request.json
         user = query_users_by_username(username)
@@ -414,7 +395,7 @@ def user_profile(username):
                 user['judge_state'] = data['judge_state']
                 update_user_judge_state(username, data['judge_state'])
 
-        return json.dumps({'message': 'success', 'user': user})
+        return dumps({'message': 'success', 'user': user})
 
 @app.route('/send', methods=['POST'])
 def send_mail():
@@ -493,6 +474,21 @@ def mentor():
     return render_template('mentor.html', mentor_rooms=mentor_rooms, 
                                             username=username,
                                             metamask_id=metamask_id)
+
+@app.route('/room/public/<room_id>', methods=['GET'])
+def view_public_room(room_id):
+    # print("room_id: ", room_id)
+    room = find_room_2_by_id(room_id)
+    if(len(room) == 0):
+        abort(404, "Invalid room id")
+    return render_template('render_room.html', room=room)
+
+@app.route('/room/public', methods=['POST'])
+def view_room():
+    data = request.json
+    room_bytes = data.room_bytes
+    room = loads(room_bytes)
+    return render_template('render_room.html', room=room)
 
 @app.route('/room/mentor/sign', methods=['POST'])
 def update_mentor_sign():
