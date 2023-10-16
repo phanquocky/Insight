@@ -25,8 +25,8 @@ function viewTest(roomID, mentorID) {
   xhr.send();
 }
 
-function viewTestSignature(room_id){
-  window.open('/room/mentor/test_signature?room_id=' + room_id)
+function viewTestSignature(room_id, mentorID){
+  window.open('/room/mentor/test_signature?room_id=' + room_id + '&mentor_id=' + mentorID, '_blank');
 
   // const button = document.getElementById('button-launch-modal')
   // button.click()
@@ -189,7 +189,7 @@ function viewSubmit(roomID) {
             <td class="col-1">None</td>
           {% else %}
             <td class="col-1">
-              <button class="btn btn-success" onclick="viewSubmit('{{ mentor._id }}')">View</button>
+              <button class="btn btn-success" onclick="viewSubmit('{{ room._id }}', `{{ room.mentors['id'] }}`)">View</button>
             </td>
           {% endif %}
 
@@ -199,14 +199,14 @@ function viewSubmit(roomID) {
           <!-- Test Sign -->
           {% if mentor.test_sign %}
            <td class="col-1">
-              <button class="btn btn-success" onclick="viewTestSignature('{{mentor._id}}')">View</button>
-            </td>
+              <button class="btn btn-success" onclick="viewTestSignature('{{ room._id }}', `{{ room.mentors['id'] }}`)">View</button>
+           </td>
           {% else %}
           <td class="col-1">None</td>
           {% endif %}
 
           <!-- Score Sign -->
-          <td class="col-1">None</td>
+              <button class="btn btn-success" onclick="viewScoreSignature('{{ room._id }}', `{{ room.mentors['id'] }}`)">View</button>
         </tr>
         {% endfor %}
       </tbody>

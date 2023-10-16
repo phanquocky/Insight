@@ -552,14 +552,15 @@ def view_signature():
     mentor_id = request.args.get('mentor_id')
     room = find_room_2_by_id(room_id)
     if(room is None):
-        jsonify({'status': 404, 'message': 'Invalid room id'})
+        return jsonify({'status': 404, 'message': 'Invalid room id'})
     
     tests = room['tests']
     for test in tests:
-        if(test['mentor_id'] == mentor_id):
+        if(test['mentor_id'] == ObjectId(mentor_id)):
             if('test_sign' not in test ) or (test['test_sign'] is None):
-                abort(404, "Have not signed yet")
-            return jsonify({'status': 200, 'signature': test['test_sign']})
+                return jsonify({'status': 404, 'message': 'Have not signed yet'})
+            else :
+                return jsonify({'status': 200, 'signature': test['test_sign']})
     return jsonify({'status': 404, 'message': 'Invalid mentor id'})
 
 @app.route('/room/contestant/sign', methods=['POST'])
