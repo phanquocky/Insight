@@ -168,7 +168,7 @@
       }
     
       const connectMetamaskButton = document.getElementById("connect-metamask-btn");
-      if( '{{username}}' && sessionStorage.getItem('metamask_id')) {
+      if( '{{metamask_id}}' && '{{metamask_id}}' != 'None' ) {
           connectMetamaskButton.innerHTML = sessionStorage.getItem('metamask_id');
       }
     </script>
