@@ -19,3 +19,10 @@ class User:
         self.username = username
         self.metamask_id = metamask_id
         self.score = score
+
+def query_user_by_username(username):
+    # Truy vấn cơ sở dữ liệu để lấy danh sách người có username là $username
+    users_collection = db['User']
+    # find only one user
+    user = users_collection.find_one({'username': username})
+    return user
