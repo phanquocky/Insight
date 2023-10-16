@@ -36,6 +36,28 @@ function viewTestSignature(room_id, mentorID){
   // modal.querySelector('.modal-body').textContent = signature
 }
 
+async function checkMetamask() {
+  if (!window.ethereum) {
+      alert('Metamask not installed')
+      return null;
+    }
+  if('{{metamask_id}}' == '') {
+    alert('Please login again!')
+    return null;
+  }
+  const provider = new ethers.providers.Web3Provider(window.ethereum)
+  console.log("metamask = ", '{{metamask_id}}')
+  const signer = provider.getSigner('{{metamask_id}}'); // signer.getAddress() == accounts[0]
+  const signerAddress = await signer.getAddress();
+  console.log("signerAddress = ", signerAddress)
+  if('{{metamask_id}}' != signerAddress) {
+    alert('Please connect to the correct metamask account.\nYour metamask account is {{metamask_id}}')
+    return null;
+  }
+
+  return signer;
+}
+
 function uploadTest(roomId, mentorID) {
   // get file from mentor's computer
   var fileInput = document.createElement('input');
@@ -45,24 +67,8 @@ function uploadTest(roomId, mentorID) {
   console.log(fileInput)
 
   fileInput.onchange = async function () {
-    if (!window.ethereum) {
-      alert('Metamask not installed')
-      return
-    }
-    if('{{metamask_id}}' == '') {
-      alert('Please login again!')
-      return
-    }
-    const provider = new ethers.providers.Web3Provider(window.ethereum)
-    console.log("metamask = ", '{{metamask_id}}')
-    const signer = provider.getSigner('{{metamask_id}}'); // signer.getAddress() == accounts[0]
-    const signerAddress = await signer.getAddress();
-    console.log("signerAddress = ", signerAddress)
-    if('{{metamask_id}}' != signerAddress) {
-      alert('Please connect to the correct metamask account.\nYour metamask account is {{metamask_id}}')
-      return
-    }
-
+    const signer = await checkMetamask();
+    if(signer == null) return;
 
     var file = fileInput.files[0];
     var formData = new FormData();
@@ -83,11 +89,11 @@ function uploadTest(roomId, mentorID) {
     };
 
 
-    // Here, you can read the file content, for example:
-const reader = new FileReader();
-reader.onload = function (e) {
+  // Here, you can read the file content, for example:
+  const reader = new FileReader();
+  reader.onload = function (e) {
   const fileContent = e.target.result;
-  // You can do something with the file content here
+    // You can do something with the file content here
 
   const arr = new Uint8Array(fileContent);
   hash_file = ethers.utils.sha256(arr);
