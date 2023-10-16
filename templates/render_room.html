@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container">
+  <h1 class="">Room {{room._id}}</h1>
+  
+  <ol>
+    <li>Room ID: {{room._id}}</li>
+    
+    <li>
+      Room Contestant: {{room.contestant.username}}
+    </li>
+  
+    <li>
+      Room Mentor:
+      <ul>
+        {% for mentor in room.mentors %}
+        <li>{{mentor.username}}</li>
+        {% endfor %}
+      </ul>
+    </li>
+  
+    <li>
+      Room Final Score: {{room.final_result}}
+    </li>
+  
+    <li>
+      Contestant Score Update: {{room.updated_score}}
+    </li>
+  </ol>
+  
+  <h4 class=""> Test, Submission and Score</h4>
+  <table class="container table table-striped mt-3 text-center">
+    <thead>
+      <tr>
+        <th scope="col">#ID</th>
+        <th scope="col">Mentor</th>
+        <th scope="col">Test</th>
+        <th scope="col">Submission</th>
+        <th scope="col">Score</th>
+      </tr>
+    </thead>
+
+    <tbody class="overflow-auto">
+      {% for test in room.tests %}
+      <tr>
+        <th scope="row" class="col-1">{{ loop.index }}</th>
+        <td class="col-2">{{ test.mentor_id }}</td>
+        
+        <!-- Test -->
+        {% if not test.test %}
+        <td class="col-2"> None </td>
+        {% else %}
+        <td class="col-2">
+          <button class="btn btn-success" onclick="viewTest('{{ room._id }}', '{{loop.index - 1}}')">View</button> 
+        </td> 
+        {% endif %}
+
+        <!-- Submission -->
+        {% if not test.submission %}
+        <td class="col-2"> None </td>
+        {% else %}
+        <td class="col-2">
+          <button class="btn btn-success" onclick="viewSubmission('{{ room._id }}', '{{loop.index - 1}}')">View</button> 
+        </td> 
+        {% endif %}
+
+        <!-- Score -->
+        {% if not test.score %}
+        <td class="col-2"> None </td>
+        {% else %}
+        <td class="col-2"> test.score </td> 
+        {% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}
