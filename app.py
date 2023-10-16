@@ -199,20 +199,21 @@ def contest():
 
     username = None
     user = None
+    metamask_id = None
     if 'username' in session:
         username = session['username']
         user = query_users_by_username(username)
-        # print("user join contest", user)
+        metamask_id = session['metamask_id']
 
-    mentors = query_users_by_score(min_score=min_score, max_score=max_score)
-    # print("mentors in contest: ", mentors)
+    mentors, min_score, max_score = query_users_by_score(min_score=min_score, max_score=max_score)
     return render_template('contest.html', 
                            mentors = mentors,
                            min_score = min_score,
                            max_score = max_score,
                            username = username,
                            data = json.dumps(mentors),
-                           user = json.dumps(user))
+                           user = json.dumps(user),
+                           metamask_id = metamask_id)
 
 @app.route('/challenge', methods=['GET','POST'])
 def challenge():
@@ -430,6 +431,10 @@ def verify_route():
 
 @app.route('/<username>',  methods=['GET', 'PATCH'])
 def user_profile(username):
+    metamask_id = None
+    if 'metamask_id' in session:
+        metamask_id = session['metamask_id']
+
     if request.method == 'GET':
         user = query_user_by_username(username)
         if user == None:
@@ -437,7 +442,8 @@ def user_profile(username):
 
         return render_template("user_profile.html", user = user, 
                                                     username = username, 
-                                                    data=json.dumps(user))
+                                                    data=json.dumps(user),
+                                                    metamask_id = metamask_id)
     else:
         data = request.json
         user = query_user_by_username(username)
