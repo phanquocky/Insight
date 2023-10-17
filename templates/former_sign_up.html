@@ -32,7 +32,7 @@
            <div class="form-inner">
                 <form class="login" name="login" role="form" action="{{ url_for('former_sign_up') }}" method="POST">
                     <div class="field">
-                        <input name="username" type="text" class="form-control" placeholder="Username" {% if username_login %} value="{{ username_login }}" readonly {% endif %} required autofocus>
+                        <input name="username" type="text" class="form-control" placeholder="Username" {% if username_login %} value="{{ username_login }}" {% endif %} required autofocus>
                     </div>
                     <input name="score" type="hidden" {% if username_login %} value="{{ score }}" {% elif former %} value="100" {% endif %}>
                     <div class="field">
