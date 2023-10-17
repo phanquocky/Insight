@@ -669,6 +669,7 @@ def contestant_a_room_detail(room_id):
         metamask_id = session['metamask_id']
 
     if request.method == 'POST':
+        print('Hi ae')
         room_id = request.form['room_id']
         mentor_id = request.form['mentor_id']
         uploaded_file = request.files['file']
