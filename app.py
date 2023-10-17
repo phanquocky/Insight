@@ -734,9 +734,18 @@ def contestant_room():
     #                                             metamask_id=metamask_id)
 
     contestant_rooms = query_contestant_room2(username)
+
+    count = 0
+    for room in contestant_rooms:
+        for tests in room['tests']:
+            if tests.get('submission'):
+                count += 1
+    print(count)
+
     return render_template('contestant_ver2.html', contestant_rooms=contestant_rooms,
-                                                    username=username,
-                                                    metamask_id=metamask_id)
+                           username=username,
+                           metamask_id=metamask_id, count_test_complete=count)
+
 
 @app.route('/contestant/<room_id>', methods = ['GET','POST'])
 def contestant_a_room_detail(room_id):
@@ -818,21 +827,6 @@ def former_send_certificate():
         certificate = create_certificate(old_score, new_score, room_byte, room_hash, signature)
         new_certificate =  add_certificate_2_by_userid(user_id, certificate)
         return jsonify({'status': 200, 'data': new_certificate})
-
-
-@app.route('/save_grade/<room_id>', methods=['GET', 'POST'])
-def save_grade(room_id):
-    # Nhận dữ liệu từ yêu cầu POST
-    data = request.json
-    print(data)
-    # Lấy thông tin từ dữ liệu nhận được
-    mentor_id = data.get('mentorID')
-    score = data.get('score')
-
-    response = update_score_by_room_id_and_mentor_id(room_id ,mentor_id,score)
-
-    return jsonify(response)
-
 
 @app.route('/save_grade/<room_id>', methods=['GET', 'POST'])
 def save_grade(room_id):

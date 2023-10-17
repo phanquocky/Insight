@@ -153,6 +153,7 @@ function viewSubmit(roomID) {
           <th scope="col">Test</th>
           <th scope="col">Submission</th>
           <th scope="col">Submission Sign</th>
+          <th scope="col">Score</th>
         </tr>
       </thead>
 
@@ -192,7 +193,8 @@ function viewSubmit(roomID) {
               None
             {% endif %}
           </td>
-
+          <!-- Score -->
+          <td class="col-2">{{ room_detail.tests[i].score }}</td>
         </tr>
           {% endfor %}
       </tbody>

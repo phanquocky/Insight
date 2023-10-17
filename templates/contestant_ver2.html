@@ -40,20 +40,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
       <tbody class="overflow-auto">
         {% for contestant in contestant_rooms %}
-          {% set completedTestCount = 0 %}
-
-          {% for test in contestant.tests %}
-            {% if test is defined %}
-              {% set completedTestCount = completedTestCount + 1 %}
-            {% endif %}
-          {% endfor %}
-
         <tr>
           <th scope="row" class="col-1">{{ loop.index }}</th>
           <td class="col-3 room-id">{{ contestant._id }}</td>
           <td class="col-2">{{ contestant.prev_score }}</td>
           <td class="col-2">{{ contestant.want_score }}</td>
-          <td class="col-2">{{ completedTestCount }}</td>
+          <td class="col-2">{{ count_test_complete }} / 5</td>
           <td class="col-2">{{ contestant.final_result }}</td>
         </tr>
           {% endfor %}
