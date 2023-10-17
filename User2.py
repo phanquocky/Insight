@@ -48,6 +48,17 @@ def query_users_by_score(min_score=1, max_score=100, num_users=None):
     users_collection = db['User2']
 
     users = []
+    if num_users is None:
+      users = users_collection.find({'score': {'$gte': min_score, '$lte': max_score}}).sort('score', -1)
+    else:
+      users = users_collection.find({'score': {'$gte': min_score, '$lte': max_score}}).sort('score', -1).limit(num_users)
+    users = list(users)
+    return users
+
+def query_random_users_by_score(min_score=1, max_score=100, num_users=None):
+    users_collection = db['User2']
+
+    users = []
     users = users_collection.find({'score': {'$gte': min_score, '$lte': max_score}}).sort('score', -1)
     users = list(users)
     random.shuffle(users)
@@ -72,8 +83,8 @@ def find_examiner(min_score, max_score, need_examiner=5):
 
     list_examiner = []
 
-    list_a = query_users_by_score(min_score, mid, 3)
-    list_b = query_users_by_score( mid + 1, max_score , 2) 
+    list_a = query_random_users_by_score(min_score, mid, 3)
+    list_b = query_random_users_by_score( mid + 1, max_score , 2) 
     need_examiner -= len(list_a) + len(list_b)
     list_examiner += list_a
     list_examiner += list_b
