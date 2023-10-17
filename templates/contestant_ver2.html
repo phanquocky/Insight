@@ -1,6 +1,16 @@
 {% extends 'base.html' %}
 {% block content %}
 
+<style>
+  .room-id {
+    cursor: pointer;
+    color: #0d6efd !important;
+  }
+  .room-id:hover{
+    text-decoration: underline;
+  }
+</style>
+
 <script>
 document.addEventListener("DOMContentLoaded", function() {
   const roomIds = document.querySelectorAll('.room-id');
