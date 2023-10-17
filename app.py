@@ -590,12 +590,12 @@ def view_test(room_id):
 @app.route('/contestant', methods=['POST', 'GET'])
 def contestant_room():
     username = None
-    public_key = None
+    #public_key = None
     metamask_id = None
 
     if 'username' in session:
         username = session['username']
-        public_key = session['public_key']
+        # public_key = session['public_key']
         metamask_id = session['metamask_id']
 
     if request.method == 'POST':
@@ -604,12 +604,18 @@ def contestant_room():
         save_submit_to_db(room_id, uploaded_file)
         return redirect('/contestant')  # Chuyển hướng người dùng sau khi tải lên thành công
 
-    contestant_rooms = query_contestant_rooms(public_key)
-    for room in contestant_rooms:
-        room['mentor'] = query_user_by_public_key(room['mentor'])['username']
-    return render_template('contestant.html', contestant_rooms=contestant_rooms, 
-                                                username=username,
-                                                metamask_id=metamask_id)
+    contestant_rooms = query_contestant_room2(username)
+
+    # contestant_rooms = query_contestant_rooms(public_key)
+    # for room in contestant_rooms:
+    #     room['mentor'] = query_user_by_public_key(room['mentor'])['username']
+    # return render_template('contestant.html', contestant_rooms=contestant_rooms,
+    #                                             username=username,
+    #                                             metamask_id=metamask_id)
+
+    return render_template('contestant_ver2.html', contestant_rooms=contestant_rooms,
+                                                    username=username,
+                                                    metamask_id=metamask_id)
 
 @app.route('/view_submit/<room_id>', methods=['GET'])
 def view_submit(room_id):

@@ -140,15 +140,17 @@ def find_users(condition):
     users = users_collection.find(condition)
     return list(users)
 
+
 def update_user_metamask(username, metamaskID):
     # Tìm và cập nhật thông tin người dùng
     users_collection = db['User']
     result = users_collection.update_one({'username': username}, {'$set': {'metamask_id': metamaskID}})
-    
+
     if result.modified_count > 0:
         return jsonify({'message': 'Metamask của người dùng được cập nhật thành công.'})
     else:
         return jsonify({'message': 'Không tìm thấy người dùng hoặc không có sự thay đổi nào.'}, 404)
+
 
 def query_user_by_public_key(key):
     # Truy vấn cơ sở dữ liệu để lấy danh sách người có public key là $key
@@ -227,16 +229,16 @@ def find_examiner(min_score, max_score, need_examiner=5):
     #  3 user => mid -> max_score
 
     min_score = min(min_score + 1, 100)
-    mid = (min_score + max_score) // 2  
+    mid = (min_score + max_score) // 2
 
     list_examiner = []
 
     list_a = query_examiners_by_score(min_score, mid, 2)
-    list_b = query_examiners_by_score(mid, max_score , 3)
+    list_b = query_examiners_by_score(mid, max_score, 3)
     need_examiner -= len(list_a) + len(list_b)
     list_examiner = list_a + list_b
 
-    if(len(list_examiner) == 0):
+    if (len(list_examiner) == 0):
         return []
 
     list_add = []
@@ -248,7 +250,7 @@ def find_examiner(min_score, max_score, need_examiner=5):
         list_add.append(temp[pos])
         temp.pop(pos)
         need_examiner -= 1
-        
+
     list_examiner += list_add
     list_examiner.sort(key=lambda x: x['score'])
     list_examiner.reverse()
@@ -280,6 +282,7 @@ def delete_room(condition):
     room_collection.delete_one(condition)
     print("Delete room successfully!")
 
+
 def update_room_status_by_id(room_id, status):
     # Cập nhật trạng thái của phòng thi có id là $room_id
     print("room_id = ", room_id)
@@ -288,11 +291,13 @@ def update_room_status_by_id(room_id, status):
     room_collection.update_one({'_id': ObjectId(room_id['$oid'])}, {'$set': {'status': status}})
     print("Update room status successfully!")
 
+
 def update_room_mentor_sign(room_id, mentor_sign):
     # Cập nhật chữ kí của mentor cho phòng thi có id là $room_id
     room_collection = db['Room']
     room_collection.update_one({'_id': ObjectId(room_id)}, {'$set': {'test_sign': mentor_sign}})
     print("Update room mentor sign successfully!")
+
 
 def update_room_contestant_sign(room_id, contestant_sign):
     # Cập nhật chữ kí của mentor cho phòng thi có id là $room_id
@@ -388,6 +393,7 @@ def save_test_to_db(room_id, file):
     else:
         print("Room not found.")
 
+
 def upload_test_to_db(room_id, uploaded_file, mentor_id):
     print('room_id')
     print(room_id)
@@ -417,6 +423,7 @@ def upload_test_to_db(room_id, uploaded_file, mentor_id):
     else:
         print("Room not found.")
 
+
 def get_test_from_db(room_id):
     rooms_collection: Collection = db['Room']
     room = rooms_collection.find_one({'_id': ObjectId(room_id)})
@@ -441,6 +448,12 @@ def query_contestant_rooms(public_key):
     contestant_rooms = rooms_collection.find({'contestant': public_key})
     return list(contestant_rooms)
 
+
+def query_contestant_room2(username):
+    rooms_collection: Collection = db['Room2']
+    rooms_data = rooms_collection.find({'contestant.username': username})
+    return list(rooms_data)
+
 def save_submit_to_db(room_id, file):
     rooms_collection: Collection = db['Room']
     room = rooms_collection.find_one({'_id': ObjectId(room_id)})
@@ -456,6 +469,7 @@ def save_submit_to_db(room_id, file):
     else:
         print("Room not found.")
 
+
 def get_submit_from_db(room_id):
     rooms_collection: Collection = db['Room']
     room = rooms_collection.find_one({'_id': ObjectId(room_id)})
@@ -466,6 +480,7 @@ def get_submit_from_db(room_id):
     else:
         # Trường hợp không tìm thấy đề thi hoặc không có nội dung, trả về None
         return None
+
 
 def query_mentor_rooms2(username):
     room_collection = db['Room2']

@@ -203,10 +203,32 @@ function viewSubmit(roomID, mentorID) {
           {% endif %}
 
           <!-- Score -->          
-          {% if not room.tests[0]['score'] %}
-            <td class="col-1">None</td>
-          {% else %}
+          {% if room.tests[0]['score'] is defined %}
             <td class="col-1">{{room.tests[0]['score']}}</td>
+          {% elif room.tests[0]['submission'] is defined %}
+            <td class="col-1">
+              <!-- Score button -->>
+              <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#gradeModal">Open Grade Modal</button>
+
+              <div class="modal fade" id="gradeModal" tabindex="-1" aria-labelledby="gradeModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-body">
+                      <form id="gradeForm">
+                        <div class="mb-3">
+                          <label for="score" class="col-form-label">Enter Score:</label>
+                          <input type="number" class="form-control" id="score" name="score" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </td>
+          {% else %}
+            <td class="col-1">None</td>
           {% endif %}
 
           <!-- Test Sign -->
