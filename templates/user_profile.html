@@ -3,14 +3,89 @@
 
 <link rel="stylesheet" href="../static/user_profile.css">
 
-<div class="container justify-content-center">
-  <h2 class="text-center">Homepage of {{user.username}}</h2>
+<script>
+  function openNewTabWithContent(content) {
+    var newWindow = window.open(" ", "_blank");
+    newWindow.document.write(content);
+  }
 
+  function openNewTabToDownloadBinaryFile(content) {
+    // var newWindow = window.open(" ", "_blank");
+    // var blob = new Blob([content], {type: "application/octet-stream"});
+    // var url = URL.createObjectURL(blob);
+    // newWindow.location.href = url;
+
+    // Create a Blob containing the binary content
+    var blob = new Blob([content], { type: "application/octet-stream" });
+
+    // Create a URL for the Blob
+    var url = URL.createObjectURL(blob);
+
+    // Create a new anchor element
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "room.bin";
+
+    // Trigger a click event on the anchor element to open a new tab and initiate the download
+    a.dispatchEvent(new MouseEvent("click"));
+
+    // Clean up by revoking the URL
+    URL.revokeObjectURL(url);
+  }
+</script>
+
+<div class="container justify-content-center">
+  <h3 class="">{{user.username}}</h3>
 
   <ul> 
     <li>Score: {{user.score}}</li>
     <li>Metamask address: {{user.metamask_id}}</li>
   </ul>
+
+  {% if certificates %}
+  <table class="container table table-striped mt-3 text-center">
+    <thead>
+      <tr>
+        <th scope="col">#ID</th>
+        <th scope="col">Date</th>
+        <th scope="col">Old Score</th>
+        <th scope="col">New Score</th>
+        <th scope="col">Room Data</th>
+        <th scope="col">Room Hash</th>
+        <th scope="col">Signature</th>
+      </tr>
+    </thead>
+
+    <tbody class="overflow-auto">
+      {% for certificate in certificates %}
+      <tr>
+        <th scope="row" class="col-1">{{ loop.index }}</th>
+        <td class="col-2">{{ certificate.date }}</td>
+        <td class="col-2">{{ certificate.old_score }}</td>
+        <td class="col-2">{{ certificate.new_score }}</td>
+        <td class="col-2"> 
+          <button class="btn btn-success" 
+             onclick="openNewTabToDownloadBinaryFile('{{certificate.room_byte}}')">
+             View
+          </button>
+        </td>
+        <td class="col-2"> 
+            <button class="btn btn-success" 
+                    onclick="openNewTabWithContent('{{certificate.room_hash}}')">
+                    View
+            </button>
+        </td>
+        <td class="col-2">
+          <button class="btn btn-success"
+                  onclick="openNewTabWithContent('{{certificate.signature}}')">
+              View
+          </button>
+        </td>
+      </tr>
+        {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
 </div>
 
 {% endblock %}

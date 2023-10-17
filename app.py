@@ -409,10 +409,17 @@ def user_profile(username_search):
 
     if request.method == 'GET':
         user = query_user_by_username(username_search)
+        print('<username_search>: user = ', user)
         if user == None:
-            abort(404)
+            return jsonify({"error": "Error: Invalid username"}), 404
+
+        CertificateRoom = query_certificate_2_by_username(username_search)
+        certificates = None
+        if CertificateRoom:
+            certificates = CertificateRoom['certificates']
 
         return render_template("user_profile.html", user = user, 
+                                                    certificates = certificates,
                                                     username = username, 
                                                     metamask_id = metamask_id)
     else:
@@ -556,7 +563,12 @@ def view_public_room(room_id):
                                                 username=username,
                                                 metamask_id=metamask_id)
 
-@app.route('/public/room', methods=['POST'])
+# Description:
+# Get:
+    # Hiện giao diện bình thường thôi. Có 1 chỗ để người dùng up load file .bin (file binary)
+    # Sau khi người dùng upload file và nhấn vào button <render room>, 
+    # Thì thực hiện Post vào đường link này với content là nội dung của file ở dạng mảng byte
+@app.route('/public/room', methods=['GET', 'POST'])
 def view_room():
     username = None
     metamask_id = None
@@ -564,18 +576,25 @@ def view_room():
         username = session['username']
         metamask_id = session['metamask_id']
 
-    data = request.json
-    room_bytes = data.room_bytes
-    room = loads(room_bytes)
+    if request.method == 'GET':
+        print('Waiting for ... Hung')
 
-    for test in room['tests']:
-        for mentor in room['mentors']:
-            if(mentor['id'] == test['mentor_id']):
-                test['mentor_name'] = mentor['username']
-                break
-            
+    if request.method == 'POST':
+        data = request.json
+        room_bytes = data.room_bytes
+        room = loads(room_bytes)
+        if not isinstance(room, Room2):
+            jsonify({"error": "Error: Invalid room data"}), 400
+        print("room = ", room)
 
-    return render_template('render_room.html', room=room,
+        for test in room['tests']:
+            for mentor in room['mentors']:
+                if(mentor['id'] == test['mentor_id']):
+                    test['mentor_name'] = mentor['username']
+                    break
+                
+
+        return render_template('render_room.html', room=room,
                                                 username=username,
                                                 metamask_id=metamask_id)
 
@@ -664,7 +683,6 @@ def view_test(room_id):
 @app.route('/contestant', methods=['POST', 'GET'])
 def contestant_room():
     username = None
-    #public_key = None
     metamask_id = None
 
     if 'username' in session:
@@ -707,6 +725,53 @@ def view_submit(room_id):
     response.headers['Content-Type'] = 'application/pdf'
     response.headers['Content-Disposition'] = f'inline; filename=test_{room_id}.pdf'
     return response
+
+@app.route('/former', methods=['GET'])
+def former_view():
+    print("former")
+
+@app.route('/former/get_byte/<room_id>', methods=['POST'])
+def former_sign(room_id):
+    data = request.json
+    user_id = data['user_id']
+    if user_id == None:
+        return jsonify({'status': 400, 'message': 'user_id is required to validate you are former!'})
+
+    user = query_user_by_id(user_id)
+    if user['isFormer'] == False:
+        jsonify({'status': 400, 'message': 'You are not a former!'})
+
+    if request.method == 'POST':
+        room_byte = encode_to_byte_room_2(room_id)
+        return jsonify({'status': 200, 'room_byte': room_byte})
+
+@app.route('/former/send_certificate', methods=['POST'])
+def former_send_certificate():
+    data = request.json
+    user_id = data['user_id']
+    if user_id == None:
+        return jsonify({'status': 400, 'message': 'user_id is required to validate you are former!'})
+    
+    user = query_user_by_id(user_id)
+    if user['isFormer'] == False:
+        jsonify({'status': 400, 'message': 'You are not a former!'})
+
+    if request.method == 'POST':
+        old_score = data['old_score']
+        new_score = data['new_score']
+        room_id   = data['room_id']
+        room_hash = data['room_hash']
+        signature = data['signature']
+        contestant_id   = data['contestant_id']
+
+        if(old_score == None or new_score == None or room_id == None or room_hash == None or signature == None or contestant_id == None):
+            return jsonify({'status': 400, 'message': 'Invalid data'})
+        
+        room_byte = encode_to_byte_room_2(room_id)
+        
+        certificate = create_certificate(old_score, new_score, room_byte, room_hash, signature)
+        new_certificate =  add_certificate_2_by_userid(user_id, certificate)
+        return jsonify({'status': 200, 'data': new_certificate})
 
 if __name__ == '__main__':
     app.run()

@@ -5,6 +5,7 @@ from mongoengine import Document, StringField, DateTimeField, IntField
 import config
 from flask import jsonify
 from bson.json_util import dumps, loads
+from bson import ObjectId
 import random
 
 uri = f"mongodb+srv://{config.USER}:{config.PASSWORD}@cluster0.becqcta.mongodb.net/?retryWrites=true&w=majority"
@@ -26,6 +27,15 @@ class User:
     def addToDB(self):
         users_collection = db['User2']
         users_collection.insert_one(self.__dict__)
+
+def query_user_by_id(id):
+    # Truy vấn cơ sở dữ liệu để lấy danh sách người có id là $id
+    users_collection = db['User2']
+    try:
+      user = users_collection.find_one({'_id': id})
+    except:
+       user = users_collection.find_one({'_id': ObjectId(id)})
+    return user
 
 def query_user_by_username(username):
     # Truy vấn cơ sở dữ liệu để lấy danh sách người có username là $username

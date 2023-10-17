@@ -27,4 +27,12 @@ from User2 import *
 #         users_collection = db['User2']
 #         users_collection.insert_one(self.__dict__)
 
-
+from Certificate2 import *
+# class Certificate:
+#   def __init__(self, old_score, new_score, data_room, room_hash, signature):
+#       self.old_score = old_score
+#       self.new_score = new_score
+#       self.room_byte = data_room
+#       self.room_hash = room_hash
+#       self.signature = signature
+#       self.date      = datetime.now()
