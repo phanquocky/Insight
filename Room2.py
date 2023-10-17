@@ -74,8 +74,8 @@ def find_room_2_by_id(room_id):
 
 def find_room_is_finished():
   room_collection = db['Room2']
-  result = room_collection.find({"is_finished": True})
-  return result
+  result = room_collection.find({"is_finished": True}, {"_id": 1, "contestant": 1, "final_result": 1, "updated_score": 1, "prev_score": 1})
+  return list(result)
 
 def update_room_2_mentor_sign(room_id, mentor_id, test_sign):
   room = find_room_2_by_id(room_id)

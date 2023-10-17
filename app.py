@@ -541,6 +541,7 @@ def former_view():
                            username = session['username'], 
                            metamask_id = session['metamask_id'])
 
+
 @app.route('/public/room/<room_id>', methods=['GET'])
 def view_public_room(room_id):
     username = None
@@ -729,12 +730,15 @@ def view_submit(room_id):
 @app.route('/former/get_byte/<room_id>', methods=['POST'])
 def former_sign(room_id):
     data = request.json
-    user_id = data['user_id']
-    if user_id == None:
-        return jsonify({'status': 400, 'message': 'user_id is required to validate you are former!'})
+    username = data['username']
+    if username == None:
+        return jsonify({'status': 400, 'message': 'username is required to validate you are former!'})
 
-    user = query_user_by_id(user_id)
-    if user['isFormer'] == False:
+    user = query_user_by_username(username)
+    if user == None:
+        return jsonify({'status': 400, 'message': 'Invalid username!'})
+    
+    if user['former'] == False:
         jsonify({'status': 400, 'message': 'You are not a former!'})
 
     if request.method == 'POST':
@@ -744,30 +748,31 @@ def former_sign(room_id):
 @app.route('/former/send_certificate', methods=['POST'])
 def former_send_certificate():
     data = request.json
-    user_id = data['user_id']
-    if user_id == None:
-        return jsonify({'status': 400, 'message': 'user_id is required to validate you are former!'})
+    print("/former/send_ceritificate: data = ", data)
+    username = data['username']
+    if username == None:
+        return jsonify({'status': 400, 'message': 'username is required to validate you are former!'})
     
-    user = query_user_by_id(user_id)
-    if user['isFormer'] == False:
+    user = query_user_by_username(username)
+    if user['former'] == False:
         jsonify({'status': 400, 'message': 'You are not a former!'})
 
     if request.method == 'POST':
-        old_score = data['old_score']
-        new_score = data['new_score']
         room_id   = data['room_id']
-        room_hash = data['room_hash']
         signature = data['signature']
-        contestant_id   = data['contestant_id']
-
-        if(old_score == None or new_score == None or room_id == None or room_hash == None or signature == None or contestant_id == None):
-            return jsonify({'status': 400, 'message': 'Invalid data'})
-        
+        room_hash = data['room_hash']
         room_byte = encode_to_byte_room_2(room_id)
-        
-        certificate = create_certificate(old_score, new_score, room_byte, room_hash, signature)
-        new_certificate =  add_certificate_2_by_userid(user_id, certificate)
-        return jsonify({'status': 200, 'data': new_certificate})
+
+        room = find_room_2_by_id(room_id)
+        if room is None:
+            return jsonify({'status': 404, 'message': 'Invalid room id!'})
+
+        certificate = create_certificate(room['prev_score'], room['updated_score'], room_byte, room_hash, signature)
+        if certificate is None:
+            return jsonify({'status': 400, 'message': 'Failed to create certificate!'})
+        add_certificate_2_by_userid(room['contestant']['id'], certificate)
+        print("add_certificate: successfully")
+        return jsonify({'status': 200, 'message': 'Successfully send certificate!'})
 
 if __name__ == '__main__':
     app.run()

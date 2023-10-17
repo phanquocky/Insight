@@ -43,13 +43,13 @@ def creat_certificate_2(user_id = None, user_name = None):
   if user_name is None:
     user_name = query_user_by_id(user_id)['username']
 
-  certificate = Certificate2_room(user_id=user_id, user_name=user_name)
+  certificate_room = Certificate2_room(user_id=user_id, user_name=user_name)
   certificate_collection = db['Certificate2']
-  certificate_collection.insert_one(certificate.__dict__)
+  certificate_collection.insert_one(certificate_room.__dict__)
 
 def add_certificate_2_by_userid(user_id, certificate):
   certificate_collection = db['Certificate2']
-  certificate = query_certificate_2_by_userid(user_id)
+  certificate_room = query_certificate_2_by_userid(user_id)
   if(certificate is None):
     creat_certificate_2(user_id, certificate)
   certificate_collection.update_one({'user_id': ObjectId(user_id)}, {'$push': {'certificates': certificate.__dict__}})
