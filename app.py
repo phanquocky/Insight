@@ -395,10 +395,17 @@ def user_profile(username_search):
 
     if request.method == 'GET':
         user = query_user_by_username(username_search)
+        print('<username_search>: user = ', user)
         if user == None:
-            abort(404)
+            return jsonify({"error": "Error: Invalid username"}), 404
+
+        CertificateRoom = query_certificate_2_by_username(username_search)
+        certificates = None
+        if CertificateRoom:
+            certificates = CertificateRoom['certificates']
 
         return render_template("user_profile.html", user = user, 
+                                                    certificates = certificates,
                                                     username = username, 
                                                     metamask_id = metamask_id)
     else:

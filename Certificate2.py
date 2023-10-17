@@ -22,7 +22,7 @@ db = client['Insight']
 class Certificate2_room:
   def __init__(self, user_id, user_name):
       self.user_id = user_id
-      self.user_name = user_name 
+      self.username = user_name 
       self.certificates = []
 
 class Certificate:
@@ -56,10 +56,10 @@ def add_certificate_2_by_userid(user_id, certificate):
 
 def add_certificate_2_by_username(user_name, certificate):
   certificate_collection = db['Certificate2']
-  certificate = query_certificate_2_by_username(user_name)
-  if(certificate is None):
+  certificate_room = query_certificate_2_by_username(user_name)
+  if certificate_room is None:
     creat_certificate_2(user_name=user_name)
-  certificate_collection.update_one({'user_name': user_name}, {'$push': {'certificates': certificate.__dict__}})
+  certificate_collection.update_one({'username': user_name}, {'$push': {'certificates': certificate.__dict__}})
   new_certificate = query_certificate_2_by_username(user_name)
   return new_certificate
 
