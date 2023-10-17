@@ -219,7 +219,7 @@ def contest():
                            user_json = dumps(user),
                            metamask_id = metamask_id)
 
-@app.route('/challenge', methods=['GET','POST'])
+@app.route('/challenge', methods=['POST'])
 def challenge():
     if request.method == 'POST':
         data = request.json
@@ -240,24 +240,6 @@ def challenge():
         room = create_room_2(challenger, mentors, prev_score=score, want_score=new_score)
 
         return  jsonify({'status':'success', 'data': room})
-    
-    elif request.method == 'GET':
-        challenger_pubkey = request.args.get('challenger')
-        mentor_pubkey = request.args.get('mentor')
-
-        rooms = find_rooms({"mentor": mentor_pubkey, "contestant": challenger_pubkey})
-        if(rooms == None or len(rooms) == 0):
-            abort(404, {"message": "Room not found"})
-        
-        examiners_public_key = rooms[0]['judges']
-        examiners = [find_users({"public_key": examiner})[0] for examiner in examiners_public_key]
-    
-        username = None
-        if 'username' in session:
-            username = session['username']
-        return render_template('challenge.html', 
-                                examiners = examiners,
-                                username = username)
 
 @app.route('/challenge_request', methods=['GET'])
 def challenge_request():
