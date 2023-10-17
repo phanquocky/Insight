@@ -630,6 +630,36 @@ def view_signature():
                 return jsonify({'status': 200, 'signature': test['test_sign']})
     return jsonify({'status': 404, 'message': 'Invalid mentor id'})
 
+@app.route('/room/mentor/score_signature', methods=['GET', 'POST'])
+def view_score_signature():
+    if request.method == 'GET':
+        room_id = request.args.get('room_id')
+        mentor_id = request.args.get('mentor_id')
+        room = find_room_2_by_id(room_id)
+        if(room is None):
+            return jsonify({'status': 404, 'message': 'Invalid room id'})
+        
+        tests = room['tests']
+        for test in tests:
+            if(test['mentor_id'] == ObjectId(mentor_id)):
+                if('score_sign' not in test ) or (test['score_sign'] is None):
+                    return jsonify({'status': 404, 'message': 'Have not signed yet'})
+                else :
+                    return jsonify({'status': 200, 'signature': test['score_sign']})
+        return jsonify({'status': 404, 'message': 'Invalid mentor id'})
+    
+    elif request.method == 'POST':
+        data = request.json
+        print("room/mentor/score_signature: data = ", data)
+        room_id = data['room_id']
+        mentor_id = data['mentor_id']
+        signature = data['signature']
+
+
+        update_room_2_score_sign(room_id, mentor_id, signature)
+        print("update_mentor_sign: successfully")
+        return jsonify({'status': 200})        
+
 @app.route('/room/contestant/sign', methods=['POST'])
 def update_contestant_sign():
     try:
@@ -788,6 +818,20 @@ def former_send_certificate():
         certificate = create_certificate(old_score, new_score, room_byte, room_hash, signature)
         new_certificate =  add_certificate_2_by_userid(user_id, certificate)
         return jsonify({'status': 200, 'data': new_certificate})
+
+
+@app.route('/save_grade/<room_id>', methods=['GET', 'POST'])
+def save_grade(room_id):
+    # Nhận dữ liệu từ yêu cầu POST
+    data = request.json
+    print(data)
+    # Lấy thông tin từ dữ liệu nhận được
+    mentor_id = data.get('mentorID')
+    score = data.get('score')
+
+    response = update_score_by_room_id_and_mentor_id(room_id ,mentor_id,score)
+
+    return jsonify(response)
 
 
 @app.route('/save_grade/<room_id>', methods=['GET', 'POST'])
