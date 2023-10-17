@@ -46,12 +46,16 @@ def update_user_score(username, score):
     
 def query_users_by_score(min_score=1, max_score=100, num_users=None):
     users_collection = db['User2']
+
     users = []
-    if (num_users == None):
-        users = users_collection.find({'score': {'$gte': min_score, '$lte': max_score}}).sort('score', -1)
-    else:
-        users = users_collection.find({'score': {'$gte': min_score, '$lte': max_score}}).sort('score', -1).limit(num_users)
-    return list(users)
+    users = users_collection.find({'score': {'$gte': min_score, '$lte': max_score}}).sort('score', -1)
+    users = list(users)
+    random.shuffle(users)
+
+    if num_users is not None:
+        users = users[:num_users]
+
+    return users
 
 def find_users(condition):
   # Tìm người dùng thỏa mãn điều kiện $condition
@@ -68,8 +72,8 @@ def find_examiner(min_score, max_score, need_examiner=5):
 
     list_examiner = []
 
-    list_a = query_users_by_score(min_score, mid, 2)
-    list_b = query_users_by_score( mid + 1, max_score , 3) 
+    list_a = query_users_by_score(min_score, mid, 3)
+    list_b = query_users_by_score( mid + 1, max_score , 2) 
     need_examiner -= len(list_a) + len(list_b)
     list_examiner += list_a
     list_examiner += list_b
