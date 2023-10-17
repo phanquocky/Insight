@@ -131,14 +131,65 @@ reader.readAsArrayBuffer(file); // Read the file as text
   fileInput.click();
 }
 
-function gradeTest(roomID, mentorID) {
+function encode_string_to_byte(str) {
+  // Create a TextEncoder instance
+  const textEncoder = new TextEncoder();
+
+  // Convert the string to an array of bytes
+  const byteArray = textEncoder.encode(str);
+  return byteArray;
+}
+
+async function gradeTest(roomID, mentorID) {
+  const signer = await checkMetamask();
+  if(signer == null) return;
+  
   const score = document.getElementById('score').value;
+
+  const score_byte = encode_string_to_byte(score);
+  const arr = new Uint8Array(score_byte);
+  const hash_score = ethers.utils.sha256(arr);
+
+  signer.signMessage(hash_score)
+    .then((signature) => {
+      console.log('Signature:', signature)
+      return fetch('/room/mentor/score_signature', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          'room_id': roomID,
+          'mentor_id': mentorID,
+          'signature': signature
+        })
+      })
+      .then((response) => response.json())
+      .then((data) => {
+          console.log('Data:', data);
+          if(data['status'] == '400') {
+            alert(data['message'])
+            return
+          }
+          alert('Successful!');
+          xhr.send(JSON.stringify({ roomID: roomID, mentorID: mentorID, score: score }));
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        alert('Error! Please try again!');
+      });
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+      alert('You need to sign this message');
+    });
+
+
   const xhr = new XMLHttpRequest();
   xhr.open('POST', '/save_grade/'+roomID+'?mentor_id='+mentorID, true);
   xhr.setRequestHeader('Content-Type', 'application/json');
 
   // Gửi dữ liệu điểm và thông tin về phòng thi đến server
-  xhr.send(JSON.stringify({ roomID: roomID, mentorID: mentorID, score: score }));
 
   // Xử lý kết quả từ server (nếu cần)
   xhr.onload = function() {
@@ -146,7 +197,7 @@ function gradeTest(roomID, mentorID) {
           console.log('Success.');
           location.reload();
       } else {
-          console.error('Error.');
+          console.log("Error")
       }
   };
   // Đóng modal sau khi nhấn "Submit"
@@ -176,6 +227,9 @@ function viewSubmit(roomID, mentorID) {
   xhr.send();
 }
 
+function viewScoreSignature(roomID, mentorID) {
+  window.open('/room/mentor/score_signature?room_id=' + roomID + '&mentor_id=' + mentorID, '_blank');
+}
 
 </script>
   <!-- {{mentor_rooms}} -->
@@ -241,7 +295,7 @@ function viewSubmit(roomID, mentorID) {
                           <label for="score" class="col-form-label">Enter Score:</label>
                           <input type="number" class="form-control" id="score" name="score" required min="0" max="10">
                         </div>
-                        <button type="button" class="btn btn-danger" onclick="gradeTest('{{ room._id }}', '{{ room.mentors['id'] }}')">Submit</button>
+                        <button type="button" class="btn btn-danger" onclick="gradeTest('{{ room._id }}', `{{ room.mentors['id'] }}`)">Submit</button>
                       </form>
                     </div>
                   </div>

@@ -102,6 +102,18 @@ def update_room_2_contestant_sign(room_id, mentor_id, signature):
     room_collection = db['Room2']
     result = room_collection.update_one({"_id": ObjectId(room_id)}, {"$set": {"tests": tests}})
 
+def update_room_2_score_sign(room_id, mentor_id, signature):
+    room = find_room_2_by_id(room_id)
+    tests = room['tests']
+    for test in tests:
+        if test['mentor_id'] == ObjectId(mentor_id):
+            test['score_sign'] = signature
+            break
+    room_collection = db['Room2']
+    print(room_id, mentor_id, signature)
+    result = room_collection.update_one({"_id": ObjectId(room_id)}, {"$set": {"tests": tests}})
+    print(result.modified_count)
+    print("update room 2 score sign successfully")
 
 def get_test_from_room_2(room_id, mentor_id):
     room = find_room_2_by_id(room_id)
