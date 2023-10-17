@@ -736,11 +736,11 @@ def contestant_room():
     contestant_rooms = query_contestant_room2(username)
 
     count = [0] * len(contestant_rooms)
+    i = 0
     # print(len(contestant_rooms))
     for room in contestant_rooms:
-        i = 0
         for tests in room['tests']:
-            if tests.get('submission'):
+            if tests['submission'] is not None:
                 count[i] += 1
         i += 1
     # print(count)

@@ -286,7 +286,6 @@ def update_score_by_room_id_and_mentor_id(room_id, mentor_id, score):
 
     for test in room['tests']:
         if test['mentor_id'] == ObjectId(mentor_id):
-            # Cập nhật trường submission của đối tượng test với dữ liệu dưới dạng bytes
             test['score'] = score
 
             # Lưu cập nhật vào database
