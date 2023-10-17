@@ -160,7 +160,7 @@ def query_users_by_username(username):
     # Truy vấn cơ sở dữ liệu để lấy danh sách người có tên là $name
     users_collection = db['User']
     # find only one user
-    user = users_collection.find_one({'username': username}, {"_id": 0, "create_date": 0})
+    user = users_collection.find_one({'username': username})
     return user
 
 
@@ -179,7 +179,7 @@ def query_all_users():
     return users
 
 
-def query_users_by_score(min_score=0, max_score=100, num_users=None):
+def query_users_by_score(min_score=1, max_score=100, num_users=None):
     users_collection = db['User']
     users = []
     if (num_users == None):
@@ -196,15 +196,14 @@ def query_users_by_score(min_score=0, max_score=100, num_users=None):
         listUser.append(user)
 
     listUser.reverse()
-    return listUser
+    return listUser, min_score, max_score
 
 
 def query_examiners_by_score(min_score=0, max_score=100, num_users=20):
     # Truy vấn cơ sở dữ liệu để lấy danh sách người dùng có điểm số trong khoảng $min_score và $max_score
     # Sort by score tăng dần
     users_collection = db['User']
-    users = users_collection.find({'score': {'$gte': min_score, '$lte': max_score}, 'judge_state': True},
-                                  {"_id": 0, "create_date": 0}).sort('score', 1).limit(num_users)
+    users = users_collection.find({'score': {'$gte': min_score, '$lte': max_score}}).sort('score', 1).limit(num_users)
     return list(users)
 
 
@@ -221,26 +220,35 @@ def update_user_score(_id, score):
     print("Update user score successfully!")
 
 
-def find_examiner_above(min_score, need_examiner=5):
-    #  2 user => min_score     -> min_score + 4
-    #  2 user => min_score + 5 -> min_score + 9
-    #  1 user => min_score + 10 -> 100
+def find_examiner(min_score, max_score, need_examiner=5):
+    #  2 user => min_score     -> mid
+    #  3 user => mid -> max_score
 
     min_score = min(min_score + 1, 100)
+    mid = (min_score + max_score) // 2  
+
     list_examiner = []
 
-    list_a = query_examiners_by_score(min_score, min_score + 4, 2)
-    list_b = query_examiners_by_score(min_score + 5, min_score + 9, 2)
+    list_a = query_examiners_by_score(min_score, mid, 2)
+    list_b = query_examiners_by_score(mid, max_score , 3)
     need_examiner -= len(list_a) + len(list_b)
     list_examiner = list_a + list_b
 
-    min_score += 10
-    while min_score <= 100 and need_examiner > 0:
-        list_c = query_examiners_by_score(min_score, min_score + 9, need_examiner)
-        list_examiner += list_c
-        need_examiner -= len(list_c)
-        min_score += 10
+    if(len(list_examiner) == 0):
+        return []
 
+    list_add = []
+    temp = []
+    while need_examiner > 0:
+        if len(temp) == 0:
+            temp = list_examiner
+        pos = random.randint(0, len(temp))
+        list_add.append(temp[pos])
+        temp.pop(pos)
+        need_examiner -= 1
+        
+    list_examiner += list_add
+    list_examiner.sort(key=lambda x: x['score'])
     list_examiner.reverse()
     return list_examiner
 
