@@ -72,6 +72,11 @@ def find_room_2_by_id(room_id):
   result = room_collection.find_one({"_id": ObjectId(room_id)})
   return result
 
+def find_room_is_finished():
+  room_collection = db['Room2']
+  result = room_collection.find({"is_finished": True})
+  return result
+
 def update_room_2_mentor_sign(room_id, mentor_id, test_sign):
   room = find_room_2_by_id(room_id)
   tests = room['tests']
