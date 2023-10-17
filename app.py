@@ -532,7 +532,13 @@ def view_public_room(room_id):
                                                 username=username,
                                                 metamask_id=metamask_id)
 
-@app.route('/public/room', methods=['POST'])
+# Description:
+# Get:
+    # Hiện giao diện bình thường thôi. Có 1 chỗ để người dùng up load file .bin (file binary)
+    # Sau khi người dùng upload file và nhấn vào button <render room>, 
+    # Thì thực hiện Post vào đường link này với content là nội dung của file ở dạng mảng byte
+
+@app.route('/public/room', methods=['GET', 'POST'])
 def view_room():
     username = None
     metamask_id = None
@@ -540,18 +546,22 @@ def view_room():
         username = session['username']
         metamask_id = session['metamask_id']
 
-    data = request.json
-    room_bytes = data.room_bytes
-    room = loads(room_bytes)
+    if request.method == 'GET':
+        print('Waiting for ... Hung')
 
-    for test in room['tests']:
-        for mentor in room['mentors']:
-            if(mentor['id'] == test['mentor_id']):
-                test['mentor_name'] = mentor['username']
-                break
-            
+    if request.method == 'POST':
+        data = request.json
+        room_bytes = data.room_bytes
+        room = loads(room_bytes)
 
-    return render_template('render_room.html', room=room,
+        for test in room['tests']:
+            for mentor in room['mentors']:
+                if(mentor['id'] == test['mentor_id']):
+                    test['mentor_name'] = mentor['username']
+                    break
+                
+
+        return render_template('render_room.html', room=room,
                                                 username=username,
                                                 metamask_id=metamask_id)
 
@@ -640,7 +650,6 @@ def view_test(room_id):
 @app.route('/contestant', methods=['POST', 'GET'])
 def contestant_room():
     username = None
-    #public_key = None
     metamask_id = None
 
     if 'username' in session:
