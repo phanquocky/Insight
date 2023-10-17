@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<link rel="stylesheet" href="../static/former_view.css">
+
+{% macro sign_room() %}
+    <form method="post">
+        <input type="submit" class="unselectable button full small join-warning" value="Sign" style="color: white;">
+    </form>
+{% endmacro %}
+
+<div id="page-container">
+    <main id="content">
+        <div id="content-body">
+            <div class="middle-content wrapper">
+                <div class="main-content">
+                    <h3 class="toggle open contest-group-header">
+                        <i class="fa fa-chevron-right fa-fw"></i>
+                        Finish Room
+                    </h3>
+                    {% if rooms %}
+                        {% for room in rooms %}
+                            <a href="/public/room/{{ room['_id'] }}" target="_blank"> 
+                                <div class="list-contest">
+                                    <div class="info-contest" style="flex: 1.5">
+                                        <div class="contest-title"> Room </div>
+                                        {{ room['_id'] }}
+                                    </div>
+                                    <div class="info-contest" style="flex: 1.5">
+                                        <div class="contest-title"> Contestant </div>
+                                        <div class="contest-block">
+                                            {{ room['contestant']['username']}}
+                                        </div>
+                                    </div>
+                                    <div class="info-contest">
+                                        <div class="contest-title"> Final Result </div>
+                                        {{ room['final_result']}}
+                                    </div>
+                                    <div class="info-contest">
+                                        <div class="contest-title"> Score change </div>
+                                        {{ room['updated_score']}}
+                                    </div>
+                                    <div class="participate-button">
+                                        {{ sign_room() }}
+                                    </div>
+                                </div>
+                            </a>
+                        {% endfor %}
+                        <br>
+                    {% else %}
+                        <div class="toggled">
+                            <i> 'There is no ongoing room at this time.' </i>
+                            <br>
+                        </div>
+                    {% endif %} 
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+
+{% endblock %}

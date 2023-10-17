@@ -18,6 +18,20 @@ def before_request():
   session.permanent = True
   app.permanent_session_lifetime = timedelta(minutes = 30) #Phiên làm việc sẽ tự động xóa sau 30p nếu không có thêm bất cứ request nào lên server.
 
+# Error Page 
+@app.errorhandler(403)
+def error_forbidden(e):
+    static_url = app.static_url_path
+    css_url = f"{static_url}/403.css"
+    return render_template('403.html', css_url = css_url), 403
+
+@app.errorhandler(404)
+def page_not_found(e):
+    static_url = app.static_url_path
+    css_url = f"{static_url}/404.css"
+    return render_template('404.html', css_url = css_url), 404
+
+
 @app.route('/')
 def main():
     return redirect(url_for('home'))
@@ -503,6 +517,23 @@ def mentor():
                                             username=username,
                                             metamask_id=metamask_id)
 
+@app.route('/former/view', methods=['GET'])
+def former_view():
+    username = None
+    if 'username' in session:
+        username = session['username']
+    if not username:
+        abort(403)
+    if query_user_by_username(username)['former'] == False:
+        abort(403)
+
+    rooms = find_room_is_finished()
+    print(rooms)
+    return render_template('former_view.html', 
+                           rooms = rooms,
+                           username = session['username'], 
+                           metamask_id = session['metamask_id'])
+
 @app.route('/public/room/<room_id>', methods=['GET'])
 def view_public_room(room_id):
     username = None
@@ -676,10 +707,6 @@ def view_submit(room_id):
     response.headers['Content-Type'] = 'application/pdf'
     response.headers['Content-Disposition'] = f'inline; filename=test_{room_id}.pdf'
     return response
-
-@app.route('/former', methods=['GET'])
-def former_view():
-    print("former")
 
 if __name__ == '__main__':
     app.run()
