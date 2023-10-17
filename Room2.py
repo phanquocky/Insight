@@ -112,7 +112,7 @@ def get_submit_from_room_2(room_id, mentor_id):
 
 def encode_to_byte_room_2(room_id):
   room_collection = db['Room2']
-  result = room_collection.find_one({"_id": ObjectId(room_id)})
+  result = room_collection.find_one({"_id": ObjectId(room_id)}, {"_id": 0})
   return dumps(result)  
 
 def decode_to_dict_room_2(room_byte):

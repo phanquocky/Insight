@@ -537,7 +537,6 @@ def view_public_room(room_id):
     # Hiện giao diện bình thường thôi. Có 1 chỗ để người dùng up load file .bin (file binary)
     # Sau khi người dùng upload file và nhấn vào button <render room>, 
     # Thì thực hiện Post vào đường link này với content là nội dung của file ở dạng mảng byte
-
 @app.route('/public/room', methods=['GET', 'POST'])
 def view_room():
     username = None
@@ -553,6 +552,9 @@ def view_room():
         data = request.json
         room_bytes = data.room_bytes
         room = loads(room_bytes)
+        if not isinstance(room, Room2):
+            jsonify({"error": "Error: Invalid room data"}), 400
+        print("room = ", room)
 
         for test in room['tests']:
             for mentor in room['mentors']:
