@@ -168,3 +168,55 @@ def upload_test_to_db(room_id, uploaded_file, mentor_id):
         print("Mentor not found in tests array.")
     else:
         print("Room not found.")
+
+def query_contestant_room2(username):
+    rooms_collection: Collection = db['Room2']
+    rooms_data = rooms_collection.find({'contestant.username': username})
+    return list(rooms_data)
+
+def query_mentor_rooms2(username):
+    room_collection = db['Room2']
+    rooms_data = room_collection.find({'mentors.username': username})
+
+    mentor_rooms = []
+    for room_data in rooms_data:
+        mentors = [mentor for mentor in room_data['mentors'] if mentor['username'] == username]
+        if mentors:
+            mentor = mentors[0]
+            tests = [test for test in room_data['tests'] if test['mentor_id'] == ObjectId(mentor['id'])]
+            if tests:
+                room_data['mentors'] = mentor
+                room_data['tests'] = tests
+                mentor_rooms.append(room_data)
+
+    return mentor_rooms
+
+def query_contestant_room_by_roomid(room_id):
+    rooms_collection: Collection = db['Room2']
+    rooms_data = rooms_collection.find_one({'_id': ObjectId(room_id)})
+    return rooms_data
+
+
+def save_submit_to_db(room_id, file, mentor_id):
+    rooms_collection: Collection = db['Room2']
+    room = rooms_collection.find_one({'_id': ObjectId(room_id)})
+
+    if room:
+        for test in room['tests']:
+            if test['mentor_id'] == ObjectId(mentor_id):
+                # Đọc nội dung của file PDF và chuyển đổi thành bytes
+                file_content = file.read()
+                file_bytes = bytes(file_content)
+
+                # Cập nhật trường submission của đối tượng test với dữ liệu dưới dạng bytes
+                test['submission'] = file_bytes
+
+                # Lưu cập nhật vào database
+                rooms_collection.update_one({'_id': ObjectId(room_id)}, {'$set': {'tests': room['tests']}})
+
+                print("Test uploaded successfully!")
+                return
+
+        print("Mentor not found in room.")
+    else:
+        print("Room not found.")
