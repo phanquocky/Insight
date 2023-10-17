@@ -502,6 +502,7 @@ def mentor():
     return render_template('mentor.html', mentor_rooms=mentor_rooms, 
                                             username=username,
                                             metamask_id=metamask_id)
+
 @app.route('/public/room/<room_id>', methods=['GET'])
 def view_public_room(room_id):
     username = None
@@ -679,10 +680,6 @@ def view_submit(room_id):
 @app.route('/former', methods=['GET'])
 def former_view():
     print("former")
-    
-# @app.route('/former/sign_up', methods=['GET'])
-# def former_sign_up():
-#     return render_template('former_sign_up.html')
 
 if __name__ == '__main__':
     app.run()
