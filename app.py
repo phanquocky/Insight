@@ -135,12 +135,12 @@ def signup():
     if  'username' in session:
         return redirect(url_for('home'))
     
-    username = request.args.get('username')
-    score = request.args.get('score')
+    username = request.args.get('username', default = None, type = str)
+    score = request.args.get('score', default = None, type = int)
 
     if not username or username == None or username == "None":
         username = request.form.get("username", default = None, type = str)
-        score = request.form.get("score", default = None, type = str)
+        score = request.form.get("score", default = None, type = int)
 
     if request.form.get('signup-submit'):
         form = SignupForm(request.form)  
@@ -158,8 +158,8 @@ def signup():
         if form.validate():
             session['username'] = form.username.data
             session['metamask_id'] = form.metamask_id.data
-            if form.score.data:
-                update_user_score(form.username.data, form.score.data)
+            if score is not None:
+                update_user_score(form.username.data, score)
 
             flash('Logged in successfully.', category='success')
             return redirect(url_for('home'))

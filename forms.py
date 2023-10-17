@@ -36,7 +36,6 @@ class LoginForm(Form):
         validators.DataRequired('Please enter your username.'),
         validators.Length(max=50, message='Username is at most 50 characters.'),
     ])
-    score = IntegerField('Score')
     metamask_id = StringField('Metamask ID', [
         validators.DataRequired('Please connect to Metamask.'),
     ])
