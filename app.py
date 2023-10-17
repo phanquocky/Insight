@@ -412,7 +412,7 @@ def user_profile(username_search):
         metamask_id = session['metamask_id']
 
     if request.method == 'GET':
-        user = query_user_by_username(username)
+        user = query_users_by_username(username_search)
         if user == None:
             abort(404)
 
