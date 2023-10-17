@@ -681,5 +681,48 @@ def view_submit(room_id):
 def former_view():
     print("former")
 
+@app.route('/former/get_byte/<room_id>', methods=['POST'])
+def former_sign(room_id):
+    data = request.json
+    user_id = data['user_id']
+    if user_id == None:
+        return jsonify({'status': 400, 'message': 'user_id is required to validate you are former!'})
+
+    user = query_user_by_id(user_id)
+    if user['isFormer'] == False:
+        jsonify({'status': 400, 'message': 'You are not a former!'})
+
+    if request.method == 'POST':
+        room_byte = encode_to_byte_room_2(room_id)
+        return jsonify({'status': 200, 'room_byte': room_byte})
+
+@app.route('/former/send_certificate', methods=['POST'])
+def former_send_certificate():
+    data = request.json
+    user_id = data['user_id']
+    if user_id == None:
+        return jsonify({'status': 400, 'message': 'user_id is required to validate you are former!'})
+    
+    user = query_user_by_id(user_id)
+    if user['isFormer'] == False:
+        jsonify({'status': 400, 'message': 'You are not a former!'})
+
+    if request.method == 'POST':
+        old_score = data['old_score']
+        new_score = data['new_score']
+        room_id   = data['room_id']
+        room_hash = data['room_hash']
+        signature = data['signature']
+        contestant_id   = data['contestant_id']
+
+        if(old_score == None or new_score == None or room_id == None or room_hash == None or signature == None or contestant_id == None):
+            return jsonify({'status': 400, 'message': 'Invalid data'})
+        
+        room_byte = encode_to_byte_room_2(room_id)
+        
+        certificate = create_certificate(old_score, new_score, room_byte, room_hash, signature)
+        new_certificate =  add_certificate_2_by_userid(user_id, certificate)
+        return jsonify({'status': 200, 'data': new_certificate})
+
 if __name__ == '__main__':
     app.run()
