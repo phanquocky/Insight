@@ -110,7 +110,7 @@ function uploadTest(roomId, mentorID) {
             alert(data['message'])
             return
           }
-          alert('Successful!');
+          console.log('Successful!');
           xhr.send(formData);
       })
       .catch((error) => {
