@@ -54,13 +54,12 @@ function viewSubmit(roomID, mentorID) {
 </script>
 
 <div class="container">
-  <h1 class="" 
-    {% if room.is_finish %}
-    style="color: green;"
+  <h1 class=""
+    {% if room.is_finished %}
+      style="color: green"
     {% endif %}
-   >
-    Room {{room._id}}
-  </h1>
+
+  >Room {{room._id}}</h1>
   
   <ol>
     <li>Room ID: {{room._id}}</li>
