@@ -726,10 +726,6 @@ def view_submit(room_id):
     response.headers['Content-Disposition'] = f'inline; filename=test_{room_id}.pdf'
     return response
 
-@app.route('/former', methods=['GET'])
-def former_view():
-    print("former")
-
 @app.route('/former/get_byte/<room_id>', methods=['POST'])
 def former_sign(room_id):
     data = request.json
