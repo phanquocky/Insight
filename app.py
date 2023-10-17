@@ -513,7 +513,12 @@ def mentor():
 
 @app.route('/public/room/<room_id>', methods=['GET'])
 def view_public_room(room_id):
-    # print("room_id: ", room_id)
+    username = None
+    metamask_id = None
+    if 'username' in session:
+        username = session['username']
+        metamask_id = session['metamask_id']
+
     room = find_room_2_by_id(room_id)
     if(len(room) == 0):
         abort(404, "Invalid room id")
@@ -524,10 +529,18 @@ def view_public_room(room_id):
                 test['mentor_name'] = mentor['username']
                 break
 
-    return render_template('render_room.html', room=room)
+    return render_template('render_room.html', room=room, 
+                                                username=username,
+                                                metamask_id=metamask_id)
 
 @app.route('/public/room', methods=['POST'])
 def view_room():
+    username = None
+    metamask_id = None
+    if 'username' in session:
+        username = session['username']
+        metamask_id = session['metamask_id']
+
     data = request.json
     room_bytes = data.room_bytes
     room = loads(room_bytes)
@@ -539,7 +552,9 @@ def view_room():
                 break
             
 
-    return render_template('render_room.html', room=room)
+    return render_template('render_room.html', room=room,
+                                                username=username,
+                                                metamask_id=metamask_id)
 
 @app.route('/room/mentor/sign', methods=['POST'])
 def update_mentor_sign():
@@ -647,6 +662,14 @@ def view_submit(room_id):
     response.headers['Content-Type'] = 'application/pdf'
     response.headers['Content-Disposition'] = f'inline; filename=test_{room_id}.pdf'
     return response
+
+@app.route('/former', methods=['GET'])
+def former_view():
+    print("former")
+    
+# @app.route('/former/sign_up', methods=['GET'])
+# def former_sign_up():
+#     return render_template('former_sign_up.html')
 
 if __name__ == '__main__':
     app.run()
