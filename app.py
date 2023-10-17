@@ -205,7 +205,7 @@ def contest():
     metamask_id = None
     if 'username' in session:
         username = session['username']
-        user = query_users_by_username(username)
+        user = query_user_by_username(username)
         metamask_id = session['metamask_id']
 
     mentors, min_score, max_score = query_users_by_score(min_score=min_score, max_score=max_score)

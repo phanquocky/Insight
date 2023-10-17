@@ -10,8 +10,6 @@ import random
 from bson.objectid import ObjectId
 from bson.json_util import dumps, loads
 
-from Room2 import *
-
 uri = f"mongodb+srv://{config.USER}:{config.PASSWORD}@cluster0.becqcta.mongodb.net/?retryWrites=true&w=majority"
 
 # Create a new client and connect to the server
