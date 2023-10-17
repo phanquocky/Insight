@@ -452,8 +452,9 @@ def query_contestant_room2(username):
     rooms_data = rooms_collection.find({'contestant.username': username})
     return list(rooms_data)
 
-def save_submit_to_db(room_id, file):
-    rooms_collection: Collection = db['Room']
+
+def save_submit_to_db(room_id, file, mentor_id):
+    rooms_collection: Collection = db['Room2']
     room = rooms_collection.find_one({'_id': ObjectId(room_id)})
 
     if room:
@@ -462,7 +463,8 @@ def save_submit_to_db(room_id, file):
         file_bytes = bytes(file_content)
 
         # Cập nhật trường test của đối tượng Room với dữ liệu dưới dạng bytes
-        rooms_collection.update_one({'_id': ObjectId(room_id)}, {'$set': {'submission': file_bytes}})
+        rooms_collection.update_one({'_id': ObjectId(room_id), 'tests.mentor_id': mentor_id},
+                                    {'$set': {'tests.$.submission': file_bytes}})
         print("Test uploaded successfully!")
     else:
         print("Room not found.")
@@ -496,3 +498,9 @@ def query_mentor_rooms2(username):
                 mentor_rooms.append(room_data)
 
     return mentor_rooms
+
+
+def query_contestant_room_by_roomid(room_id):
+    rooms_collection: Collection = db['Room2']
+    rooms_data = rooms_collection.find_one({'_id': ObjectId(room_id)})
+    return rooms_data

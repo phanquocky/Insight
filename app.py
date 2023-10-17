@@ -561,7 +561,7 @@ def update_mentor_sign():
         return jsonify({'status': 200})
     except Exception as e:
         print(e)
-        return jsonify({'status': 400})
+        return jsonify({'status': 400, "message": "Invalid data"})
 
 @app.route('/room/mentor/test_signature', methods=['GET'])
 def view_signature():
@@ -593,7 +593,7 @@ def update_contestant_sign():
         return jsonify({'status': 200})
     except Exception as e:
         print(e)
-        return jsonify({'status': 400})
+        return jsonify({'status': 400, "message": "Invalid data"})
 
 @app.route('/room/contestant/submission_signature', methods=['GET'])
 def view_submission_signature():
@@ -630,7 +630,7 @@ def view_test(room_id):
     response.headers['Content-Disposition'] = f'inline; filename=test_{room_id}_{mentor_id}.pdf'
     return response
 
-@app.route('/contestant', methods=['POST', 'GET'])
+@app.route('/contestant')
 def contestant_room():
     username = None
     #public_key = None
@@ -641,13 +641,11 @@ def contestant_room():
         # public_key = session['public_key']
         metamask_id = session['metamask_id']
 
-    if request.method == 'POST':
-        room_id = request.form['room_id']
-        uploaded_file = request.files['file']
-        save_submit_to_db(room_id, uploaded_file)
-        return redirect('/contestant')  # Chuyển hướng người dùng sau khi tải lên thành công
-
-    contestant_rooms = query_contestant_room2(username)
+    # if request.method == 'POST':
+    #     room_id = request.form['room_id']
+    #     uploaded_file = request.files['file']
+    #     save_submit_to_db(room_id, uploaded_file)
+    #     return redirect('/contestant')  # Chuyển hướng người dùng sau khi tải lên thành công
 
     # contestant_rooms = query_contestant_rooms(public_key)
     # for room in contestant_rooms:
@@ -656,9 +654,31 @@ def contestant_room():
     #                                             username=username,
     #                                             metamask_id=metamask_id)
 
+    contestant_rooms = query_contestant_room2(username)
     return render_template('contestant_ver2.html', contestant_rooms=contestant_rooms,
                                                     username=username,
                                                     metamask_id=metamask_id)
+
+@app.route('/contestant/<room_id>', methods = ['GET','POST'])
+def contestant_a_room_detail(room_id):
+    username = None
+    metamask_id = None
+
+    if 'username' in session:
+        username = session['username']
+        metamask_id = session['metamask_id']
+
+    if request.method == 'POST':
+        print('Hi ae')
+        room_id = request.form['room_id']
+        mentor_id = request.form['mentor_id']
+        uploaded_file = request.files['file']
+        save_submit_to_db(room_id, uploaded_file, mentor_id)
+        return jsonify({'Status': 200}), 200
+
+    room_detail = query_contestant_room_by_roomid(room_id)
+    return render_template('contestant_room_detail.html', room_detail=room_detail,
+                           username=username, metamask_id=metamask_id)
 
 @app.route('/view_submit/<room_id>', methods=['GET'])
 def view_submit(room_id):
