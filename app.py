@@ -789,5 +789,19 @@ def former_send_certificate():
         new_certificate =  add_certificate_2_by_userid(user_id, certificate)
         return jsonify({'status': 200, 'data': new_certificate})
 
+
+@app.route('/save_grade/<room_id>', methods=['GET', 'POST'])
+def save_grade(room_id):
+    # Nhận dữ liệu từ yêu cầu POST
+    data = request.json
+    print(data)
+    # Lấy thông tin từ dữ liệu nhận được
+    mentor_id = data.get('mentorID')
+    score = data.get('score')
+
+    response = update_score_by_room_id_and_mentor_id(room_id ,mentor_id,score)
+
+    return jsonify(response)
+
 if __name__ == '__main__':
     app.run()
