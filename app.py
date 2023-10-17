@@ -573,7 +573,7 @@ def update_mentor_sign():
         mentor_id = data['mentor_id']
         signature = data['signature']
 
-        update_room_mentor_sign(room_id, mentor_id, signature)
+        update_room_2_mentor_sign(room_id, mentor_id, signature)
         print("update_mentor_sign: successfully")
         return jsonify({'status': 200})
     except Exception as e:
@@ -599,29 +599,43 @@ def view_signature():
 
 @app.route('/room/contestant/sign', methods=['POST'])
 def update_contestant_sign():
-    data = request.json
-    room_id = data['room_id']
-    signature = data['signature']
-    update_room_contestant_sign(room_id, signature)
-    print("update_mentor_sign: successfully")
-    return jsonify({'status': 200})
+    try:
+        data = request.json
+        room_id = data['room_id']
+        mentor_id = data['mentor_id']
+        signature = data['signature']
+
+        update_room_2_contestant_sign(room_id, mentor_id, signature)
+        print("update_mentor_sign: successfully")
+        return jsonify({'status': 200})
+    except Exception as e:
+        print(e)
+        return jsonify({'status': 400})
 
 @app.route('/room/contestant/submission_signature', methods=['GET'])
 def view_submission_signature():
     room_id = request.args.get('room_id')
-    room = find_rooms({'_id': ObjectId(room_id)})
-    if(len(room) == 0):
-        abort(404, "Invalid room id")
-    room = room[0]
-    if('submission_sign' not in room):
-        abort(404, "Invalid room id")
-    return jsonify({'status': 200, 'signature': room['submission_sign']})
+    mentor_id = request.args.get('mentor_id')
+
+    room = find_room_2_by_id(room_id) 
+
+    if(room is None):
+        return jsonify({'status': 404, 'message': 'Invalid room id'})
+
+    tests = room['tests']
+    for test in tests:
+        if(test['mentor_id'] == ObjectId(mentor_id)):
+            if('submission_sign' not in test ) or (test['submission_sign'] is None):
+                return jsonify({'status': 404, 'message': 'Have not signed yet'})
+            else :
+                return jsonify({'status': 200, 'signature': test['test_sign']})
+    return jsonify({'status': 404, 'message': 'Invalid mentor id'})
 
 @app.route('/view_test/<room_id>', methods=['GET'])
 def view_test(room_id):
-    menter_id = request.args.get('mentor_id')
+    mentor_id = request.args.get('mentor_id')
     # Truy vấn cơ sở dữ liệu để lấy nội dung của file Test dựa trên room_id
-    room_content = get_test_from_room_2(room_id, menter_id)
+    room_content = get_test_from_room_2(room_id, mentor_id)
 
     # Kiểm tra xem room_content có tồn tại không
     if room_content is None:
@@ -630,18 +644,18 @@ def view_test(room_id):
     # Trả về nội dung của file Test dưới dạng response PDF
     response = make_response(room_content)
     response.headers['Content-Type'] = 'application/pdf'
-    response.headers['Content-Disposition'] = f'inline; filename=test_{room_id}_{menter_id}.pdf'
+    response.headers['Content-Disposition'] = f'inline; filename=test_{room_id}_{mentor_id}.pdf'
     return response
 
 @app.route('/contestant', methods=['POST', 'GET'])
 def contestant_room():
     username = None
-    public_key = None
+    #public_key = None
     metamask_id = None
 
     if 'username' in session:
         username = session['username']
-        public_key = session['public_key']
+        # public_key = session['public_key']
         metamask_id = session['metamask_id']
 
     if request.method == 'POST':
@@ -650,17 +664,25 @@ def contestant_room():
         save_submit_to_db(room_id, uploaded_file)
         return redirect('/contestant')  # Chuyển hướng người dùng sau khi tải lên thành công
 
-    contestant_rooms = query_contestant_rooms(public_key)
-    for room in contestant_rooms:
-        room['mentor'] = query_user_by_public_key(room['mentor'])['username']
-    return render_template('contestant.html', contestant_rooms=contestant_rooms, 
-                                                username=username,
-                                                metamask_id=metamask_id)
+    contestant_rooms = query_contestant_room2(username)
+
+    # contestant_rooms = query_contestant_rooms(public_key)
+    # for room in contestant_rooms:
+    #     room['mentor'] = query_user_by_public_key(room['mentor'])['username']
+    # return render_template('contestant.html', contestant_rooms=contestant_rooms,
+    #                                             username=username,
+    #                                             metamask_id=metamask_id)
+
+    return render_template('contestant_ver2.html', contestant_rooms=contestant_rooms,
+                                                    username=username,
+                                                    metamask_id=metamask_id)
 
 @app.route('/view_submit/<room_id>', methods=['GET'])
 def view_submit(room_id):
+    mentor_id = request.args.get('mentor_id')
+
     # Truy vấn cơ sở dữ liệu để lấy nội dung của file Test dựa trên room_id
-    room_content = get_submit_from_db(room_id)
+    room_content = get_submit_from_room_2(room_id, mentor_id)
 
     # Kiểm tra xem room_content có tồn tại không
     if room_content is None:

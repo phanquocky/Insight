@@ -52,38 +52,45 @@ function viewSubmit(roomID, mentorID) {
   xhr.send();
 }
 
-async function uploadTest(roomId) {
-  // Lấy file đề thi từ người dùng
+async function checkMetamask() {
+  if (!window.ethereum) {
+      alert('Metamask not installed')
+      return null;
+    }
+  if('{{metamask_id}}' == '') {
+    alert('Please login again!')
+    return null;
+  }
+  const provider = new ethers.providers.Web3Provider(window.ethereum)
+  console.log("metamask = ", '{{metamask_id}}')
+  const signer = provider.getSigner('{{metamask_id}}'); // signer.getAddress() == accounts[0]
+  const signerAddress = await signer.getAddress();
+  console.log("signerAddress = ", signerAddress)
+  if('{{metamask_id}}' != signerAddress) {
+    alert('Please connect to the correct metamask account.\nYour metamask account is {{metamask_id}}')
+    return null;
+  }
+
+  return signer;
+}
+
+function uploadTest(roomId, mentorID) {
+  // get file from mentor's computer
   var fileInput = document.createElement('input');
   fileInput.type = 'file';
-  fileInput.accept = '.pdf';  // Chỉ chấp nhận file PDF
+  fileInput.accept = '.pdf';  // Only accept PDF file
 
   console.log(fileInput)
 
   fileInput.onchange = async function () {
-    if (!window.ethereum) {
-      alert('Metamask not installed')
-      return
-    }
-    if('{{metamask_id}}' == '') {
-      alert('Please login again!')
-      return
-    }
-    const provider = new ethers.providers.Web3Provider(window.ethereum)
-    // console.log("metamask = ", '{{metamask_id}}')
-    const signer = provider.getSigner('{{metamask_id}}'); // signer.getAddress() == accounts[0]
-    const signerAddress = await signer.getAddress();
-    // console.log("signerAddress = ", signerAddress)
-    if('{{metamask_id}}' != signerAddress) {
-      alert('Please connect to the correct metamask account.\nYour metamask account is {{metamask_id}}')
-      return
-    }
-
+    const signer = await checkMetamask();
+    if(signer == null) return;
 
     var file = fileInput.files[0];
     var formData = new FormData();
     formData.append('file', file);
     formData.append('room_id', roomId);
+    formData.append('mentor_id',mentorID);
 
     // Gửi yêu cầu POST để tải lên file đề thi lên server
     var xhr = new XMLHttpRequest();
@@ -98,48 +105,74 @@ async function uploadTest(roomId) {
     };
 
 
-    // Here, you can read the file content, for example:
-    const reader = new FileReader();
-    reader.onload = function (e) {
-      const fileContent = e.target.result;
-      // You can do something with the file content here
+  // Here, you can read the file content, for example:
+  const reader = new FileReader();
+  reader.onload = function (e) {
+  const fileContent = e.target.result;
+    // You can do something with the file content here
 
-      const arr = new Uint8Array(fileContent);
-      hash_file = ethers.utils.sha256(arr);
-      signer.signMessage(hash_file)
-        .then((signature) => {
-          fetch('/room/mentor/sign', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              'room_id': roomId,
-              'signature': signature
-            })
-          })
-          .then((response) => response.json())
-          .then((data) => {
-            console.log('Success:', data);
-            xhr.send(formData);
-          })
-          .catch((error) => {
-            console.error('Error:', error);
-            alert('Error! Please try again!')
-          });
-        })    
-        .catch((error) => {
-          console.error('Error:', error);
-          alert('You need to sign this message')
-        });
-    };
-    reader.readAsArrayBuffer(file); // Read the file as text
+  const arr = new Uint8Array(fileContent);
+  hash_file = ethers.utils.sha256(arr);
+  signer.signMessage(hash_file)
+    .then((signature) => {
+      fetch('/room/mentor/sign', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          'room_id': roomId,
+          'mentor_id': mentorID,
+          'signature': signature
+        })
+      })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log('Success:', data);
+        xhr.send(formData);
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        alert('Error! Please try again!');
+      });
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+      alert('You need to sign this message');
+    });
+};
+reader.readAsArrayBuffer(file); // Read the file as text
+
   };
 
   // Kích hoạt sự kiện click trên input[type=file] để chọn file
   fileInput.click();
 }
+
+function viewSubmit(roomID, mentorID) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', '/view_submit/' + roomID + "?mentor_id=" + mentorID, true);
+  xhr.responseType = 'arraybuffer';
+
+  xhr.onload = function () {
+    if (xhr.status == 200) {
+      // Nếu nhận được dữ liệu thành công, tạo một blob từ arrayBuffer và mở cửa sổ mới chứa PDF
+      var arrayBuffer = xhr.response;
+      var blob = new Blob([arrayBuffer], { type: 'application/pdf' });
+      var url = URL.createObjectURL(blob);
+
+      // Mở cửa sổ mới chứa PDF
+      window.open(url, '_blank');
+    } else {
+      alert('Error! Please try again!');
+    }
+  };
+
+  // Gửi yêu cầu lấy dữ liệu PDF từ server
+  xhr.send();
+}
 </script>
+  <!-- {{mentor_rooms}} -->
 
   <h1 class="text-center mt-3">Mentor Room</h1>
 
@@ -159,16 +192,16 @@ async function uploadTest(roomId) {
       </thead>
 
       <tbody class="overflow-auto">
-        {% for mentor in mentor_rooms %}
+        {% for room in mentor_rooms %}
         <tr>
           <th scope="row" class="col-1">{{ loop.index }}</th>
-          <td class="col-2">{{ mentor._id }}</td>
-          <td class="col-2">{{ mentor.contestant }}</td>
+          <td class="col-2">{{ room._id }}</td>
+          <td class="col-2">{{ room['contestant']['username'] }}</td>
           
           <!-- test -->
-          {% if not mentor.test %}
+          {% if not room.tests[0]['test'] %}
             <td class="col-1">
-              <button class="btn btn-danger" onclick="uploadTest('{{ mentor._id }}')">Submit</button>
+              <button class="btn btn-danger" onclick="uploadTest('{{ room._id }}', '{{ room.mentors.id }}')">Upload</button>
             </td>
           {% else %}
             <td class="col-1">
@@ -177,7 +210,7 @@ async function uploadTest(roomId) {
           {% endif %}
 
           <!-- Submission -->
-          {% if not mentor.submission %}
+          {% if not room.tests[0]['submission'] %}
             <td class="col-1">None</td>
           {% else %}
             <td class="col-1">
@@ -186,23 +219,51 @@ async function uploadTest(roomId) {
           {% endif %}
 
           <!-- Score -->          
-          {% if not room.tests[0]['score'] %}
-            <td class="col-1">None</td>
-          {% else %}
+          {% if room.tests[0]['score'] is defined %}
             <td class="col-1">{{room.tests[0]['score']}}</td>
+          {% elif room.tests[0]['submission'] is defined %}
+            <td class="col-1">
+              <!-- Score button -->>
+              <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#gradeModal">Open Grade Modal</button>
+
+              <div class="modal fade" id="gradeModal" tabindex="-1" aria-labelledby="gradeModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-body">
+                      <form id="gradeForm">
+                        <div class="mb-3">
+                          <label for="score" class="col-form-label">Enter Score:</label>
+                          <input type="number" class="form-control" id="score" name="score" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </td>
+          {% else %}
+            <td class="col-1">None</td>
           {% endif %}
 
           <!-- Test Sign -->
-          {% if mentor.test_sign %}
+          {% if room.tests[0]['test_sign'] %}
            <td class="col-1">
               <button class="btn btn-success" onclick="viewTestSignature('{{ room._id }}', `{{ room.mentors['id'] }}`)">View</button>
            </td>
           {% else %}
-          <td class="col-1">None</td>
+           <td class="col-1">None</td>
           {% endif %}
 
           <!-- Score Sign -->
+          {% if room.tests[0]['score_sign'] %}
+           <td class="col-1">
               <button class="btn btn-success" onclick="viewScoreSignature('{{ room._id }}', `{{ room.mentors['id'] }}`)">View</button>
+           </td>
+          {% else %}
+           <td class="col-1">None</td>
+          {% endif %}
         </tr>
         {% endfor %}
       </tbody>
