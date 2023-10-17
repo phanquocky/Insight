@@ -8,6 +8,30 @@
     var newWindow = window.open(" ", "_blank");
     newWindow.document.write(content);
   }
+
+  function openNewTabToDownloadBinaryFile(content) {
+    // var newWindow = window.open(" ", "_blank");
+    // var blob = new Blob([content], {type: "application/octet-stream"});
+    // var url = URL.createObjectURL(blob);
+    // newWindow.location.href = url;
+
+    // Create a Blob containing the binary content
+    var blob = new Blob([content], { type: "application/octet-stream" });
+
+    // Create a URL for the Blob
+    var url = URL.createObjectURL(blob);
+
+    // Create a new anchor element
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "room.bin";
+
+    // Trigger a click event on the anchor element to open a new tab and initiate the download
+    a.dispatchEvent(new MouseEvent("click"));
+
+    // Clean up by revoking the URL
+    URL.revokeObjectURL(url);
+  }
 </script>
 
 <div class="container justify-content-center">
@@ -41,7 +65,7 @@
         <td class="col-2">{{ certificate.new_score }}</td>
         <td class="col-2"> 
           <button class="btn btn-success" 
-             onclick="openNewTabWithContent('{{certificate.room_hash}}')">
+             onclick="openNewTabToDownloadBinaryFile('{{certificate.room_byte}}')">
              View
           </button>
         </td>
