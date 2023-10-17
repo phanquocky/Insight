@@ -3,13 +3,73 @@
 
 <link rel="stylesheet" href="../static/former_view.css">
 
-{% macro sign_room() %}
-    <form method="post">
-        <input type="submit" class="unselectable button full small join-warning" value="Sign" style="color: white;">
-    </form>
-{% endmacro %}
+<script>
+    async function checkMetamask() {
+        if (!window.ethereum) {
+            alert('Metamask not installed')
+            return null;
+            }
+        if('{{metamask_id}}' == '') {
+            alert('Please login again!')
+            return null;
+        }
+        const provider = new ethers.providers.Web3Provider(window.ethereum)
+        console.log("metamask = ", '{{metamask_id}}')
+        const signer = provider.getSigner('{{metamask_id}}'); // signer.getAddress() == accounts[0]
+        const signerAddress = await signer.getAddress();
+        console.log("signerAddress = ", signerAddress)
+        if('{{metamask_id}}' != signerAddress) {
+            alert('Please connect to the correct metamask account.\nYour metamask account is {{metamask_id}}')
+            return null;
+        }
+
+        return signer;
+    }
+    
+    async function signRoomAndSendCertificate(event, room_id) {
+        event.preventDefault(); 
+        let data = await fetch(`/former/get_byte/${room_id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                "username": "{{ username }}",
+            })
+        }).then(res => res.json()); 
+        console.log("data = ", data)
+
+        const room_byte = data.room_byte;
+        const arr = new Uint8Array(room_byte);
+        const room_hash = ethers.utils.sha256(arr);
+        const signer = await checkMetamask();
+        if(signer == null) return;
+        const signature = await signer.signMessage(ethers.utils.arrayify(room_hash));
+        console.log("signature = ", signature)
+        
+        data = await fetch(`/former/send_certificate`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                "room_id": room_id,
+                "username": "{{ username }}",
+                "room_hash": room_hash,
+                "signature": signature,
+            })
+        }).then(res => res.json());
+        console.log("data = ", data)
+        if(data.status == '200') {
+            alert('Certificate sent successfully!')
+        } else {
+            alert('Certificate sent failed!')
+        }
+    }
+</script>
 
 <div id="page-container">
+    <!-- {{rooms}} -->
     <main id="content">
         <div id="content-body">
             <div class="middle-content wrapper">
@@ -41,7 +101,9 @@
                                         {{ room['updated_score']}}
                                     </div>
                                     <div class="participate-button">
-                                        {{ sign_room() }}
+                                        <input type="submit" class="unselectable button full small join-warning" value="Sign" style="color: white;"
+                                               onclick="signRoomAndSendCertificate(event, `{{ room['_id'] }}`, `{{ room['contestant']['id'] }}`)"
+                                         >
                                     </div>
                                 </div>
                             </a>
