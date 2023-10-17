@@ -267,7 +267,17 @@ def update_final_score(room_id):
 
             if temp == 5:
                 rooms_collection.update_one({'_id': ObjectId(room_id)}, {'$set': {'is_finished': True}})
-
+                
+                updated_score = room['prev_score']
+                if room['final_result'] < 5:
+                    updated_score = room['pre_score']
+                elif room['final_result'] > 5 and room['final_result'] < 7:
+                    updated_score = room['pre_score'] + (room['want_score'] - room['pre_score'])*0.3
+                elif room['final_result'] > 7 and room['final_result'] < 9:
+                    updated_score = room['pre_score'] + (room['want_score'] - room['pre_score'])*0.6
+                elif room['final_result'] > 9:
+                    updated_score = room['pre_score'] + (room['want_score'] - room['pre_score'])*(room['final_result']/10)
+                rooms_collection.update_one({'_id': ObjectId(room_id)}, {'$set': {'updated_score': updated_score}})
         if temp == 0:
             return
         final_score = float(total_score / temp)
