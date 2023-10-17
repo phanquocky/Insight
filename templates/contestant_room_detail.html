@@ -84,12 +84,18 @@ function submit(roomId, mentorID) {
             },
             body: JSON.stringify({
               'room_id': roomId,
+              'mentor_id': mentorID,
               'signature': signature
             })
           })
           .then((response) => response.json())
           .then((data) => {
-            console.log('Success:', data);
+            console.log('Data:', data);
+            if(data['status'] == '400') {
+              alert(data['message'])
+              return
+            }
+            console.log('Successful!'); 
             xhr.send(formData);
           })
           .catch((error) => {
@@ -108,9 +114,8 @@ function submit(roomId, mentorID) {
   // Kích hoạt sự kiện click trên input[type=file] để chọn file
   fileInput.click();
 }
-function viewSubmitSign(roomID) {
-  console.log(roomID)
-  window.open('/room/contestant/submission_signature?room_id=' + roomID)
+function viewSubmitSign(roomID, mentorID) {
+  window.open('/room/contestant/submission_signature?room_id=' + roomID + '&mentor_id=' + mentorID, '_blank')
 }
 
 function viewSubmit(roomID) {
@@ -182,7 +187,7 @@ function viewSubmit(roomID) {
           <!-- Submission Sign -->
           <td class="col-2">
             {% if room_detail.tests[i].submission_sign %}
-              <button style="cursor: pointer;" class="btn btn-success" onclick="viewSubmitSign('{{ room_detail._id }}', '{{ room_detail.mentors.id }}')">View</button>
+              <button style="cursor: pointer;" class="btn btn-success" onclick="viewSubmitSign('{{ room_detail._id }}', '{{ room_detail.mentors[i].id }}')">View</button>
             {% else %}
               None
             {% endif %}

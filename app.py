@@ -611,7 +611,7 @@ def update_mentor_sign():
         return jsonify({'status': 200})
     except Exception as e:
         print(e)
-        return jsonify({'status': 400})
+        return jsonify({'status': 400, "message": "Invalid data"})
 
 @app.route('/room/mentor/test_signature', methods=['GET'])
 def view_signature():
@@ -643,7 +643,7 @@ def update_contestant_sign():
         return jsonify({'status': 200})
     except Exception as e:
         print(e)
-        return jsonify({'status': 400})
+        return jsonify({'status': 400, "message": "Invalid data"})
 
 @app.route('/room/contestant/submission_signature', methods=['GET'])
 def view_submission_signature():
