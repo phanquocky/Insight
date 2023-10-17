@@ -1,6 +1,8 @@
 # from flask import jsonify
 from pymongo.collection import Collection
 from pymongo.mongo_client import MongoClient
+from sqlalchemy import true
+
 # from pymongo.server_api import ServerApi
 # from mongoengine import Document, StringField, DateTimeField, IntField
 # from Keypair.hash import sha256_hash
@@ -198,8 +200,10 @@ def upload_test_to_db(room_id, uploaded_file, mentor_id):
 def query_contestant_room2(username):
     rooms_collection: Collection = db['Room2']
     rooms_data = rooms_collection.find({'contestant.username': username})
-    return list(rooms_data)
-
+    rooms_data = list(rooms_data)
+    for room in rooms_data:
+        update_final_score(room['_id'])
+    return rooms_data
 
 def query_mentor_rooms2(username):
     room_collection = db['Room2']
@@ -249,6 +253,30 @@ def save_submit_to_db(room_id, file, mentor_id):
     else:
         print("Room not found.")
 
+def update_final_score(room_id):
+    rooms_collection = db['Room2']
+    room = rooms_collection.find_one({'_id': ObjectId(room_id)})
+
+    if room:
+        total_score = 0
+        temp = 0
+        for test in room['tests']:
+            if test['score'] is not None:
+                total_score += int(test['score'])
+                temp += 1
+
+            if temp == 5:
+                rooms_collection.update_one({'_id': ObjectId(room_id)}, {'$set': {'is_finished': True}})
+
+        if temp == 0:
+            return
+        final_score = float(total_score / temp)
+        rooms_collection.update_one({'_id': ObjectId(room_id)}, {'$set': {'final_result': final_score}})
+        # print(total_score)
+        # print(room['_id'])
+        print("Final score updated successfully!")
+    else:
+        print("Room not found.")
 
 def update_score_by_room_id_and_mentor_id(room_id, mentor_id, score):
     rooms_collection: Collection = db['Room2']
@@ -266,5 +294,6 @@ def update_score_by_room_id_and_mentor_id(room_id, mentor_id, score):
             if result.modified_count > 0:
                 response = {'message': 'Đã cập nhật điểm thành công.'}
             print("Score uploaded successfully!")
+    update_final_score(room_id)
     return response
 

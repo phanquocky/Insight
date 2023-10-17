@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", function() {
           <td class="col-3 room-id">{{ contestant._id }}</td>
           <td class="col-2">{{ contestant.prev_score }}</td>
           <td class="col-2">{{ contestant.want_score }}</td>
-          <td class="col-2">{{ count_test_complete }} / 5</td>
+          <td class="col-2">{{ count_test_complete[loop.index - 1] }} / 5</td>
           <td class="col-2">{{ contestant.final_result }}</td>
         </tr>
           {% endfor %}

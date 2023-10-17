@@ -735,12 +735,15 @@ def contestant_room():
 
     contestant_rooms = query_contestant_room2(username)
 
-    count = 0
+    count = [0] * len(contestant_rooms)
+    # print(len(contestant_rooms))
     for room in contestant_rooms:
+        i = 0
         for tests in room['tests']:
             if tests.get('submission'):
-                count += 1
-    print(count)
+                count[i] += 1
+        i += 1
+    # print(count)
 
     return render_template('contestant_ver2.html', contestant_rooms=contestant_rooms,
                            username=username,
@@ -757,7 +760,7 @@ def contestant_a_room_detail(room_id):
         metamask_id = session['metamask_id']
 
     if request.method == 'POST':
-        print('Hi ae')
+        # print('Hi ae')
         room_id = request.form['room_id']
         mentor_id = request.form['mentor_id']
         uploaded_file = request.files['file']
