@@ -69,10 +69,6 @@ body {
     padding-right: 0.5rem;
 }
 
-.w-full {
-    width: 100%;
-}
-
 .py-16 {
     padding-bottom: 4rem;
     padding-top: 4rem;
@@ -103,12 +99,7 @@ body {
 .flex-col {
     flex-direction: column;
 }
-.w-full {
-    width: 100%;
-}
-.h-full {
-    height: 100%;
-}
+
 .flex {
     display: flex;
 }
@@ -170,9 +161,7 @@ svg {
 .items-center {
     align-items: center;
 }
-.flex {
-    display: flex;
-}
+
 .mt-4 {
     margin-top: 1rem;
 }
@@ -188,16 +177,10 @@ svg {
     cursor: pointer;
 }
 
-.md\:w-1\/2 {
-    width: 50%;
-}
-
 .md\:-m-2 {
     margin: -0.5rem;
 }
-.w-full {
-    width: 100%;
-}
+
 .mt-6 {
     margin-top: 1.5rem;
 }
