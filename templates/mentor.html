@@ -29,29 +29,6 @@ function viewTestSignature(room_id, mentorID){
   window.open('/room/mentor/test_signature?room_id=' + room_id + '&mentor_id=' + mentorID, '_blank');
 }
 
-function viewSubmit(roomID, mentorID) {
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', '/view_submit/' + roomID + "?mentor_id=" + mentorID, true);
-  xhr.responseType = 'arraybuffer';
-
-  xhr.onload = function () {
-    if (xhr.status == 200) {
-      // Nếu nhận được dữ liệu thành công, tạo một blob từ arrayBuffer và mở cửa sổ mới chứa PDF
-      var arrayBuffer = xhr.response;
-      var blob = new Blob([arrayBuffer], { type: 'application/pdf' });
-      var url = URL.createObjectURL(blob);
-
-      // Mở cửa sổ mới chứa PDF
-      window.open(url, '_blank');
-    } else {
-      alert('Error! Please try again!');
-    }
-  };
-
-  // Gửi yêu cầu lấy dữ liệu PDF từ server
-  xhr.send();
-}
-
 async function checkMetamask() {
   if (!window.ethereum) {
       alert('Metamask not installed')
@@ -128,8 +105,13 @@ function uploadTest(roomId, mentorID) {
       })
       .then((response) => response.json())
       .then((data) => {
-        console.log('Success:', data);
-        xhr.send(formData);
+          console.log('Data:', data);
+          if(data['status'] == '400') {
+            alert(data['message'])
+            return
+          }
+          console.log('Successful!');
+          xhr.send(formData);
       })
       .catch((error) => {
         console.error('Error:', error);
@@ -147,6 +129,79 @@ reader.readAsArrayBuffer(file); // Read the file as text
 
   // Kích hoạt sự kiện click trên input[type=file] để chọn file
   fileInput.click();
+}
+
+function encode_string_to_byte(str) {
+  // Create a TextEncoder instance
+  const textEncoder = new TextEncoder();
+
+  // Convert the string to an array of bytes
+  const byteArray = textEncoder.encode(str);
+  return byteArray;
+}
+
+async function gradeTest(roomID, mentorID) {
+  const signer = await checkMetamask();
+  if(signer == null) return;
+  
+  const score = document.getElementById('score').value;
+
+  const score_byte = encode_string_to_byte(score);
+  const arr = new Uint8Array(score_byte);
+  const hash_score = ethers.utils.sha256(arr);
+
+  signer.signMessage(hash_score)
+    .then((signature) => {
+      console.log('Signature:', signature)
+      return fetch('/room/mentor/score_signature', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          'room_id': roomID,
+          'mentor_id': mentorID,
+          'signature': signature
+        })
+      })
+      .then((response) => response.json())
+      .then((data) => {
+          console.log('Data:', data);
+          if(data['status'] == '400') {
+            alert(data['message'])
+            return
+          }
+          alert('Successful!');
+          xhr.send(JSON.stringify({ roomID: roomID, mentorID: mentorID, score: score }));
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        alert('Error! Please try again!');
+      });
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+      alert('You need to sign this message');
+    });
+
+
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', '/save_grade/'+roomID+'?mentor_id='+mentorID, true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+
+  // Gửi dữ liệu điểm và thông tin về phòng thi đến server
+
+  // Xử lý kết quả từ server (nếu cần)
+  xhr.onload = function() {
+      if (xhr.status === 200) {
+          console.log('Success.');
+          location.reload();
+      } else {
+          console.log("Error")
+      }
+  };
+  // Đóng modal sau khi nhấn "Submit"
+  $('#gradeModal').modal('hide');
 }
 
 function viewSubmit(roomID, mentorID) {
@@ -171,6 +226,11 @@ function viewSubmit(roomID, mentorID) {
   // Gửi yêu cầu lấy dữ liệu PDF từ server
   xhr.send();
 }
+
+function viewScoreSignature(roomID, mentorID) {
+  window.open('/room/mentor/score_signature?room_id=' + roomID + '&mentor_id=' + mentorID, '_blank');
+}
+
 </script>
   <!-- {{mentor_rooms}} -->
 
@@ -219,12 +279,12 @@ function viewSubmit(roomID, mentorID) {
           {% endif %}
 
           <!-- Score -->          
-          {% if room.tests[0]['score'] is defined %}
+          {% if room.tests[0]['score']%}
             <td class="col-1">{{room.tests[0]['score']}}</td>
-          {% elif room.tests[0]['submission'] is defined %}
+          {% elif room.tests[0]['submission'] %}
             <td class="col-1">
-              <!-- Score button -->>
-              <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#gradeModal">Open Grade Modal</button>
+              <!-- Score button -->
+              <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#gradeModal">Score</button>
 
               <div class="modal fade" id="gradeModal" tabindex="-1" aria-labelledby="gradeModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
@@ -233,15 +293,14 @@ function viewSubmit(roomID, mentorID) {
                       <form id="gradeForm">
                         <div class="mb-3">
                           <label for="score" class="col-form-label">Enter Score:</label>
-                          <input type="number" class="form-control" id="score" name="score" required>
+                          <input type="number" class="form-control" id="score" name="score" required min="0" max="10">
                         </div>
-                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <button type="button" class="btn btn-danger" onclick="gradeTest('{{ room._id }}', `{{ room.mentors['id'] }}`)">Submit</button>
                       </form>
                     </div>
                   </div>
                 </div>
               </div>
-
             </td>
           {% else %}
             <td class="col-1">None</td>

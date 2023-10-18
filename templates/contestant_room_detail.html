@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<script>
+function viewTest(roomID, mentorID) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', '/view_test/' + roomID + '?mentor_id=' + mentorID , true);
+  xhr.responseType = 'arraybuffer';
+
+  xhr.onload = function () {
+    if (xhr.status == 200) {
+      // Nếu nhận được dữ liệu thành công, tạo một blob từ arrayBuffer và mở cửa sổ mới chứa PDF
+      var arrayBuffer = xhr.response;
+      var blob = new Blob([arrayBuffer], { type: 'application/pdf' });
+      var url = URL.createObjectURL(blob);
+
+      // Mở cửa sổ mới chứa PDF
+      window.open(url, '_blank');
+    } else {
+      alert('Error! Please try again!');
+    }
+  };
+
+  // Gửi yêu cầu lấy dữ liệu PDF từ server
+  xhr.send();
+}
+
+function submit(roomId, mentorID) {
+  var fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = '.pdf';  // Chỉ chấp nhận file PDF
+
+  fileInput.onchange = async function () {
+    if (!window.ethereum) {
+      alert('Metamask not installed')
+      return
+    }
+    if('{{metamask_id}}' == '') {
+      alert('Please login again!')
+      return
+    }
+    const provider = new ethers.providers.Web3Provider(window.ethereum)
+    console.log("metamask = ", '{{metamask_id}}')
+    const signer = provider.getSigner('{{metamask_id}}'); // signer.getAddress() == accounts[0]
+    const signerAddress = await signer.getAddress();
+    console.log("signerAddress = ", signerAddress)
+    if('{{metamask_id}}' != signerAddress) {
+      alert('Please connect to the correct metamask account.\nYour metamask account is {{metamask_id}}')
+      return
+    }
+    var file = fileInput.files[0];
+    var formData = new FormData();
+    formData.append('file', file);
+    formData.append('room_id', roomId);
+    formData.append('mentor_id',mentorID);
+
+    // Gửi yêu cầu POST để tải lên file đề thi lên server
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/contestant/'+roomId, true);
+    xhr.onload = function () {
+        if (xhr.status == 200) {
+            alert('Successful!');
+            location.reload();
+        } else {
+            alert('Error! Please try again!');
+        }
+    };
+
+
+    // Here, you can read the file content, for example:
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const fileContent = e.target.result;
+      // You can do something with the file content here
+
+      const arr = new Uint8Array(fileContent);
+      hash_file = ethers.utils.sha256(arr);
+      signer.signMessage(hash_file)
+        .then((signature) => {
+          fetch('/room/contestant/sign', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              'room_id': roomId,
+              'mentor_id': mentorID,
+              'signature': signature
+            })
+          })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log('Data:', data);
+            if(data['status'] == '400') {
+              alert(data['message'])
+              return
+            }
+            console.log('Successful!'); 
+            xhr.send(formData);
+          })
+          .catch((error) => {
+            console.error('Error:', error);
+            alert('Error! Please try again!')
+          });
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+          alert('You need to sign this message')
+        });
+    };
+    reader.readAsArrayBuffer(file); // Read the file as text
+  };
+
+  // Kích hoạt sự kiện click trên input[type=file] để chọn file
+  fileInput.click();
+}
+function viewSubmitSign(roomID, mentorID) {
+  window.open('/room/contestant/submission_signature?room_id=' + roomID + '&mentor_id=' + mentorID, '_blank')
+}
+
+function viewSubmit(roomID) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', '/view_submit/' + roomID, true);
+  xhr.responseType = 'arraybuffer';
+
+  xhr.onload = function () {
+    if (xhr.status == 200) {
+      // Nếu nhận được dữ liệu thành công, tạo một blob từ arrayBuffer và mở cửa sổ mới chứa PDF
+      var arrayBuffer = xhr.response;
+      var blob = new Blob([arrayBuffer], { type: 'application/pdf' });
+      var url = URL.createObjectURL(blob);
+
+      // Mở cửa sổ mới chứa PDF
+      window.open(url, '_blank');
+    } else {
+      alert('Error! Please try again!');
+    }
+  };
+
+  // Gửi yêu cầu lấy dữ liệu PDF từ server
+  xhr.send();
+}
+</script>
+
+  <h1 class="text-center mt-3">Room Details</h1>
+
+  {% if room_detail %}
+    <table class="table table-bordered mt-3 text-center">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Mentor</th>
+          <th scope="col">Test</th>
+          <th scope="col">Submission</th>
+          <th scope="col">Submission Sign</th>
+          <th scope="col">Score</th>
+        </tr>
+      </thead>
+
+      <tbody class="overflow-auto">
+        {% for i in range(5) %}
+        <tr>
+          <th scope="row" class="col-1">{{ loop.index }}</th>
+          <td class="col-2">{{ room_detail.mentors[i].username }}</td>
+
+          <!-- Test -->
+          <td class="col-2">
+            {% if not room_detail.tests[i].test %}
+              No test
+            {% else %}
+              <button type="button" class="btn btn-success" onclick="viewTest('{{ room_detail._id }}', '{{ room_detail.mentors[i].id }}')">View</button>
+            {% endif %}
+          </td>
+
+          <!-- Submission -->
+          <td class="col-2">
+            {% if not room_detail.tests[i].test %}
+              None
+            {% else %}
+              {% if not room_detail.tests[i].submission %}
+                <button style="cursor: pointer;" class="btn btn-danger" onclick="submit('{{ room_detail._id }}', '{{ room_detail.mentors[i].id }}')">Submit</button>
+              {% else %}
+                <button style="cursor: pointer;"  class="btn btn-success" onclick="viewSubmit('{{ room_detail._id }}', '{{ room_detail.mentors[i].id }}')">View</button>
+              {% endif %}
+            {% endif %}
+          </td>
+
+          <!-- Submission Sign -->
+          <td class="col-2">
+            {% if room_detail.tests[i].submission_sign %}
+              <button style="cursor: pointer;" class="btn btn-success" onclick="viewSubmitSign('{{ room_detail._id }}', '{{ room_detail.mentors[i].id }}')">View</button>
+            {% else %}
+              None
+            {% endif %}
+          </td>
+          <!-- Score -->
+          <td class="col-2">{{ room_detail.tests[i].score }}</td>
+        </tr>
+          {% endfor %}
+      </tbody>
+    </table>
+
+  {% else %}
+    <h2 class="text-center mt-3">No room found</h2>
+  {% endif %}
+
+{% endblock %}

@@ -28,6 +28,12 @@ class User:
         users_collection = db['User2']
         users_collection.insert_one(self.__dict__)
 
+def query_all_users():
+    # Truy vấn cơ sở dữ liệu để lấy danh sách tất cả người dùng
+    users_collection = db['User2']
+    users = users_collection.find()
+    return list(users)
+
 def query_user_by_id(id):
     # Truy vấn cơ sở dữ liệu để lấy danh sách người có id là $id
     users_collection = db['User2']

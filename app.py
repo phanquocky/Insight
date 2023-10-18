@@ -541,6 +541,7 @@ def former_view():
                            username = session['username'], 
                            metamask_id = session['metamask_id'])
 
+
 @app.route('/public/room/<room_id>', methods=['GET'])
 def view_public_room(room_id):
     username = None
@@ -611,7 +612,7 @@ def update_mentor_sign():
         return jsonify({'status': 200})
     except Exception as e:
         print(e)
-        return jsonify({'status': 400})
+        return jsonify({'status': 400, "message": "Invalid data"})
 
 @app.route('/room/mentor/test_signature', methods=['GET'])
 def view_signature():
@@ -630,6 +631,36 @@ def view_signature():
                 return jsonify({'status': 200, 'signature': test['test_sign']})
     return jsonify({'status': 404, 'message': 'Invalid mentor id'})
 
+@app.route('/room/mentor/score_signature', methods=['GET', 'POST'])
+def view_score_signature():
+    if request.method == 'GET':
+        room_id = request.args.get('room_id')
+        mentor_id = request.args.get('mentor_id')
+        room = find_room_2_by_id(room_id)
+        if(room is None):
+            return jsonify({'status': 404, 'message': 'Invalid room id'})
+        
+        tests = room['tests']
+        for test in tests:
+            if(test['mentor_id'] == ObjectId(mentor_id)):
+                if('score_sign' not in test ) or (test['score_sign'] is None):
+                    return jsonify({'status': 404, 'message': 'Have not signed yet'})
+                else :
+                    return jsonify({'status': 200, 'signature': test['score_sign']})
+        return jsonify({'status': 404, 'message': 'Invalid mentor id'})
+    
+    elif request.method == 'POST':
+        data = request.json
+        print("room/mentor/score_signature: data = ", data)
+        room_id = data['room_id']
+        mentor_id = data['mentor_id']
+        signature = data['signature']
+
+
+        update_room_2_score_sign(room_id, mentor_id, signature)
+        print("update_mentor_sign: successfully")
+        return jsonify({'status': 200})        
+
 @app.route('/room/contestant/sign', methods=['POST'])
 def update_contestant_sign():
     try:
@@ -643,7 +674,7 @@ def update_contestant_sign():
         return jsonify({'status': 200})
     except Exception as e:
         print(e)
-        return jsonify({'status': 400})
+        return jsonify({'status': 400, "message": "Invalid data"})
 
 @app.route('/room/contestant/submission_signature', methods=['GET'])
 def view_submission_signature():
@@ -680,7 +711,7 @@ def view_test(room_id):
     response.headers['Content-Disposition'] = f'inline; filename=test_{room_id}_{mentor_id}.pdf'
     return response
 
-@app.route('/contestant', methods=['POST', 'GET'])
+@app.route('/contestant')
 def contestant_room():
     username = None
     metamask_id = None
@@ -690,13 +721,11 @@ def contestant_room():
         # public_key = session['public_key']
         metamask_id = session['metamask_id']
 
-    if request.method == 'POST':
-        room_id = request.form['room_id']
-        uploaded_file = request.files['file']
-        save_submit_to_db(room_id, uploaded_file)
-        return redirect('/contestant')  # Chuyển hướng người dùng sau khi tải lên thành công
-
-    contestant_rooms = query_contestant_room2(username)
+    # if request.method == 'POST':
+    #     room_id = request.form['room_id']
+    #     uploaded_file = request.files['file']
+    #     save_submit_to_db(room_id, uploaded_file)
+    #     return redirect('/contestant')  # Chuyển hướng người dùng sau khi tải lên thành công
 
     # contestant_rooms = query_contestant_rooms(public_key)
     # for room in contestant_rooms:
@@ -705,9 +734,43 @@ def contestant_room():
     #                                             username=username,
     #                                             metamask_id=metamask_id)
 
+    contestant_rooms = query_contestant_room2(username)
+
+    count = [0] * len(contestant_rooms)
+    i = 0
+    # print(len(contestant_rooms))
+    for room in contestant_rooms:
+        for tests in room['tests']:
+            if tests['submission'] is not None:
+                count[i] += 1
+        i += 1
+    # print(count)
+
     return render_template('contestant_ver2.html', contestant_rooms=contestant_rooms,
-                                                    username=username,
-                                                    metamask_id=metamask_id)
+                           username=username,
+                           metamask_id=metamask_id, count_test_complete=count)
+
+
+@app.route('/contestant/<room_id>', methods = ['GET','POST'])
+def contestant_a_room_detail(room_id):
+    username = None
+    metamask_id = None
+
+    if 'username' in session:
+        username = session['username']
+        metamask_id = session['metamask_id']
+
+    if request.method == 'POST':
+        # print('Hi ae')
+        room_id = request.form['room_id']
+        mentor_id = request.form['mentor_id']
+        uploaded_file = request.files['file']
+        save_submit_to_db(room_id, uploaded_file, mentor_id)
+        return jsonify({'Status': 200}), 200
+
+    room_detail = query_contestant_room_by_roomid(room_id)
+    return render_template('contestant_room_detail.html', room_detail=room_detail,
+                           username=username, metamask_id=metamask_id)
 
 @app.route('/view_submit/<room_id>', methods=['GET'])
 def view_submit(room_id):
@@ -729,12 +792,15 @@ def view_submit(room_id):
 @app.route('/former/get_byte/<room_id>', methods=['POST'])
 def former_sign(room_id):
     data = request.json
-    user_id = data['user_id']
-    if user_id == None:
-        return jsonify({'status': 400, 'message': 'user_id is required to validate you are former!'})
+    username = data['username']
+    if username == None:
+        return jsonify({'status': 400, 'message': 'username is required to validate you are former!'})
 
-    user = query_user_by_id(user_id)
-    if user['isFormer'] == False:
+    user = query_user_by_username(username)
+    if user == None:
+        return jsonify({'status': 400, 'message': 'Invalid username!'})
+    
+    if user['former'] == False:
         jsonify({'status': 400, 'message': 'You are not a former!'})
 
     if request.method == 'POST':
@@ -744,30 +810,58 @@ def former_sign(room_id):
 @app.route('/former/send_certificate', methods=['POST'])
 def former_send_certificate():
     data = request.json
-    user_id = data['user_id']
-    if user_id == None:
-        return jsonify({'status': 400, 'message': 'user_id is required to validate you are former!'})
+    print("/former/send_ceritificate: data = ", data)
+    username = data['username']
+    if username == None:
+        return jsonify({'status': 400, 'message': 'username is required to validate you are former!'})
     
-    user = query_user_by_id(user_id)
-    if user['isFormer'] == False:
+    user = query_user_by_username(username)
+    if user['former'] == False:
         jsonify({'status': 400, 'message': 'You are not a former!'})
 
     if request.method == 'POST':
-        old_score = data['old_score']
-        new_score = data['new_score']
         room_id   = data['room_id']
-        room_hash = data['room_hash']
         signature = data['signature']
-        contestant_id   = data['contestant_id']
-
-        if(old_score == None or new_score == None or room_id == None or room_hash == None or signature == None or contestant_id == None):
-            return jsonify({'status': 400, 'message': 'Invalid data'})
-        
+        room_hash = data['room_hash']
         room_byte = encode_to_byte_room_2(room_id)
-        
-        certificate = create_certificate(old_score, new_score, room_byte, room_hash, signature)
-        new_certificate =  add_certificate_2_by_userid(user_id, certificate)
-        return jsonify({'status': 200, 'data': new_certificate})
+
+        room = find_room_2_by_id(room_id)
+        if room is None:
+            return jsonify({'status': 404, 'message': 'Invalid room id!'})
+
+        certificate = create_certificate(room['prev_score'], room['updated_score'], room_byte, room_hash, signature)
+        if certificate is None:
+            return jsonify({'status': 400, 'message': 'Failed to create certificate!'})
+        add_certificate_2_by_userid(room['contestant']['id'], certificate)
+        print("add_certificate: successfully")
+
+        contestant_username = room['contestant']['username']
+        update_score = str(room['updated_score'])
+        # message = {
+        #     contestant_username,
+        #     update_score
+        # }
+        # message = dumps(message)
+        apiLink = 'http://127.0.0.1:8000/done_exam?username='+contestant_username+'&score='+update_score+'&community=1'
+        return redirect(apiLink)
+
+@app.route('/save_grade/<room_id>', methods=['GET', 'POST'])
+def save_grade(room_id):
+    # Nhận dữ liệu từ yêu cầu POST
+    data = request.json
+    print(data)
+    # Lấy thông tin từ dữ liệu nhận được
+    mentor_id = data.get('mentorID')
+    score = data.get('score')
+
+    response = update_score_by_room_id_and_mentor_id(room_id ,mentor_id,score)
+
+    return jsonify(response)
+
+@app.route('/get_all_users', methods=['GET'])
+def get_all_users():
+    users = query_all_users()
+    return jsonify(users)
 
 if __name__ == '__main__':
     app.run()
