@@ -31,7 +31,7 @@ class User:
 def query_all_users():
     # Truy vấn cơ sở dữ liệu để lấy danh sách tất cả người dùng
     users_collection = db['User2']
-    users = users_collection.find({}, {'_id': 0})
+    users = users_collection.find({}, {"_id": 0})
     return list(users)
 
 def query_user_by_id(id):

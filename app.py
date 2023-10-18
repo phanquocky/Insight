@@ -8,11 +8,15 @@ from Keypair.generation import *
 from forms import *
 from bson.json_util import dumps, loads
 from api_link_create import *
+from flask_cors import CORS
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = SECRECT_KEY 
 app.config['SESSION_COOKIE_SECURE'] = True
 
+
+# Initialize CORS with your Flask app
+cors = CORS(app, resources={r"/*": {"origins": "*"}})
 @app.before_request
 def before_request():
   session.permanent = True
