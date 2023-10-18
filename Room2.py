@@ -277,6 +277,7 @@ def update_final_score(room_id):
                     updated_score = room['pre_score'] + (room['want_score'] - room['pre_score'])*0.6
                 elif room['final_result'] > 9:
                     updated_score = room['pre_score'] + (room['want_score'] - room['pre_score'])*(room['final_result']/10)
+                update_score = int(update_score)
                 rooms_collection.update_one({'_id': ObjectId(room_id)}, {'$set': {'updated_score': updated_score}})
         if temp == 0:
             return
