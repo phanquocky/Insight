@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block content %}
+
+<script>
+function viewTest(roomID, mentorID) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', '/view_test/' + roomID + "?mentor_id=" + mentorID, true);
+  xhr.responseType = 'arraybuffer';
+
+  xhr.onload = function () {
+    if (xhr.status == 200) {
+      // Nếu nhận được dữ liệu thành công, tạo một blob từ arrayBuffer và mở cửa sổ mới chứa PDF
+      var arrayBuffer = xhr.response;
+      var blob = new Blob([arrayBuffer], { type: 'application/pdf' });
+      var url = URL.createObjectURL(blob);
+
+      // Mở cửa sổ mới chứa PDF
+      window.open(url, '_blank');
+    } else {
+      alert('Error! Please try again!');
+    }
+  };
+
+  // Gửi yêu cầu lấy dữ liệu PDF từ server
+  xhr.send();
+}
+
+function viewTestSignature(room_id, mentorID){
+  window.open('/room/mentor/test_signature?room_id=' + room_id + '&mentor_id=' + mentorID, '_blank');
+}
+
+function viewSubmit(roomID, mentorID) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', '/view_submit/' + roomID + "?mentor_id=" + mentorID, true);
+  xhr.responseType = 'arraybuffer';
+
+  xhr.onload = function () {
+    if (xhr.status == 200) {
+      // Nếu nhận được dữ liệu thành công, tạo một blob từ arrayBuffer và mở cửa sổ mới chứa PDF
+      var arrayBuffer = xhr.response;
+      var blob = new Blob([arrayBuffer], { type: 'application/pdf' });
+      var url = URL.createObjectURL(blob);
+
+      // Mở cửa sổ mới chứa PDF
+      window.open(url, '_blank');
+    } else {
+      alert('Error! Please try again!');
+    }
+  };
+
+  // Gửi yêu cầu lấy dữ liệu PDF từ server
+  xhr.send();
+}
+</script>
+
+<div class="container">
+  <h1 class="" 
+    {% if room.is_finish %}
+    style="color: green;"
+    {% endif %}
+   >
+    Room {{room._id}}
+  </h1>
+  
+  <ol>
+    <li>Room ID: {{room._id}}</li>
+    
+    <li>
+      Room Contestant: {{room.contestant.username}}
+      <ol>
+        <li>Score: {{room.prev_score}}</li>
+        <li>Wanted Score: {{room.want_score}}</li>
+      </ol>
+    </li>
+  
+    <li>
+      Room Mentor:
+      <ul>
+        {% for mentor in room.mentors %}
+        <li>{{mentor.username}}</li>
+        {% endfor %}
+      </ul>
+    </li>
+  
+    <li>
+      Room Final Score: {{room.final_result}}
+    </li>
+  
+    <li>
+      Contestant Score Update: {{room.updated_score}}
+    </li>
+  </ol>
+  
+  <h4 class=""> Test, Submission and Score</h4>
+  <table class="container table table-striped mt-3 text-center">
+    <thead>
+      <tr>
+        <th scope="col">#ID</th>
+        <th scope="col">Mentor</th>
+        <th scope="col">Test</th>
+        <th scope="col">Submission</th>
+        <th scope="col">Score</th>
+      </tr>
+    </thead>
+
+    <tbody class="overflow-auto">
+      {% for test in room.tests %}
+      <tr>
+        <th scope="row" class="col-1">{{ loop.index }}</th>
+        <td class="col-2">{{ test.mentor_name }}</td>
+        
+        <!-- Test -->
+        {% if not test.test %}
+        <td class="col-2"> None </td>
+        {% else %}
+        <td class="col-2">
+          <button class="btn btn-success" onclick="viewTest('{{ room._id }}', '{{test.mentor_id}}')">View</button> 
+        </td> 
+        {% endif %}
+
+        <!-- Submission -->
+        {% if not test.submission %}
+        <td class="col-2"> None </td>
+        {% else %}
+        <td class="col-2">
+          <button class="btn btn-success" onclick="viewSubmission('{{ room._id }}', '{{loop.index - 1}}')">View</button> 
+        </td> 
+        {% endif %}
+
+        <!-- Score -->
+        {% if not test.score %}
+        <td class="col-2"> None </td>
+        {% else %}
+        <td class="col-2"> test.score </td> 
+        {% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

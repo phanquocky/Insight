@@ -3,85 +3,89 @@
 
 <link rel="stylesheet" href="../static/user_profile.css">
 
-<div class="toggle-group pull-right p-3 text-center">
-  <p class="ms-2" for="judge-check" lass="form-check-label"> <strong>Judge</strong></p>
-  <label class="switch">
-    <input id="judge-check" type="checkbox" name="{{username}}"
-       {% if user.judge_state == True %} checked {% endif %}
-      onchange="changeJudgeState(event, '{{username}}', '{{user.score}}')" 
-    >
-    <span class="slider round"></span>
-  </label>
-</div>
-
-<!-- Button trigger modal -->
-<button style="display: none;" id="buttonModal" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-  Launch static backdrop modal
-</button>
-
-<!-- Modal -->
-<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="staticBackdropLabel">Announcement</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <p>Now, you are a judge. And you are <strong>already to  be judge </strong> for  another Competiton.</p>
-        <p> If you want to stop being a judge, please uncheck the judge button.</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary"   data-bs-dismiss="modal">Understood</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script type="text/javascript">
-  function save_user_info(data) {
-    console.log(data);
-    sessionStorage.setItem('user', data);
-    console.log("save to session storage")
-  }
-  save_user_info({{ data|safe }})
-</script>
-
 <script>
-  function changeJudgeState(event, username, score) {
-    const judge_state = event.target.checked;
-    console.log(username, judge_state, score)
-    if(judge_state == true && score < 10) {
-      alert("You need to have at least 10 points to become a judge!")
-      event.target.checked = false;
-      return;
-    }
+  function openNewTabWithContent(content) {
+    var newWindow = window.open(" ", "_blank");
+    newWindow.document.write(content);
+  }
 
-    fetch(`/${username}`, {
-      method: 'PATCH',
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        judge_state: judge_state
-      })
-    })
-    .then(response => response.json())
-    .then(result => {
-      console.log(result);
-      sessionStorage.setItem('user', result.user);
+  function openNewTabToDownloadBinaryFile(content) {
+    // var newWindow = window.open(" ", "_blank");
+    // var blob = new Blob([content], {type: "application/octet-stream"});
+    // var url = URL.createObjectURL(blob);
+    // newWindow.location.href = url;
 
-      if(judge_state == true) {
-        document.getElementById("buttonModal").click();
-      }
-    })
-    .catch(error => {
-      console.log('Error:', error);
-      alert("Server is busy, try again later!")
-      event.target.checked = false;
-    });
+    // Create a Blob containing the binary content
+    var blob = new Blob([content], { type: "application/octet-stream" });
+
+    // Create a URL for the Blob
+    var url = URL.createObjectURL(blob);
+
+    // Create a new anchor element
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "room.bin";
+
+    // Trigger a click event on the anchor element to open a new tab and initiate the download
+    a.dispatchEvent(new MouseEvent("click"));
+
+    // Clean up by revoking the URL
+    URL.revokeObjectURL(url);
   }
 </script>
+
+<div class="container justify-content-center">
+  <h3 class="">{{user.username}}</h3>
+
+  <ul> 
+    <li>Score: {{user.score}}</li>
+    <li>Metamask address: {{user.metamask_id}}</li>
+  </ul>
+
+  {% if certificates %}
+  <table class="container table table-striped mt-3 text-center">
+    <thead>
+      <tr>
+        <th scope="col">#ID</th>
+        <th scope="col">Date</th>
+        <th scope="col">Old Score</th>
+        <th scope="col">New Score</th>
+        <th scope="col">Room Data</th>
+        <th scope="col">Room Hash</th>
+        <th scope="col">Signature</th>
+      </tr>
+    </thead>
+
+    <tbody class="overflow-auto">
+      {% for certificate in certificates %}
+      <tr>
+        <th scope="row" class="col-1">{{ loop.index }}</th>
+        <td class="col-2">{{ certificate.date }}</td>
+        <td class="col-2">{{ certificate.old_score }}</td>
+        <td class="col-2">{{ certificate.new_score }}</td>
+        <td class="col-2"> 
+          <button class="btn btn-success" 
+             onclick="openNewTabToDownloadBinaryFile('{{certificate.room_byte}}')">
+             View
+          </button>
+        </td>
+        <td class="col-2"> 
+            <button class="btn btn-success" 
+                    onclick="openNewTabWithContent('{{certificate.room_hash}}')">
+                    View
+            </button>
+        </td>
+        <td class="col-2">
+          <button class="btn btn-success"
+                  onclick="openNewTabWithContent('{{certificate.signature}}')">
+              View
+          </button>
+        </td>
+      </tr>
+        {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
 
 {% endblock %}

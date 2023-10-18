@@ -1,0 +1,150 @@
+#page-container {
+    min-height: 100%;
+    position: relative;
+    margin: 0 auto;
+    border-right: 1px solid #ccc;
+    border-left: 1px solid #f5c0c0;
+    background: #f1f2f2;
+}
+
+#content {
+    margin: 20px auto 1em;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-top: 1em;
+    width: 95%;
+    height: 100%;
+    min-height: 32em;
+    display: block;
+}
+
+#content-body {
+    padding-bottom: 2em;
+}
+
+.middle-content.wrapper {
+    padding: 1em 0;
+    background: #fff;
+    border-radius: 1em;
+    min-height: 31em;
+}
+
+.main-content {
+    padding: 10px;
+}
+
+.button.unselectable.button.full.small, button.unselectable.button.full.small, input[type=submit].unselectable.button.full.small {
+    margin: 0 auto;
+}
+
+.button.small, button.small, input[type=submit].small {
+    min-height: auto;
+    padding: calc(0.5rem - 1px) calc(1rem - 1px);
+}
+
+.button, button, input[type=submit] {
+    -webkit-box-align: center;
+    align-items: center;
+    background-clip: padding-box;
+    background-color: #9c3706;
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+    box-shadow: rgba(0,0,0,.02) 0 1px 3px 0;
+    box-sizing: border-box;
+    cursor: pointer;
+    display: block;
+    font-family: system-ui,-apple-system,system-ui,helvetica neue,Helvetica,Arial,sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    -webkit-box-pack: center;
+    justify-content: center;
+    line-height: 1.25;
+    margin: 0;
+    padding: calc(0.875rem - 1px) calc(1.5rem - 1px);
+    position: relative;
+    text-decoration: none;
+    -webkit-transition: all 250ms;
+    transition: all 250ms;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    vertical-align: middle;
+    text-align: center;
+    width: auto;
+}
+
+.unselectable {
+    cursor: default;
+}
+
+.full {
+    width: 100%!important;
+}
+
+.contest-group-header {
+    padding-bottom: 1em;
+}
+
+.toggle {
+    font-weight: 700;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.toggle .fa {
+    transition: transform 0.4s;
+}
+
+.toggle.open .fa {
+    transform: rotate(90deg);
+}
+
+h3 {
+    font-weight: 400;
+    font-size: 1.4em;
+    border-radius: 0.5em;
+    padding: 0;
+    margin: 0;
+}
+
+a {
+    text-decoration: none; /* Loại bỏ gạch chân */
+    color: inherit;
+}
+
+.list-contest {
+    box-shadow: 0px 1px 2px lightgrey, 0px 1px 5px lightgrey;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+}
+
+.list-contest .info-contest:first-child {
+    margin-right: 15px;
+}
+
+.list-contest .info-contest:nth-child(2) {
+    margin-right: 5px;
+}
+
+.list-contest .info-contest {
+    flex: 1;
+}
+
+.list-contest .participate-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.list-contest .contest-title {
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 150%;
+    margin-bottom: 10px;
+}

@@ -1,7 +1,7 @@
 import json
 from flask import Flask, render_template, request, flash, url_for, session, redirect, abort, jsonify, make_response
 from datetime import datetime, timedelta
-from mongodb import *
+from mongodb_ver2 import *
 from config import SECRECT_KEY
 from Keypair.sign_verify import *
 from Keypair.generation import *
@@ -16,7 +16,21 @@ app.config['SESSION_COOKIE_SECURE'] = True
 @app.before_request
 def before_request():
   session.permanent = True
-  app.permanent_session_lifetime = timedelta(minutes = 15) #Phiên làm việc sẽ tự động xóa sau 15p nếu không có thêm bất cứ request nào lên server.
+  app.permanent_session_lifetime = timedelta(minutes = 30) #Phiên làm việc sẽ tự động xóa sau 30p nếu không có thêm bất cứ request nào lên server.
+
+# Error Page 
+@app.errorhandler(403)
+def error_forbidden(e):
+    static_url = app.static_url_path
+    css_url = f"{static_url}/403.css"
+    return render_template('403.html', css_url = css_url), 403
+
+@app.errorhandler(404)
+def page_not_found(e):
+    static_url = app.static_url_path
+    css_url = f"{static_url}/404.css"
+    return render_template('404.html', css_url = css_url), 404
+
 
 @app.route('/')
 def main():
@@ -25,13 +39,11 @@ def main():
 @app.route('/home', methods=['GET', 'POST'])
 def home():
     username = None
-    public_key = None
     metamask_id = None
     if 'username' in session:
         username = session['username']
-        public_key = session['public_key']
         metamask_id = session['metamask_id']
-    return render_template("base.html", username = username, public_key = public_key, metamask_id = metamask_id)
+    return render_template("base.html", username = username, metamask_id = metamask_id)
 
 @app.route('/mail', methods=['GET', 'POST'])
 def mail():
@@ -103,35 +115,74 @@ def search():
                            request_name = name,
                            username = username)
 
-@app.route('/signup', methods = ['GET', 'POST'])
-def signup():
+@app.route('/former_sign_up', methods = ['GET', 'POST'])
+def former_sign_up():
     if  'username' in session:
-        return render_template("base.html", username = session['username'])
+        return redirect(url_for('home'))
 
     if request.form.get('signup-submit'):
         form = SignupForm(request.form)  
         if form.validate():
-            new_user = User(name = form.username.data, 
-                            username = form.username.data, 
-                            password = form.password.data.encode('utf-8'), 
-                            public_key = form.public_key.data,
-                            metamask_id = form.metamask_id.data)
+            new_user = User( username = form.username.data, 
+                            metamask_id = form.metamask_id.data,
+                            score = form.score.data,
+                            former = True)
+            print(new_user)
             new_user.addToDB()
             flash('Signed up successfully.', category='success')
-        return render_template('signup.html', form=form)
+        return render_template('former_sign_up.html', form=form, former = True)
     
     elif request.form.get('login-submit'):
         form = LoginForm(request.form)
         if form.validate():
             session['username'] = form.username.data
             session['metamask_id'] = form.metamask_id.data
-            session['public_key'] = query_users_by_username(session['username'])['public_key']
 
             flash('Logged in successfully.', category='success')
             return redirect(url_for('home'))
-        return render_template('signup.html', form=form, login = True)
+        return render_template('former_sign_up.html', form=form, former = True)
     
-    return render_template('signup.html')
+    return render_template('former_sign_up.html', former = True)
+
+@app.route('/sign_up', methods = ['GET', 'POST'])
+def signup():
+    if  'username' in session:
+        return redirect(url_for('home'))
+    
+    username = request.args.get('username', default = None, type = str)
+    score = request.args.get('score', default = None, type = int)
+
+    if not username or username == None or username == "None":
+        username = request.form.get("username", default = None, type = str)
+        score = request.form.get("score", default = None, type = int)
+
+    if request.form.get('signup-submit'):
+        form = SignupForm(request.form)  
+        if form.validate():
+            new_user = User(username = form.username.data, 
+                            metamask_id = form.metamask_id.data,
+                            score = score)
+            new_user.addToDB()
+            flash('Signed up successfully.', category='success')
+            return render_template('signup.html', username_login = username, score = score)
+        return render_template('signup.html', form=form, username_signup = username, score = score)
+    
+    elif request.form.get('login-submit'):
+        form = LoginForm(request.form)
+        if form.validate():
+            session['username'] = form.username.data
+            session['metamask_id'] = form.metamask_id.data
+            if score is not None:
+                update_user_score(form.username.data, score)
+
+            flash('Logged in successfully.', category='success')
+            return redirect(url_for('home'))
+        return render_template('signup.html', form=form, username_login = username, score = score)
+    
+    if query_user_by_username(username):
+        return render_template('signup.html', username_login = username, score = score)
+    else:
+        return render_template('signup.html', username_signup = username, score = score)
 
 @app.route('/generateKey', methods = ['POST'])
 def generateKey():
@@ -143,13 +194,12 @@ def generateKey():
         'public_key': public_key
     }
 
-    return json.dumps(data)
+    return dumps(data)
 
 @app.route('/logout')
 def logout():
     # Xóa thông tin đăng nhập khỏi session để người dùng đăng xuất
     session.pop('username', None)
-    session.pop('public_key', None)
     session.pop('metamask_id', None)
     return redirect(url_for('home'))
 
@@ -161,91 +211,49 @@ def contest():
     min_score = int(min_score) if min_score else 0
     max_score = int(max_score) if max_score else 100
 
+    new_score = request.args.get('new_score')
+    print(new_score)
+
     username = None
     user = None
+    metamask_id = None
     if 'username' in session:
         username = session['username']
-        user = query_users_by_username(username)
-        # print("user join contest", user)
+        user = query_user_by_username(username)
+        metamask_id = session['metamask_id']
 
     mentors = query_users_by_score(min_score=min_score, max_score=max_score)
-    # print("mentors in contest: ", mentors)
     return render_template('contest.html', 
                            mentors = mentors,
                            min_score = min_score,
                            max_score = max_score,
+                           new_score = new_score,
                            username = username,
-                           data = json.dumps(mentors),
-                           user = json.dumps(user))
+                           user = user,
+                           user_json = dumps(user),
+                           metamask_id = metamask_id)
 
-@app.route('/challenge', methods=['GET','POST'])
+@app.route('/challenge', methods=['POST'])
 def challenge():
     if request.method == 'POST':
         data = request.json
-        challenger = data['challenger']
-        mentor = data['mentor']
+        print("data = ", data)
+        challenger_id = data['challenger_id']
+        score = data['score']
+        new_score = data['new_score']
 
-        print("challenger: ", challenger)
-        print("mentor: ", mentor)
+        # print("challenger_id: ", challenger_id)
+        challenger = find_users({"_id": ObjectId(challenger_id['$oid'])})[0]
 
-        find_room_condition = {
-            "contestant": challenger['public_key'],
-            "status": {'$gte': 1}
-        }
+        # Find 5 mentors
+        mentors = find_examiner(score, new_score)
+        if len(mentors) == 0:
+            return jsonify({'status':'failed', 'message': 'No mentor found'})
 
-        # Check if challenger is in another room (Join another contest)
-        if(len(find_rooms(find_room_condition)) > 0):
-            return jsonify({'result':'failed', 'message': 'Challenger is in another room'})
+        # Create room
+        room = create_room_2(challenger, mentors, prev_score=score, want_score=new_score)
 
-        # Gui request ve mentor nhieu lan
-        if(len(find_rooms({
-            "mentor": mentor['public_key'],
-            "contestant": challenger['public_key']
-        })) > 0):
-            return jsonify({'result':'success', 'message': 'Request is already', 
-                            'challenger': challenger['public_key'],
-                            'mentor': mentor['public_key']})
-
-        examiners = find_examiner_above(mentor['score'] if 'score' in mentor else 0)
-        if not examiners:
-            examiners.append(mentor['public_key'])
-
-        examiners_public_key = [examiner['public_key'] for examiner in examiners]      
-        print("create room: ", mentor['public_key'], challenger['public_key'])
-        room = create_room(mentor = mentor['public_key'], challenger = challenger['public_key'],examiners = examiners_public_key)
-        print("room created: ", room)
-
-        time_expire = 3 
-        api_link = mentor_confirm_link(mentor['public_key'], challenger['public_key'])
-        # print("api_link: ", api_link)
-        send_mail_to_user(challenger['public_key'], 
-                         mentor['public_key'], 
-                          "You have a new challenge", 
-                          "You have a new challenge from " + challenger['public_key'] + ". Click this link to accept it or it will be expired after {} days. ({})".format(time_expire, api_link), 
-                          time_expire)
-
-        return  jsonify({'result':'success', 
-                         'message': 'Room is create',
-                         'challenger': challenger['public_key'],
-                         'mentor': mentor['public_key']})
-    
-    elif request.method == 'GET':
-        challenger_pubkey = request.args.get('challenger')
-        mentor_pubkey = request.args.get('mentor')
-
-        rooms = find_rooms({"mentor": mentor_pubkey, "contestant": challenger_pubkey})
-        if(rooms == None or len(rooms) == 0):
-            abort(404, {"message": "Room not found"})
-        
-        examiners_public_key = rooms[0]['judges']
-        examiners = [find_users({"public_key": examiner})[0] for examiner in examiners_public_key]
-    
-        username = None
-        if 'username' in session:
-            username = session['username']
-        return render_template('challenge.html', 
-                                examiners = examiners,
-                                username = username)
+        return  jsonify({'status':'success', 'data': room})
 
 @app.route('/challenge_request', methods=['GET'])
 def challenge_request():
@@ -303,7 +311,7 @@ def sign_route():
             signature, private_key = sign(hex_string_to_bytes(message), private_key)
             signature_hex = signature.hex()
             signature_hex = "0x" + signature_hex
-            return json.dumps({'signature': signature_hex})
+            return dumps({'signature': signature_hex})
         except Exception as e:
             print(e)
             abort(400, "Invalid data")
@@ -350,7 +358,7 @@ def verify_route():
         try:
             is_verified = None
             is_verified = verify(hex_string_to_bytes(message), hex_string_to_bytes(signature),  hex_string_to_public_key(public_key))
-            return json.dumps({'is_verified': is_verified})        
+            return dumps({'is_verified': is_verified})        
         except Exception as e:
             print(e)
             abort(400, "Invalid data")
@@ -391,20 +399,32 @@ def verify_route():
                 alert_message = "alert-danger"
                 return render_template('verify.html', public_key = public_key, message = message, signature = signature, alert_message = alert_message, username = username)
 
+@app.route('/<username_search>',  methods=['GET', 'PATCH'])
+def user_profile(username_search):
+    username = None
+    metamask_id = None
+    if 'username' in session:
+        username = session['username']
+        metamask_id = session['metamask_id']
 
-@app.route('/<username>',  methods=['GET', 'PATCH'])
-def user_profile(username):
     if request.method == 'GET':
-        user = query_users_by_username(username)
+        user = query_user_by_username(username_search)
+        print('<username_search>: user = ', user)
         if user == None:
-            abort(404)
+            return jsonify({"error": "Error: Invalid username"}), 404
+
+        CertificateRoom = query_certificate_2_by_username(username_search)
+        certificates = None
+        if CertificateRoom:
+            certificates = CertificateRoom['certificates']
 
         return render_template("user_profile.html", user = user, 
+                                                    certificates = certificates,
                                                     username = username, 
-                                                    data=json.dumps(user))
+                                                    metamask_id = metamask_id)
     else:
         data = request.json
-        user = query_users_by_username(username)
+        user = query_user_by_username(username)
         print("user = ", user)
         if user == None:
             abort(404, "Invalid username")
@@ -414,7 +434,7 @@ def user_profile(username):
                 user['judge_state'] = data['judge_state']
                 update_user_judge_state(username, data['judge_state'])
 
-        return json.dumps({'message': 'success', 'user': user})
+        return dumps({'message': 'success', 'user': user})
 
 @app.route('/send', methods=['POST'])
 def send_mail():
@@ -466,51 +486,189 @@ def mentor_confirm():
 def mentor():
     # Lấy dữ liệu từ MongoDB
     username = None
-    public_key = None
+    # public_key = None
+    metamask_id = None
     if 'username' in session:
         username = session['username']
-        public_key = session['public_key']
+        # public_key = session['public_key']
+        metamask_id = session['metamask_id']
+
+    # if request.method == 'POST':
+    #     room_id = request.form['room_id']
+    #     print("room_id: ", room_id)
+    #     uploaded_file = request.files['file']
+    #     save_test_to_db(room_id, uploaded_file)
+    #     return redirect('/mentor')
+
+    mentor_rooms = query_mentor_rooms2(username)
+    # mentor_rooms = query_mentor_rooms(public_key)
 
     if request.method == 'POST':
         room_id = request.form['room_id']
         uploaded_file = request.files['file']
-        save_test_to_db(room_id, uploaded_file)
-        return redirect('/mentor')  # Chuyển hướng người dùng sau khi tải lên thành công
+        mentor_id = request.form['mentor_id']
+        upload_test_to_db(room_id, uploaded_file, mentor_id)
+        return redirect('/mentor')
 
-    mentor_rooms = query_mentor_rooms(public_key)
+    # for room in mentor_rooms:
+    #     contestant_user = query_user_by_public_key(room['contestant'])
+    #     # print("contestant_user: ", contestant_user)
+    #     room['contestant'] = contestant_user['name'] if contestant_user['name'] else contestant_user['username']
+    #     if(room['status'] == 0):
+    #         room['status'] = "waiting..."
+    #     else:
+    #         room['status'] = "accepted"
+    # print(mentor_rooms)
 
-    for room in mentor_rooms:
-        contestant_user = query_user_by_public_key(room['contestant'])
-        # print("contestant_user: ", contestant_user)
-        room['contestant'] = contestant_user['name'] if contestant_user['name'] else contestant_user['username']
-        if(room['status'] == 0):
-            room['status'] = "waiting..."
-        else:
-            room['status'] = "accepted"
-    return render_template('mentor.html', mentor_rooms=mentor_rooms, username=username)
+    return render_template('mentor.html', mentor_rooms=mentor_rooms, 
+                                            username=username,
+                                            metamask_id=metamask_id)
 
-# Đoạn này làm để trả tải về máy
-# @app.route('/view_test/<room_id>', methods=['GET'])
-# def view_test(room_id):
-#     # Truy vấn cơ sở dữ liệu để lấy nội dung của file Test dựa trên room_id
-#     room_content = get_test_from_db(room_id)
-#
-#     # Kiểm tra xem room_content có tồn tại không
-#     if room_content is None:
-#         return "Test not found", 404
-#
-#     # Tạo tạm thời một file PDF từ dãy binary
-#     temp_pdf_path = f'test_{room_id}.pdf'
-#     with open(temp_pdf_path, 'wb') as temp_pdf:
-#         temp_pdf.write(room_content)
-#
-#     # Trả về file PDF dưới dạng response
-#     return send_file(temp_pdf_path, as_attachment=True, download_name=f'test_{room_id}.pdf')
+@app.route('/former/view', methods=['GET'])
+def former_view():
+    username = None
+    if 'username' in session:
+        username = session['username']
+    if not username:
+        abort(403)
+    if query_user_by_username(username)['former'] == False:
+        abort(403)
+
+    rooms = find_room_is_finished()
+    print(rooms)
+    return render_template('former_view.html', 
+                           rooms = rooms,
+                           username = session['username'], 
+                           metamask_id = session['metamask_id'])
+
+@app.route('/public/room/<room_id>', methods=['GET'])
+def view_public_room(room_id):
+    username = None
+    metamask_id = None
+    if 'username' in session:
+        username = session['username']
+        metamask_id = session['metamask_id']
+
+    room = find_room_2_by_id(room_id)
+    if(room is None):
+        abort(404, "Invalid room id")
+
+    for test in room['tests']:
+        for mentor in room['mentors']:
+            if(mentor['id'] == test['mentor_id']):
+                test['mentor_name'] = mentor['username']
+                break
+
+    return render_template('render_room.html', room=room, 
+                                                username=username,
+                                                metamask_id=metamask_id)
+
+# Description:
+# Get:
+    # Hiện giao diện bình thường thôi. Có 1 chỗ để người dùng up load file .bin (file binary)
+    # Sau khi người dùng upload file và nhấn vào button <render room>, 
+    # Thì thực hiện Post vào đường link này với content là nội dung của file ở dạng mảng byte
+@app.route('/public/room', methods=['GET', 'POST'])
+def view_room():
+    username = None
+    metamask_id = None
+    if 'username' in session:
+        username = session['username']
+        metamask_id = session['metamask_id']
+
+    if request.method == 'GET':
+        print('Waiting for ... Hung')
+
+    if request.method == 'POST':
+        data = request.json
+        room_bytes = data.room_bytes
+        room = loads(room_bytes)
+        if not isinstance(room, Room2):
+            jsonify({"error": "Error: Invalid room data"}), 400
+        print("room = ", room)
+
+        for test in room['tests']:
+            for mentor in room['mentors']:
+                if(mentor['id'] == test['mentor_id']):
+                    test['mentor_name'] = mentor['username']
+                    break
+                
+
+        return render_template('render_room.html', room=room,
+                                                username=username,
+                                                metamask_id=metamask_id)
+
+@app.route('/room/mentor/sign', methods=['POST'])
+def update_mentor_sign():
+    try:
+        data = request.json
+        room_id = data['room_id']
+        mentor_id = data['mentor_id']
+        signature = data['signature']
+
+        update_room_2_mentor_sign(room_id, mentor_id, signature)
+        print("update_mentor_sign: successfully")
+        return jsonify({'status': 200})
+    except Exception as e:
+        print(e)
+        return jsonify({'status': 400})
+
+@app.route('/room/mentor/test_signature', methods=['GET'])
+def view_signature():
+    room_id = request.args.get('room_id')
+    mentor_id = request.args.get('mentor_id')
+    room = find_room_2_by_id(room_id)
+    if(room is None):
+        return jsonify({'status': 404, 'message': 'Invalid room id'})
+    
+    tests = room['tests']
+    for test in tests:
+        if(test['mentor_id'] == ObjectId(mentor_id)):
+            if('test_sign' not in test ) or (test['test_sign'] is None):
+                return jsonify({'status': 404, 'message': 'Have not signed yet'})
+            else :
+                return jsonify({'status': 200, 'signature': test['test_sign']})
+    return jsonify({'status': 404, 'message': 'Invalid mentor id'})
+
+@app.route('/room/contestant/sign', methods=['POST'])
+def update_contestant_sign():
+    try:
+        data = request.json
+        room_id = data['room_id']
+        mentor_id = data['mentor_id']
+        signature = data['signature']
+
+        update_room_2_contestant_sign(room_id, mentor_id, signature)
+        print("update_mentor_sign: successfully")
+        return jsonify({'status': 200})
+    except Exception as e:
+        print(e)
+        return jsonify({'status': 400})
+
+@app.route('/room/contestant/submission_signature', methods=['GET'])
+def view_submission_signature():
+    room_id = request.args.get('room_id')
+    mentor_id = request.args.get('mentor_id')
+
+    room = find_room_2_by_id(room_id) 
+
+    if(room is None):
+        return jsonify({'status': 404, 'message': 'Invalid room id'})
+
+    tests = room['tests']
+    for test in tests:
+        if(test['mentor_id'] == ObjectId(mentor_id)):
+            if('submission_sign' not in test ) or (test['submission_sign'] is None):
+                return jsonify({'status': 404, 'message': 'Have not signed yet'})
+            else :
+                return jsonify({'status': 200, 'signature': test['test_sign']})
+    return jsonify({'status': 404, 'message': 'Invalid mentor id'})
 
 @app.route('/view_test/<room_id>', methods=['GET'])
 def view_test(room_id):
+    mentor_id = request.args.get('mentor_id')
     # Truy vấn cơ sở dữ liệu để lấy nội dung của file Test dựa trên room_id
-    room_content = get_test_from_db(room_id)
+    room_content = get_test_from_room_2(room_id, mentor_id)
 
     # Kiểm tra xem room_content có tồn tại không
     if room_content is None:
@@ -519,16 +677,18 @@ def view_test(room_id):
     # Trả về nội dung của file Test dưới dạng response PDF
     response = make_response(room_content)
     response.headers['Content-Type'] = 'application/pdf'
-    response.headers['Content-Disposition'] = f'inline; filename=test_{room_id}.pdf'
+    response.headers['Content-Disposition'] = f'inline; filename=test_{room_id}_{mentor_id}.pdf'
     return response
 
 @app.route('/contestant', methods=['POST', 'GET'])
 def contestant_room():
     username = None
-    public_key = None
+    metamask_id = None
+
     if 'username' in session:
         username = session['username']
-        public_key = session['public_key']
+        # public_key = session['public_key']
+        metamask_id = session['metamask_id']
 
     if request.method == 'POST':
         room_id = request.form['room_id']
@@ -536,15 +696,25 @@ def contestant_room():
         save_submit_to_db(room_id, uploaded_file)
         return redirect('/contestant')  # Chuyển hướng người dùng sau khi tải lên thành công
 
-    contestant_rooms = query_contestant_rooms(public_key)
-    for room in contestant_rooms:
-        room['mentor'] = query_user_by_public_key(room['mentor'])['name']
-    return render_template('contestant.html', contestant_rooms=contestant_rooms, username=username)
+    contestant_rooms = query_contestant_room2(username)
+
+    # contestant_rooms = query_contestant_rooms(public_key)
+    # for room in contestant_rooms:
+    #     room['mentor'] = query_user_by_public_key(room['mentor'])['username']
+    # return render_template('contestant.html', contestant_rooms=contestant_rooms,
+    #                                             username=username,
+    #                                             metamask_id=metamask_id)
+
+    return render_template('contestant_ver2.html', contestant_rooms=contestant_rooms,
+                                                    username=username,
+                                                    metamask_id=metamask_id)
 
 @app.route('/view_submit/<room_id>', methods=['GET'])
 def view_submit(room_id):
+    mentor_id = request.args.get('mentor_id')
+
     # Truy vấn cơ sở dữ liệu để lấy nội dung của file Test dựa trên room_id
-    room_content = get_submit_from_db(room_id)
+    room_content = get_submit_from_room_2(room_id, mentor_id)
 
     # Kiểm tra xem room_content có tồn tại không
     if room_content is None:
@@ -555,6 +725,49 @@ def view_submit(room_id):
     response.headers['Content-Type'] = 'application/pdf'
     response.headers['Content-Disposition'] = f'inline; filename=test_{room_id}.pdf'
     return response
+
+@app.route('/former/get_byte/<room_id>', methods=['POST'])
+def former_sign(room_id):
+    data = request.json
+    user_id = data['user_id']
+    if user_id == None:
+        return jsonify({'status': 400, 'message': 'user_id is required to validate you are former!'})
+
+    user = query_user_by_id(user_id)
+    if user['isFormer'] == False:
+        jsonify({'status': 400, 'message': 'You are not a former!'})
+
+    if request.method == 'POST':
+        room_byte = encode_to_byte_room_2(room_id)
+        return jsonify({'status': 200, 'room_byte': room_byte})
+
+@app.route('/former/send_certificate', methods=['POST'])
+def former_send_certificate():
+    data = request.json
+    user_id = data['user_id']
+    if user_id == None:
+        return jsonify({'status': 400, 'message': 'user_id is required to validate you are former!'})
+    
+    user = query_user_by_id(user_id)
+    if user['isFormer'] == False:
+        jsonify({'status': 400, 'message': 'You are not a former!'})
+
+    if request.method == 'POST':
+        old_score = data['old_score']
+        new_score = data['new_score']
+        room_id   = data['room_id']
+        room_hash = data['room_hash']
+        signature = data['signature']
+        contestant_id   = data['contestant_id']
+
+        if(old_score == None or new_score == None or room_id == None or room_hash == None or signature == None or contestant_id == None):
+            return jsonify({'status': 400, 'message': 'Invalid data'})
+        
+        room_byte = encode_to_byte_room_2(room_id)
+        
+        certificate = create_certificate(old_score, new_score, room_byte, room_hash, signature)
+        new_certificate =  add_certificate_2_by_userid(user_id, certificate)
+        return jsonify({'status': 200, 'data': new_certificate})
 
 if __name__ == '__main__':
     app.run()

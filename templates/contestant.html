@@ -26,12 +26,29 @@ function viewSubmit(roomID) {
   xhr.send();
 }
 
-function submitTest(roomId) {
+function submit(roomId) {
   var fileInput = document.createElement('input');
   fileInput.type = 'file';
   fileInput.accept = '.pdf';  // Chỉ chấp nhận file PDF
 
-  fileInput.onchange = function () {
+  fileInput.onchange = async function () {
+    if (!window.ethereum) {
+      alert('Metamask not installed')
+      return
+    }
+    if('{{metamask_id}}' == '') {
+      alert('Please login again!')
+      return
+    }
+    const provider = new ethers.providers.Web3Provider(window.ethereum)
+    console.log("metamask = ", '{{metamask_id}}')
+    const signer = provider.getSigner('{{metamask_id}}'); // signer.getAddress() == accounts[0]
+    const signerAddress = await signer.getAddress();
+    console.log("signerAddress = ", signerAddress)
+    if('{{metamask_id}}' != signerAddress) {
+      alert('Please connect to the correct metamask account.\nYour metamask account is {{metamask_id}}')
+      return
+    }
     var file = fileInput.files[0];
     var formData = new FormData();
     formData.append('file', file);
@@ -48,7 +65,44 @@ function submitTest(roomId) {
             alert('Error! Please try again!');
         }
     };
-    xhr.send(formData);
+    
+
+    // Here, you can read the file content, for example:
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const fileContent = e.target.result;
+      // You can do something with the file content here
+
+      const arr = new Uint8Array(fileContent);
+      hash_file = ethers.utils.sha256(arr);
+      signer.signMessage(hash_file)
+        .then((signature) => {
+          fetch('/room/contestant/sign', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              'room_id': roomId,
+              'signature': signature
+            })
+          })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log('Success:', data);
+            xhr.send(formData);
+          })
+          .catch((error) => {
+            console.error('Error:', error);
+            alert('Error! Please try again!')
+          });
+        })    
+        .catch((error) => {
+          console.error('Error:', error);
+          alert('You need to sign this message')
+        });
+    };
+    reader.readAsArrayBuffer(file); // Read the file as text
   };
 
   // Kích hoạt sự kiện click trên input[type=file] để chọn file
@@ -77,6 +131,11 @@ function viewTest(roomID) {
   // Gửi yêu cầu lấy dữ liệu PDF từ server
   xhr.send();
 }
+
+function viewSubmitSign(roomID) {
+  console.log(roomID)
+  window.open('/room/contestant/submission_signature?room_id=' + roomID)
+}
 </script>
 
   <h1 class="text-center mt-3">Contestant Room</h1>
@@ -87,11 +146,11 @@ function viewTest(roomID) {
         <tr>
           <th scope="col">#</th>
           <th scope="col">RoomID</th>
+          <th scope="col">Mentor</th>
           <th scope="col">Test</th>
           <th scope="col">Submission</th>
-          <th scope="col">Level</th>
-          <th scope="col">Status</th>
-          <th scope="col">Mentor</th>
+          <th scope="col">Submission Sign</th>
+          <!-- <th scope="col">Status</th> -->
         </tr>
       </thead>
 
@@ -100,26 +159,35 @@ function viewTest(roomID) {
         <tr>
           <th scope="row" class="col-1">{{ loop.index }}</th>
           <td class="col-3">{{ contestant._id }}</td>
+          <td class="col-2">{{ contestant.mentor }}</td> 
+
+          <!-- test -->
           {% if not contestant.test %}
-            <td class="col-1">None</td>
-            <td class="col-1">No submission</td>
+            <td class="col-2">No submission</td>
           {% else %}
-            <td class="col-1">
-              <button class="btn btn-success" onclick="viewTest('{{ contestant._id }}')">View Test</button>
+            <td class="col-2">
+              <button type="button" class="btn btn-success" onclick="viewTest('{{ contestant._id }}')">View</button>
             </td>
-            {% if not contestant.submission %}
-              <td class="col-1">
-                <button class="btn btn-danger" onclick="submitTest('{{ contestant._id }}')">Submit</button>
-              </td>
-            {% else %}
-              <td class="col-1">
-                <button class="btn btn-success" onclick="viewSubmit('{{ contestant._id }}')">View submit</button>
-              </td>
-            {% endif %}
           {% endif %}
-          <td class="col-1">{{ contestant.level }}</td>
-          <td class="col-1">{{ contestant.status }}</td>
-          <td class="col-2">{{ contestant.mentor }}</td>
+
+          {% if not contestant.submission %}
+            <td class="col-2">
+              <button style="cursor: pointer;" class="btn btn-danger" onclick="submit('{{ contestant._id }}')">Submit</button>
+            </td>
+          {% else %}
+            <td class="col-2">
+              <button style="cursor: pointer;"  class="btn btn-success" onclick="viewSubmit('{{ contestant._id }}')">View</button>
+            </td>
+          {% endif %}
+            
+          <!-- Submission Sign -->
+          {% if contestant.submission_sign %}
+            <td class="col-2">
+              <button style="cursor: pointer;" class="btn btn-success" onclick="viewSubmitSign('{{ contestant._id }}')">View</button>
+            </td>
+          {% else %}
+            <td class="col-2">None</td>
+          {% endif %}
         </tr>
           {% endfor %}
       </tbody>

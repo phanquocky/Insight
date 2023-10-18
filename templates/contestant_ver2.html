@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<script>
+
+</script>
+
+  <h1 class="text-center mt-3">Contestant Room</h1>
+
+  {% if contestant_rooms %}
+    <table class="table table-bordered mt-3 text-center">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">RoomID</th>
+          <th scope="col">Mentor</th>
+          <th scope="col">Test</th>
+          <th scope="col">Submission</th>
+          <th scope="col">Submission Sign</th>
+          <!-- <th scope="col">Status</th> -->
+        </tr>
+      </thead>
+
+      <tbody class="overflow-auto">
+        {% for contestant in contestant_rooms %}
+        <tr>
+          <th scope="row" class="col-1">{{ loop.index }}</th>
+          <td class="col-3">{{ contestant._id }}</td>
+          <td class="col-2">{{ contestant.mentor }}</td>
+
+          <!-- test -->
+          {% if not contestant.test %}
+            <td class="col-2">No submission</td>
+          {% else %}
+            <td class="col-2">
+              <button type="button" class="btn btn-success" onclick="viewTest('{{ contestant._id }}')">View</button>
+            </td>
+          {% endif %}
+
+          {% if not contestant.submission %}
+            <td class="col-2">
+              <button style="cursor: pointer;" class="btn btn-danger" onclick="submit('{{ contestant._id }}')">Submit</button>
+            </td>
+          {% else %}
+            <td class="col-2">
+              <button style="cursor: pointer;"  class="btn btn-success" onclick="viewSubmit('{{ contestant._id }}')">View</button>
+            </td>
+          {% endif %}
+
+          <!-- Submission Sign -->
+          {% if contestant.submission_sign %}
+            <td class="col-2">
+              <button style="cursor: pointer;" class="btn btn-success" onclick="viewSubmitSign('{{ contestant._id }}')">View</button>
+            </td>
+          {% else %}
+            <td class="col-2">None</td>
+          {% endif %}
+        </tr>
+          {% endfor %}
+      </tbody>
+    </table>
+
+  {% else %}
+    <h2 class="text-center mt-3">No room found</h2>
+  {% endif %}
+
+{% endblock %}
