@@ -19,16 +19,40 @@ body {
     box-shadow: 0 12px 18px 2px rgba(34,0,51,.04), 0 6px 22px 4px rgba(7,48,114,.12), 0 6px 10px -4px rgba(14,13,26,.12);
 }
 
-.md\:rounded-xl {
-    border-radius: 1rem;
-}
+@media (min-width: 768px) {
+    .md\:p-8 {
+        padding: 2rem;
+    }
 
-.md\:flex-row {
-    flex-direction: row;
-}
+    .md\:rounded-xl {
+        border-radius: 1rem;
+    }
 
-.md\:flex {
-    display: flex;
+    .md\:flex-row {
+        flex-direction: row;
+    }
+
+    .md\:flex {
+        display: flex;
+    }
+
+    .md\:w-1\/2 {
+        width: 50%;
+    }
+
+    .md\:mr-8 {
+        margin-right: 2rem;
+    }
+
+    .md\:px-0 {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .md\:-m-2 {
+        margin: -0.5rem;
+    }
+    
 }
 
 .p-6 {
@@ -43,25 +67,8 @@ body {
     width: 100%;
 }
 
-.md\:p-8 {
-    padding: 2rem;
-}
-
 .h-full {
     height: 100%;
-}
-
-.md\:px-0 {
-    padding-left: 0;
-    padding-right: 0;
-}
-
-.md\:w-1\/2 {
-    width: 50%;
-}
-
-.md\:mr-8 {
-    margin-right: 2rem;
 }
 
 .px-2 {
@@ -175,10 +182,6 @@ svg {
 }
 [role=button], button {
     cursor: pointer;
-}
-
-.md\:-m-2 {
-    margin: -0.5rem;
 }
 
 .mt-6 {
