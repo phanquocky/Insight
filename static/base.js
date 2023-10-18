@@ -8,3 +8,9 @@ function logout_user(event) {
   localStorage.removeItem("metamask_id");
   window.location.href = "/logout";
 };
+
+function back_to_home(event) {
+  event.preventDefault();
+  window.location.href = "/";
+  // fetch to api 
+}

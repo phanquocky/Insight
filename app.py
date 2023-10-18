@@ -834,7 +834,14 @@ def former_send_certificate():
             return jsonify({'status': 400, 'message': 'Failed to create certificate!'})
         add_certificate_2_by_userid(room['contestant']['id'], certificate)
         print("add_certificate: successfully")
-        return jsonify({'status': 200, 'message': 'Successfully send certificate!'})
+
+        contestant_username = room['contestant']['username']
+        update_score = room['updated_score']
+        message = {
+            contestant_username,
+            update_score
+        }
+        return jsonify({'status': 200, 'message': message})
 
 @app.route('/save_grade/<room_id>', methods=['GET', 'POST'])
 def save_grade(room_id):
