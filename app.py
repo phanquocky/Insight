@@ -837,11 +837,7 @@ def former_send_certificate():
 
         contestant_username = room['contestant']['username']
         update_score = str(room['updated_score'])
-        # message = {
-        #     contestant_username,
-        #     update_score
-        # }
-        # message = dumps(message)
+        update_user_score(contestant_username, update_score)
         apiLink = 'http://127.0.0.1:8000/done_exam?username='+contestant_username+'&score='+update_score+'&community=1'
         return redirect(apiLink)
 
