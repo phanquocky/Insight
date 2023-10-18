@@ -858,5 +858,10 @@ def save_grade(room_id):
 
     return jsonify(response)
 
+@app.route('/get_all_users', methods=['GET'])
+def get_all_users():
+    users = query_all_users()
+    return jsonify(users)
+
 if __name__ == '__main__':
     app.run()
