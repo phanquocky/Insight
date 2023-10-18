@@ -55,6 +55,7 @@ def mail():
     if 'username' in session:
         username = session['username']
     return render_template("mail.html", username = username)
+
 @app.route('/send-mail', methods=['GET', 'POST'])
 def send_email():
     username = None
@@ -68,6 +69,7 @@ def send_email():
             expire_time = 3
             send_mail_to_user(From, To, subject, message, expire_time)
             return render_template("mail.html", username = username)
+    
 @app.route('/notification', methods=['GET', 'POST'])
 def notify():
     username = None
@@ -119,7 +121,11 @@ def search():
                            request_name = name,
                            username = username)
 
-@app.route('/former_sign_up', methods = ['GET', 'POST'])
+@app.route("/upload_file_render", methods=['GET'])
+def render_room():
+    return render_template('upload_file_render.html')
+
+@app.route('/former/sign_up', methods = ['GET', 'POST'])
 def former_sign_up():
     if  'username' in session:
         return redirect(url_for('home'))
@@ -585,6 +591,10 @@ def view_room():
         print('Waiting for ... Hung')
 
     if request.method == 'POST':
+        #Get the file
+        uploaded_file = request.files['file']
+        print(uploaded_file)
+
         data = request.json
         room_bytes = data.room_bytes
         room = loads(room_bytes)
