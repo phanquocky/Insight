@@ -836,12 +836,14 @@ def former_send_certificate():
         print("add_certificate: successfully")
 
         contestant_username = room['contestant']['username']
-        update_score = room['updated_score']
-        message = {
-            contestant_username,
-            update_score
-        }
-        return jsonify({'status': 200, 'message': message})
+        update_score = str(room['updated_score'])
+        # message = {
+        #     contestant_username,
+        #     update_score
+        # }
+        # message = dumps(message)
+        apiLink = 'http://127.0.0.1:8000/done_exam?username='+contestant_username+'&score='+update_score+'&community=1'
+        return redirect(apiLink)
 
 @app.route('/save_grade/<room_id>', methods=['GET', 'POST'])
 def save_grade(room_id):

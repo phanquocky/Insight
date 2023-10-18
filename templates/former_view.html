@@ -62,14 +62,17 @@
         console.log("data = ", data)
         if(data.status == '200') {
             alert('Certificate sent successfully!')
-            message = data.message;
-            const contestant_username = message.contestant_username;
-            const update_score = message.update_score;
-            const apiLink =  `127.0.0.1:8000/done_exam?username=${contestant_username}&score=${update_score}`;
-            fetch(apiLink, {
-                method: 'GET',
-            }).then(res => res.json())
-            .then(res => console.log(res));
+            // message = data.message;
+            // message = JSON.parse(message);
+            // console.log(message)
+            // const contestant_username = message.contestant_username;
+            // const update_score = message.update_score;
+            // const apiLink =  `http://127.0.0.1:8000/done_exam?username=${contestant_username}&score=${update_score}`;
+            // window.open(apiLink);
+            // fetch(apiLink, {
+            //     method: 'GET',
+            // }).then(res => res.json())
+            // .then(res => console.log(res));
         } else {
             alert('Certificate sent failed!')
         }
