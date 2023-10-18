@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<link rel="stylesheet" href="../static/upload_file_render.css">
+
+<main class="main">
+<section class="h-full w-full p-6 md:p-8 overflow-hidden md:flex md:flex-row md:rounded-xl md:shadow-big">
+    <div class="px-2 w-full md:px-0 md:mr-8 md:w-1/2">
+    <div class="flex flex-col items-center justify-center border-2 border-dashed border-grey-transparent rounded-default px-6 py-16 h-full w-full dark:border-grey-60">
+        <div class="pt-6 pb-2 text-center text-lg font-bold tracking-wide">Drag and drop the file</div>
+        <div class="pb-6 text-center text-base">or click the button below to send file</div>
+        <input id="file-upload" accept=".bin" type="file" class="opacity-0 w-0 h-0 appearance-none absolute overflow-hidden">
+        <label role="button" title="Choose the file to upload" for="file-upload" class="button rounded-lg flex items-center mt-4">Choose the file to upload</label>
+        <div id="uploaded-file-name" class="mt-4 text-center text-base"></div>
+    </div>
+    </div>
+    <div class="mt-6 w-full md:w-1/2 md:-m-2">
+    <div class="flex flex-col items-center justify-center bg-white px-6 md:py-0 py-6 mb-0 h-full w-full dark:bg-grey-90">
+        <div class="mt-12 flex flex-col h-full">
+        <h1 class="text-3xl font-bold md:pb-2">Rendering the room</h1>
+        <p class="max-w-sm leading-loose mt-6 md:mt-2 md:pr-14">
+            Please send the binary file of room's information and click the render button to see room's detail.
+        </p>
+        <button type="submit" id="render-btn" class="btn btn-success" style="width: 50%;">Render</button>
+        </div>
+    </div>
+    </div>
+</section>
+</main>
+
+<script>
+    document.getElementById('file-upload').addEventListener('change', function(e) {
+        const uploadedFile = e.target.files[0];
+        
+        if (uploadedFile) {
+        // Hiển thị tên tệp đã tải lên
+        document.getElementById('uploaded-file-name').textContent = `Uploaded file: ${uploadedFile.name}`;
+        }
+    });
+
+    document.getElementById('render-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+
+        const formData = new FormData();
+        const fileInput = document.getElementById('file-upload');
+        formData.append('file', fileInput.files[0]);
+
+        fetch('/public/room', {
+            method: 'POST',
+            body: formData,
+        })
+        .then(response => response.json())
+        .catch(error => {
+            console.error('Error:', error);
+        });
+});
+
+</script>
+  
+
+
+{% endblock %}
