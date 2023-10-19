@@ -130,7 +130,12 @@ def search():
 
 @app.route("/upload_file_render", methods=['GET'])
 def render_room():
-    return render_template('upload_file_render.html')
+    username = None
+    metamask_id = None
+    if 'username' in session:
+        username = session['username']
+        metamask_id = session['metamask_id']
+    return render_template('upload_file_render.html', username = username, metamask_id = metamask_id)
 
 @app.route('/former/sign_up', methods = ['GET', 'POST'])
 def former_sign_up():
