@@ -9,11 +9,17 @@ from forms import *
 from bson.json_util import dumps, loads
 from api_link_create import *
 from flask_cors import CORS
+import uuid
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = SECRECT_KEY 
 app.config['SESSION_COOKIE_SECURE'] = True
 
+room_data_storage = {}
+
+def generate_unique_identifier():
+    return str(uuid.uuid4())
+# Simulate a database or storage for large data
 
 # Initialize CORS with your Flask app
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
@@ -21,6 +27,7 @@ cors = CORS(app, resources={r"/*": {"origins": "*"}})
 def before_request():
   session.permanent = True
   app.permanent_session_lifetime = timedelta(minutes = 30) #Phiên làm việc sẽ tự động xóa sau 30p nếu không có thêm bất cứ request nào lên server.
+
 
 # Error Page 
 @app.errorhandler(403)
@@ -55,6 +62,7 @@ def mail():
     if 'username' in session:
         username = session['username']
     return render_template("mail.html", username = username)
+
 @app.route('/send-mail', methods=['GET', 'POST'])
 def send_email():
     username = None
@@ -68,6 +76,7 @@ def send_email():
             expire_time = 3
             send_mail_to_user(From, To, subject, message, expire_time)
             return render_template("mail.html", username = username)
+    
 @app.route('/notification', methods=['GET', 'POST'])
 def notify():
     username = None
@@ -119,7 +128,11 @@ def search():
                            request_name = name,
                            username = username)
 
-@app.route('/former_sign_up', methods = ['GET', 'POST'])
+@app.route("/upload_file_render", methods=['GET'])
+def render_room():
+    return render_template('upload_file_render.html')
+
+@app.route('/former/sign_up', methods = ['GET', 'POST'])
 def former_sign_up():
     if  'username' in session:
         return redirect(url_for('home'))
@@ -581,27 +594,36 @@ def view_room():
         username = session['username']
         metamask_id = session['metamask_id']
 
+    room = None
     if request.method == 'GET':
-        print('Waiting for ... Hung')
-
-    if request.method == 'POST':
-        data = request.json
-        room_bytes = data.room_bytes
-        room = loads(room_bytes)
+        identifier = request.args.get('identifier')
+        if identifier in room_data_storage:
+            room = loads(room_data_storage[identifier])
+        else:
+            abort(404, "Invalid identifier")
+        
         if not isinstance(room, Room2):
             jsonify({"error": "Error: Invalid room data"}), 400
-        print("room = ", room)
-
+        
         for test in room['tests']:
             for mentor in room['mentors']:
                 if(mentor['id'] == test['mentor_id']):
                     test['mentor_name'] = mentor['username']
                     break
-                
-
+        
         return render_template('render_room.html', room=room,
-                                                username=username,
-                                                metamask_id=metamask_id)
+                                                    username=username,
+                                                    metamask_id=metamask_id)    
+
+    if request.method == 'POST':
+        #Get the file
+        uploaded_file = request.files['file']
+
+        room_bytes = uploaded_file.read()
+     
+        identifier = generate_unique_identifier()
+        room_data_storage[identifier] = room_bytes
+        return redirect(url_for('view_room', identifier=identifier))
 
 @app.route('/room/mentor/sign', methods=['POST'])
 def update_mentor_sign():
@@ -754,7 +776,6 @@ def contestant_room():
                            username=username,
                            metamask_id=metamask_id, count_test_complete=count)
 
-
 @app.route('/contestant/<room_id>', methods = ['GET','POST'])
 def contestant_a_room_detail(room_id):
     username = None
@@ -836,16 +857,14 @@ def former_send_certificate():
         certificate = create_certificate(room['prev_score'], room['updated_score'], room_byte, room_hash, signature)
         if certificate is None:
             return jsonify({'status': 400, 'message': 'Failed to create certificate!'})
+        print("certificate: ", certificate.__dict__)
         add_certificate_2_by_userid(room['contestant']['id'], certificate)
         print("add_certificate: successfully")
 
         contestant_username = room['contestant']['username']
         update_score = str(room['updated_score'])
-        # message = {
-        #     contestant_username,
-        #     update_score
-        # }
-        # message = dumps(message)
+        update_user_score(contestant_username, update_score)
+        print("update_user_score: successfully")
         apiLink = 'http://127.0.0.1:8000/done_exam?username='+contestant_username+'&score='+update_score+'&community=1'
         return redirect(apiLink)
 

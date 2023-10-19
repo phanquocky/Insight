@@ -54,21 +54,28 @@ function viewSubmit(roomID, mentorID) {
 </script>
 
 <div class="container">
-  <h1 class=""
-    {% if room.is_finished %}
-      style="color: green"
-    {% endif %}
+  {% if room._id %}
+    <h1 class=""
+      {% if room.is_finished %}
+        style="color: green"
+      {% endif %}
 
-  >Room {{room._id}}</h1>
+    >Room {{room._id}}</h1>
+  {% else %}
+    <h1 class="" style="color: green">Room Viewer</h1>
+  {% endif %}
   
   <ol>
-    <li>Room ID: {{room._id}}</li>
-    
+    {% if room._id %} 
+      <li>Room ID: {{room._id}}</li>
+    {% endif %}
+
     <li>
       Room Contestant: {{room.contestant.username}}
       <ol>
         <li>Score: {{room.prev_score}}</li>
         <li>Wanted Score: {{room.want_score}}</li>
+        <li>Updated Score: {{room.updated_score}}</li>
       </ol>
     </li>
   
@@ -82,11 +89,7 @@ function viewSubmit(roomID, mentorID) {
     </li>
   
     <li>
-      Room Final Score: {{room.final_result}}
-    </li>
-  
-    <li>
-      Contestant Score Update: {{room.updated_score}}
+      Room Final Average Score: {{room.final_result}}
     </li>
   </ol>
   
@@ -130,7 +133,7 @@ function viewSubmit(roomID, mentorID) {
         {% if not test.score %}
         <td class="col-2"> None </td>
         {% else %}
-        <td class="col-2"> test.score </td> 
+        <td class="col-2"> {{test.score}} </td> 
         {% endif %}
       </tr>
       {% endfor %}
