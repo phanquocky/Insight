@@ -135,7 +135,8 @@ def get_submit_from_room_2(room_id, mentor_id):
     room = find_room_2_by_id(room_id)
     tests = room['tests']
     for test in tests:
-        return test['submission']
+        if test['mentor_id'] == mentor_id:
+            return test['submission']
     return None
 
 
