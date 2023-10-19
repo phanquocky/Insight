@@ -234,7 +234,6 @@ def contest():
     max_score = int(max_score) if max_score else 100
 
     new_score = request.args.get('new_score')
-    print(new_score)
 
     username = None
     user = None
@@ -245,6 +244,7 @@ def contest():
         metamask_id = session['metamask_id']
 
     mentors = query_users_by_score(min_score=min_score, max_score=max_score)
+    print(mentors)
     return render_template('contest.html', 
                            mentors = mentors,
                            min_score = min_score,
@@ -805,6 +805,7 @@ def contestant_a_room_detail(room_id):
 @app.route('/view_submit/<room_id>', methods=['GET'])
 def view_submit(room_id):
     mentor_id = request.args.get('mentor_id')
+    print("mentor_id: ", mentor_id)
 
     # Truy vấn cơ sở dữ liệu để lấy nội dung của file Test dựa trên room_id
     room_content = get_submit_from_room_2(room_id, mentor_id)
@@ -840,7 +841,7 @@ def former_sign(room_id):
 @app.route('/former/send_certificate', methods=['POST'])
 def former_send_certificate():
     data = request.json
-    print("/former/send_ceritificate: data = ", data)
+    # print("/former/send_ceritificate: data = ", data)
     username = data['username']
     if username == None:
         return jsonify({'status': 400, 'message': 'username is required to validate you are former!'})
@@ -867,10 +868,10 @@ def former_send_certificate():
         print("add_certificate: successfully")
 
         contestant_username = room['contestant']['username']
-        update_score = str(room['updated_score'])
+        update_score = int(room['updated_score'])
         update_user_score(contestant_username, update_score)
         print("update_user_score: successfully")
-        apiLink = 'http://127.0.0.1:8000/done_exam?username='+contestant_username+'&score='+update_score+'&community=1'
+        apiLink = 'http://127.0.0.1:8000/done_exam?username='+contestant_username+'&score='+str(update_score)+'&community=1'
         return redirect(apiLink)
 
 @app.route('/save_grade/<room_id>', methods=['GET', 'POST'])
