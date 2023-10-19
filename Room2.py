@@ -270,15 +270,17 @@ def update_final_score(room_id):
                 
                 updated_score = room['prev_score']
                 if room['final_result'] < 5:
-                    updated_score = room['pre_score']
+                    updated_score = room['prev_score']
                 elif room['final_result'] > 5 and room['final_result'] < 7:
-                    updated_score = room['pre_score'] + (room['want_score'] - room['pre_score'])*0.3
+                    updated_score = room['prev_score'] + (room['want_score'] - room['prev_score'])*0.3
                 elif room['final_result'] > 7 and room['final_result'] < 9:
-                    updated_score = room['pre_score'] + (room['want_score'] - room['pre_score'])*0.6
+                    updated_score = room['prev_score'] + (room['want_score'] - room['prev_score'])*0.6
                 elif room['final_result'] > 9:
-                    updated_score = room['pre_score'] + (room['want_score'] - room['pre_score'])*(room['final_result']/10)
-                update_score = int(update_score)
-                rooms_collection.update_one({'_id': ObjectId(room_id)}, {'$set': {'updated_score': updated_score}})
+                    updated_score = room['prev_score'] + (room['want_score'] - room['prev_score'])*(room['final_result']/10)
+                print(updated_score)
+                print('type of updated_score: ', type(updated_score))
+                new_score = int(updated_score)
+                rooms_collection.update_one({'_id': ObjectId(room_id)}, {'$set': {'updated_score': new_score}})
         if temp == 0:
             return
         final_score = float(total_score / temp)
