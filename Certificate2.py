@@ -53,7 +53,7 @@ def creat_certificate_2(user_id = None, user_name = None):
 def add_certificate_2_by_userid(user_id, certificate):
   certificate_collection = db['Certificate2']
   certificate_room = query_certificate_2_by_userid(user_id)
-  if(certificate is None):
+  if(certificate_room is None):
     creat_certificate_2(user_id=user_id)
     print("create certificate 2 room")
   certificate_collection.update_one({'user_id': ObjectId(user_id)}, {'$push': {'certificates': certificate.__dict__}})
