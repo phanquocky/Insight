@@ -94,33 +94,35 @@ def find_examiner(min_score, max_score, need_examiner=5):
     #  2 user => min_score     -> mid
     #  3 user => mid -> max_score
 
-    min_score = min(min_score + 1, 100)
-    mid = (min_score + max_score) // 2  
+    # min_score = min(min_score + 1, 100)
+    # mid = (min_score + max_score) // 2  
 
-    list_examiner = []
+    # list_examiner = []
 
-    list_a = query_random_users_by_score(min_score, mid, 3)
-    list_b = query_random_users_by_score( mid + 1, max_score , 2) 
-    need_examiner -= len(list_a) + len(list_b)
-    list_examiner += list_a
-    list_examiner += list_b
+    # list_a = query_random_users_by_score(min_score, mid, 3)
+    # list_b = query_random_users_by_score( mid + 1, max_score , 2) 
+    # need_examiner -= len(list_a) + len(list_b)
+    # list_examiner += list_a
+    # list_examiner += list_b
 
-    if(len(list_examiner) == 0):
-        return []
+    # if(len(list_examiner) == 0):
+    #     return []
 
-    list_add = []
-    temp = []
-    while need_examiner > 0:
-        if len(temp) == 0:
-          temp = list_examiner.copy()
-        pos = random.randint(0, len(temp))
-        pos = max(pos, 0)
-        pos = min(pos, len(temp) - 1)
-        list_add.append(temp[pos])
-        temp.pop(pos)
-        need_examiner -= 1
+    # list_add = []
+    # temp = []
+    # while need_examiner > 0:
+    #     if len(temp) == 0:
+    #       temp = list_examiner.copy()
+    #     pos = random.randint(0, len(temp))
+    #     pos = max(pos, 0)
+    #     pos = min(pos, len(temp) - 1)
+    #     list_add.append(temp[pos])
+    #     temp.pop(pos)
+    #     need_examiner -= 1
   
-    list_examiner += list_add
-    list_examiner.sort(key=lambda x: x['score'])
-    list_examiner.reverse()
+    # list_examiner += list_add
+    # list_examiner.sort(key=lambda x: x['score'])
+    # list_examiner.reverse()
+    users_collection = db['User2']
+    list_examiner= list(users_collection.find({'score': {'$gte': min_score + 1, '$lte': max_score}}).limit(need_examiner))
     return list_examiner

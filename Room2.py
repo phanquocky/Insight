@@ -135,7 +135,7 @@ def get_submit_from_room_2(room_id, mentor_id):
     room = find_room_2_by_id(room_id)
     tests = room['tests']
     for test in tests:
-        if test['mentor_id'] == mentor_id:
+        if test['mentor_id'] == ObjectId(mentor_id):
             return test['submission']
     return None
 
@@ -185,7 +185,7 @@ def upload_test_to_db(room_id, uploaded_file, mentor_id):
 
         # Tìm và cập nhật phần tử đúng trong mảng tests với mentor_id tương ứng
         for test in room['tests']:
-            print(test)
+           # print(test)
             print('\n')
             if test['mentor_id'] == ObjectId(mentor_id):
                 test['test'] = file_bytes

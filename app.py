@@ -434,11 +434,12 @@ def user_profile(username_search):
         certificates = None
         if CertificateRoom:
             certificates = CertificateRoom['certificates']
-
+        print(user['score'])
         return render_template("user_profile.html", user = user, 
                                                     certificates = certificates,
                                                     username = username, 
-                                                    metamask_id = metamask_id)
+                                                    metamask_id = metamask_id,
+                                                    score = user['score'])
     else:
         data = request.json
         user = query_user_by_username(username)

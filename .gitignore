@@ -1,7 +1,7 @@
 test.py
-config.py
 insightenv
 __pycache__
 InsightEnv
+virEnv
 .idea
 .vercel
